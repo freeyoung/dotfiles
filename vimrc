@@ -1,4 +1,3 @@
-ln -s ~/.vim/vimrc ~/.vimrc
 set nocompatible    "非兼容模式
 syntax on
 set background=dark "背景色
@@ -39,8 +38,6 @@ set backspace=2     "退格键可以删除任何东西
 "显示TAB字符为<+++
 set list
 set list listchars=tab:<+
-set paste
-
 "映射常用操作
 map [r :! python % <CR>
 map [o :! python -i % <CR>
@@ -63,9 +60,9 @@ if has("autocmd")
     filetype plugin on
     filetype indent on
     "智能缩进，使用4空格，使用全局的了
-    "autocmd FileType python setlocal et | setlocal sta | setlocal sw=4
-    "autocmd FileType c setlocal et | setlocal sta | setlocal sw=4
-    "autocmd FileType h setlocal et | setlocal sta | setlocal sw=4
+    autocmd FileType python setlocal et | setlocal sta | setlocal sw=4
+    autocmd FileType c setlocal et | setlocal sta | setlocal sw=4
+    autocmd FileType h setlocal et | setlocal sta | setlocal sw=4
 endif
 
 
