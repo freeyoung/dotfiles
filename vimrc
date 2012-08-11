@@ -10,7 +10,7 @@ set smartcase       "只能匹配，即小写全匹配，大小写混槴¢时高
 set incsearch       "增量秴¢
 set nohls           "秴¢时随着输入立即定位，不知什么原因会关闭结果高亮
 set report=0        "显示修改次数
-set mouse=a         "控制台启用鼠标
+"set mouse=a         "控制台启用鼠标
 set number          "行号
 set nobackup        "无备份
 "set cursorline      "高亮当前行背景
@@ -27,6 +27,7 @@ set foldopen-=search    "秴¢时不打开折叠
 set foldopen-=undo  "撤销时不打开折叠
 set updatecount=0   "不使用交换文件
 set magic           "使用正则时，除了$ . * ^以外的元字符都要加反斜线
+set paste
 colorscheme solarized
 "缩进定义
 set shiftwidth=4
