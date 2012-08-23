@@ -1,0 +1,1 @@
+/home/qianlong/.vim/bundle/Pydiction/plugin/python_pydiction.vim

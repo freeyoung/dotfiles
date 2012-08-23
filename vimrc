@@ -13,7 +13,7 @@ set report=0        "显示修改次数
 "set mouse=a         "控制台启用鼠标
 set number          "行号
 set nobackup        "无备份
-"set cursorline      "高亮当前行背景
+set cursorline      "高亮当前行背景
 set fileencodings=ucs-bom,UTF-8,GBK,BIG5,latin1
 set fileencoding=UTF-8
 set fileformat=unix "换行使用unix方式
@@ -30,12 +30,18 @@ set magic           "使用正则时，除了$ . * ^以外的元字符都要加�
 "set paste          "paste 会导致缩进问题
 colorscheme solarized
 "缩进定义
+filetype on
+filetype plugin on
+let g:pydiction_location = '~/.vim/bundle/Pydiction/complete-dict'
+
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
 set autoindent
 set smartindent
 set smarttab
+autocmd FileType python setlocal et sta sw=4 sts=4
+
 set backspace=2     "退格键可以删除任何东西
 "显示TAB字符为<+++
 set list
@@ -52,21 +58,6 @@ if has("gui_running")
     set guioptions-=m   "不显示菜单
     set guioptions-=T   "不显示工具栏
     set guifont=consolas\ 10
-endif
-
-filetype on
-filetype plugin on
-filetype indent on
-
-if has("autocmd")
-    "回到上次文件打开所在行
-    au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
-        \| exe "normal g'\"" | endif
-    "自动检测文件类型，并载入相关的规则文件
-    filetype plugin on
-    filetype indent on
-    "智能缩进，使用4空格，使用全局的了
-    autocmd FileType python setlocal et | setlocal sta | setlocal sw=4
 endif
 
 "Format the statusline
