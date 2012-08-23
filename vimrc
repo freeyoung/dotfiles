@@ -32,7 +32,8 @@ colorscheme solarized
 "缩进定义
 filetype on
 filetype plugin on
-let g:pydiction_location = '~/.vim/bundle/Pydiction/complete-dict'
+filetype indent on
+let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
 
 set tabstop=4
 set softtabstop=4
@@ -77,6 +78,6 @@ if filereadable(expand("$VIM/vimfiles/plugin/vimbuddy.vim"))
 set statusline+=\ %{VimBuddy()} " vim buddy
 endif
 set statusline+=%= " right align
-"set statusline+=%2*0x%-8B\ " current char
+set statusline+=%2*0x%-8B\ " current char
 set statusline+=0x%-8B\ " current char
 set statusline+=%-14.(%l,%c%V%)\ %<%P " offset 
