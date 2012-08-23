@@ -27,13 +27,12 @@ set foldopen-=search    "秴¢时不打开折叠
 set foldopen-=undo  "撤销时不打开折叠
 set updatecount=0   "不使用交换文件
 set magic           "使用正则时，除了$ . * ^以外的元字符都要加反斜线
-set paste
+"set paste          "paste 会导致缩进问题
 colorscheme solarized
 "缩进定义
-set shiftwidth=4
 set tabstop=4
 set softtabstop=4
-set expandtab
+set shiftwidth=4
 set autoindent
 set smartindent
 set smarttab
@@ -55,6 +54,10 @@ if has("gui_running")
     set guifont=consolas\ 10
 endif
 
+filetype on
+filetype plugin on
+filetype indent on
+
 if has("autocmd")
     "回到上次文件打开所在行
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
@@ -64,8 +67,25 @@ if has("autocmd")
     filetype indent on
     "智能缩进，使用4空格，使用全局的了
     autocmd FileType python setlocal et | setlocal sta | setlocal sw=4
-    autocmd FileType c setlocal et | setlocal sta | setlocal sw=4
-    autocmd FileType h setlocal et | setlocal sta | setlocal sw=4
 endif
 
-
+"Format the statusline
+"Nice statusbar
+set laststatus=2
+set statusline=
+set statusline+=%2*%-3.3n%0*\ " buffer number
+set statusline+=%f\ " file name
+set statusline+=%h%1*%m%r%w%0* " flag
+set statusline+=[
+if v:version >= 600
+set statusline+=%{strlen(&ft)?&ft:'none'}, " filetype
+set statusline+=%{&encoding}, " encoding
+endif
+set statusline+=%{&fileformat}] " file format
+if filereadable(expand("$VIM/vimfiles/plugin/vimbuddy.vim"))
+set statusline+=\ %{VimBuddy()} " vim buddy
+endif
+set statusline+=%= " right align
+"set statusline+=%2*0x%-8B\ " current char
+set statusline+=0x%-8B\ " current char
+set statusline+=%-14.(%l,%c%V%)\ %<%P " offset 
