@@ -34,6 +34,8 @@ set shiftwidth=4
 set tabstop=4
 set softtabstop=4
 set expandtab
+set autoindent
+set smartindent
 set smarttab
 set backspace=2     "退格键可以删除任何东西
 "显示TAB字符为<+++
