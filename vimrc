@@ -90,7 +90,7 @@ set rtp+=~/.vim/bundle/vundle/
 call vundle#rc()
 
 " 使用Vundle来管理Vundle，这个必须要有。
-Bundle 'gmarik/vundle'
+" Bundle 'gmarik/vundle'
 " "接下来是要安装的插件
 " "格式1：Github上其他用户的仓库（非vim-scripts账户里的仓库，所以要加Github用户名）
 Bundle 'scrooloose/nerdtree'
