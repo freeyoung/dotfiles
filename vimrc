@@ -29,11 +29,6 @@ set updatecount=0   "不使用交换文件
 set magic           "使用正则时，除了$ . * ^以外的元字符都要加反斜线
 "set paste          "paste 会导致缩进问题
 colorscheme solarized
-"因为使用 vundle 取消了
-"filetype on
-"filetype plugin on
-"filetype indent on
-"let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
 
 "缩进定义
 set tabstop=4
@@ -102,5 +97,6 @@ Bundle 'xolox/vim-session'
 " Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
 
 filetype plugin indent on
+let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
 
 nmap <F2> :NERDTreeToggle <CR>
