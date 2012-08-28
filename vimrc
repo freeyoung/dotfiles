@@ -94,6 +94,7 @@ Bundle 'gmarik/vundle'
 " "接下来是要安装的插件
 " "格式1：Github上其他用户的仓库（非vim-scripts账户里的仓库，所以要加Github用户名）
 Bundle 'scrooloose/nerdtree'
+Bundle 'xolox/vim-session'
 " "格式2：vim-scripts里面的仓库，直接打仓库名即可。
 " Bundle 'L9'
 " Bundle 'FuzzyFinder'
