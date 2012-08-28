@@ -30,14 +30,6 @@ set magic           "使用正则时，除了$ . * ^以外的元字符都要加�
 "set paste          "paste 会导致缩进问题
 colorscheme solarized
 
-"缩进定义
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-set autoindent
-set smartindent
-set smarttab
-autocmd FileType python setlocal et sta sw=4 sts=4
 
 set backspace=2     "退格键可以删除任何东西
 "显示TAB字符为<+++
@@ -78,6 +70,11 @@ set statusline+=%2*0x%-8B\ " current char
 set statusline+=0x%-8B\ " current char
 set statusline+=%-14.(%l,%c%V%)\ %<%P " offset 
 
+" 打开文件时自动回到上次位置
+if has("autocmd")
+    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+
 " vundle
 set nocompatible " be iMproved
 filetype off " required!
@@ -99,4 +96,16 @@ Bundle 'xolox/vim-session'
 filetype plugin indent on
 let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
 
+"缩进定义
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set autoindent
+set smartindent
+set smarttab
+autocmd FileType python setlocal et sta sw=4 sts=4
+
+" 按键映射
 nmap <F2> :NERDTreeToggle <CR>
+nmap <F3> :%s/\t/    /g <CR>
+nmap <C-w> :w <CR>
