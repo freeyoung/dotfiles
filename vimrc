@@ -29,12 +29,13 @@ set updatecount=0   "不使用交换文件
 set magic           "使用正则时，除了$ . * ^以外的元字符都要加反斜线
 "set paste          "paste 会导致缩进问题
 colorscheme solarized
-"缩进定义
-filetype on
-filetype plugin on
-filetype indent on
-let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
+"因为使用 vundle 取消了
+"filetype on
+"filetype plugin on
+"filetype indent on
+"let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
 
+"缩进定义
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
@@ -81,3 +82,22 @@ set statusline+=%= " right align
 set statusline+=%2*0x%-8B\ " current char
 set statusline+=0x%-8B\ " current char
 set statusline+=%-14.(%l,%c%V%)\ %<%P " offset 
+
+" vundle
+set nocompatible " be iMproved
+filetype off " required!
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+
+" 使用Vundle来管理Vundle，这个必须要有。
+Bundle 'gmarik/vundle'
+" "接下来是要安装的插件
+" "格式1：Github上其他用户的仓库（非vim-scripts账户里的仓库，所以要加Github用户名）
+Bundle 'scrooloose/nerdtree'
+" "格式2：vim-scripts里面的仓库，直接打仓库名即可。
+" Bundle 'L9'
+" Bundle 'FuzzyFinder'
+" "格式3：非Github的Git仓库
+" Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
+
+filetype plugin indent on
