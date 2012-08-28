@@ -102,3 +102,5 @@ Bundle 'xolox/vim-session'
 " Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
 
 filetype plugin indent on
+
+nmap <F2> :NERDTreeToggle <CR>
