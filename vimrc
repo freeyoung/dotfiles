@@ -1,111 +1,197 @@
-set nocompatible    "非兼容模式
-syntax on
-set background=dark "背景色
-"color desert
-set ruler           "在左下角显示当前文件所在行
-set showcmd         "在状态栏显示命令
-set showmatch       "显示匹配的括号
-set ignorecase      "大小写无关匹配
-set smartcase       "只能匹配，即小写全匹配，大小写混槴¢时高亮显示
-set incsearch       "增量秴¢
-set nohls           "秴¢时随着输入立即定位，不知什么原因会关闭结果高亮
-set report=0        "显示修改次数
-"set mouse=a         "控制台启用鼠标
-set number          "行号
-set nobackup        "无备份
-set cursorline      "高亮当前行背景
-set fileencodings=ucs-bom,UTF-8,GBK,BIG5,latin1
-set fileencoding=UTF-8
-set fileformat=unix "换行使用unix方式
-set ambiwidth=double
-set noerrorbells    "不显示响铃
-set visualbell      "可视化铃声
-set foldmarker={,}  "缩进符号
-set foldmethod=indent   "缩进作为折叠标识
-set foldlevel=100   "不自动折叠
-set foldopen-=search    "秴¢时不打开折叠
-set foldopen-=undo  "撤销时不打开折叠
-set updatecount=0   "不使用交换文件
-set magic           "使用正则时，除了$ . * ^以外的元字符都要加反斜线
-"set paste          "paste 会导致缩进问题
-colorscheme solarized
+source ~/.vim/bundles.vim
 
+" encoding dectection
+set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1
 
-set backspace=2     "退格键可以删除任何东西
-"显示TAB字符为<+++
-set list
-set list listchars=tab:<+
-"映射常用操作
-map [r :! python % <CR>
-map [o :! python -i % <CR>
-map [t :! rst2html.py % %<.html <CR>
-
-if has("gui_running")
-    set lines=25
-    set columns=80
-    set lazyredraw  "延迟重绘
-    set guioptions-=m   "不显示菜单
-    set guioptions-=T   "不显示工具栏
-    set guifont=consolas\ 10
-endif
-
-"Format the statusline
-"Nice statusbar
-set laststatus=2
-set statusline=
-set statusline+=%2*%-3.3n%0*\ " buffer number
-set statusline+=%f\ " file name
-set statusline+=%h%1*%m%r%w%0* " flag
-set statusline+=[
-if v:version >= 600
-set statusline+=%{strlen(&ft)?&ft:'none'}, " filetype
-set statusline+=%{&encoding}, " encoding
-endif
-set statusline+=%{&fileformat}] " file format
-if filereadable(expand("$VIM/vimfiles/plugin/vimbuddy.vim"))
-set statusline+=\ %{VimBuddy()} " vim buddy
-endif
-set statusline+=%= " right align
-set statusline+=%2*0x%-8B\ " current char
-set statusline+=0x%-8B\ " current char
-set statusline+=%-14.(%l,%c%V%)\ %<%P " offset 
-
-" 打开文件时自动回到上次位置
-if has("autocmd")
-    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-endif
-
-" vundle
-set nocompatible " be iMproved
-filetype off " required!
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
-
-" 使用Vundle来管理Vundle，这个必须要有。
-" Bundle 'gmarik/vundle'
-" "接下来是要安装的插件
-" "格式1：Github上其他用户的仓库（非vim-scripts账户里的仓库，所以要加Github用户名）
-Bundle 'scrooloose/nerdtree'
-Bundle 'xolox/vim-session'
-" "格式2：vim-scripts里面的仓库，直接打仓库名即可。
-" Bundle 'L9'
-" Bundle 'FuzzyFinder'
-" "格式3：非Github的Git仓库
-" Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
-
+" enable filetype dectection and ft specific plugin/indent
 filetype plugin indent on
-let g:pydiction_location = '~/.vim/tools/pydiction/complete-dict'
 
-"缩进定义
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+" enable syntax hightlight and completion 
+syntax enable
+syntax on
+
+" color theme
+color solarized 
+
+" highlight current line
+au WinLeave * set nocursorline nocursorcolumn
+au WinEnter * set cursorline cursorcolumn
+set cursorline cursorcolumn
+
+" search operations
+set incsearch
+"set highlight 	" conflict with highlight current line
+set ignorecase
+set smartcase
+
+" editor settings
+set nocompatible
+set confirm                                                       " prompt when existing from an unsaved file
+set history=1000
+set backspace=indent,eol,start                                    " More powerful backspacing
+set updatecount=0                                                 " dont use swapfile 
+
+" display settings
+set t_Co=256                                                      " Explicitly tell vim that the terminal has 256 colors "
+" set mouse=a                                                       " use mouse in all modes
+set report=0                                                      " always report number of lines changed                "
+set nowrap                                                        " dont wrap lines
+set scrolloff=2                                                   " 2 lines above/below cursor when scrolling
+set number                                                        " show line numbers
+set showmatch                                                     " show matching bracket (briefly jump)
+set showmode                                                      " show mode in status bar (insert/replace/...)
+set showcmd                                                       " show typed command in status bar
+set ruler                                                         " show cursor position in status bar
+set title                                                         " show file in titlebar
+set laststatus=2                                                  " use 2 lines for the status bar
+set matchtime=2                                                   " show matching bracket for 0.2 seconds
+set matchpairs+=<:>                                               " specially for html
+set list listchars=tab:<+                                         " display TAB as <+++
+
+ " When editing a file, always jump to the last cursor position
+autocmd BufReadPost *
+      \ if ! exists("g:leave_my_cursor_position_alone") |
+      \     if line("'\"") > 0 && line ("'\"") <= line("$") |
+      \         exe "normal g'\"" |
+      \     endif |
+      \ endif
+
+" Default Indentation
 set autoindent
-set smartindent
-set smarttab
-autocmd FileType python setlocal et sta sw=4 sts=4
+set smartindent     " indent when
+set tabstop=8       " tab width
+set softtabstop=4   " backspace & 
+set shiftwidth=4    " indent width
+"set textwidth=79
+set expandtab       " expand tab to space
+autocmd FileType html,htmldjango,xhtml,haml,sass,scss,ruby,javascript,php,css setlocal tabstop=4 shiftwidth=2 softtabstop=2
+autocmd FileType python set textwidth=0
+autocmd Syntax javascript set syntax=jquery   " JQuery syntax support
+" js
+let g:html_indent_inctags = "html,body,head,tbody"
+let g:html_indent_script1 = "inc"
+let g:html_indent_style1 = "inc"
 
-" 按键映射
-nmap <F2> :NERDTreeToggle <CR>
-nmap <F3> :%s/\t/    /g <CR>
-nmap <C-w> :w <CR>
+" Keybindings for plugin toggle
+nmap <F5> :TagbarToggle<cr>
+nmap <F6> :NERDTreeToggle<cr>
+nmap <F3> :GundoToggle<cr>
+
+" easier navigation between split windows
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+map <F1> :w<kEnter>
+imap <F1> <Esc>:w<kEnter>a
+
+" tabbar
+let g:Tb_MaxSize = 2
+let g:Tb_TabWrap = 1
+
+" Tagbar
+let g:tagbar_left=1
+let g:tagbar_width=30
+let g:tagbar_autofocus = 1
+let g:tagbar_sort = 0 
+let g:tagbar_compact = 1
+" tag for coffee
+if executable('coffeetags')
+  let g:tagbar_type_coffee = {
+        \ 'ctagsbin' : 'coffeetags',
+        \ 'ctagsargs' : '',
+        \ 'kinds' : [
+        \ 'f:functions',
+        \ 'o:object',
+        \ ],
+        \ 'sro' : ".",
+        \ 'kind2scope' : {
+        \ 'f' : 'object',
+        \ 'o' : 'object',
+        \ }
+        \ }
+endif
+
+" Nerd Tree 
+let NERDChristmasTree=0
+let NERDTreeWinSize=30
+let NERDTreeChDirMode=2
+let NERDTreeIgnore=['\.vim$', '\~$', '\.pyc$', '\.swp$']
+let NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$',  '\~$']
+let NERDTreeShowBookmarks=1
+let NERDTreeWinPos = "right"
+
+" ZenCoding
+let g:user_zen_expandabbr_key='<C-j>'
+
+" powerline
+"let g:Powerline_symbols = 'fancy'
+
+" NeoComplCache
+set completeopt-=preview
+let g:neocomplcache_enable_at_startup=1
+"let g:neoComplcache_disableautocomplete=1
+let g:neocomplcache_enable_smart_case=1
+let g:neocomplcache_min_syntax_length = 3
+let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
+imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
+smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
+"imap <C-l> <Plug>(neocomplcache_snippets_expand)
+"smap <C-l> <Plug>(neocomplcache_snippets_expand)
+"imap <C-t> <Plug>(neocomplcache_snippets_jump)
+"smap <C-t> <Plug>(neocomplcache_snippets_jump)
+imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
+smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
+
+" Enable omni completion.
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+
+" SuperTab
+let g:SuperTabDefaultCompletionType="<c-n>"
+
+" ctrlp
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,.DS_Store  " MacOSX/Linux
+let g:ctrlp_custom_ignore = '\.git$\|\.hg$\|\.svn$'
+
+" eggcache vim
+:command W w
+:command WQ wq
+:command Wq wq
+:command Q q
+:command Qa qa
+:command QA qa
+
+" show syntax highlighting groups for word under cursor
+nmap <C-P> :call <SID>SynStack()<CR>
+function! <SID>SynStack()
+  if !exists("*synstack")
+    return
+  endif
+  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
+
+" for macvim
+if has("gui_running")
+    set go=aAce  " remove toolbar
+    set transparency=30
+    set guifont=Monaco:h13
+    set showtabline=2
+    set columns=140
+    set lines=40
+    noremap <D-M-Left> :tabprevious<cr>
+    noremap <D-M-Right> :tabnext<cr>
+    map <D-1> 1gt
+    map <D-2> 2gt
+    map <D-3> 3gt
+    map <D-4> 4gt
+    map <D-5> 5gt
+    map <D-6> 6gt
+    map <D-7> 7gt
+    map <D-8> 8gt
+    map <D-9> 9gt
+    map <D-0> :tablast<CR>
+endif
+
