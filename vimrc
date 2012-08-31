@@ -11,6 +11,7 @@ syntax enable
 syntax on
 
 " color theme
+set background=dark
 color solarized 
 
 " highlight current line
