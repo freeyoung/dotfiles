@@ -40,11 +40,11 @@ Bundle 'kien/ctrlp.vim'
 " ------------
 Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-powerline'
-Bundle 'humiaozuzu/fcitx-status'
+" Bundle 'humiaozuzu/fcitx-status'
 Bundle 'sjl/gundo.vim'
 Bundle 'vim-scripts/mru.vim'
 Bundle 'scrooloose/syntastic'
-Bundle 'nvie/vim-togglemouse'
+" Bundle 'nvie/vim-togglemouse'
 Bundle 'xolox/vim-session'
 
 "----------------------------------------
@@ -57,11 +57,12 @@ Bundle '2072/PHP-Indenting-for-VIm'
 Bundle 'tpope/vim-haml'
 Bundle 'othree/html5.vim'
 Bundle 'kchmck/vim-coffee-script'
+Bundle 'rodjek/vim-puppet'
 
 "--------------
 " Color Scheme
 "--------------
-Bundle 'rickharris/vim-blackboard'
+" Bundle 'rickharris/vim-blackboard'
 Bundle 'altercation/vim-colors-solarized'
 Bundle 'rickharris/vim-monokai'
 Bundle 'tpope/vim-vividchalk'
