@@ -64,7 +64,7 @@ Bundle 'rodjek/vim-puppet'
 "--------------
 " Bundle 'rickharris/vim-blackboard'
 Bundle 'altercation/vim-colors-solarized'
-Bundle 'rickharris/vim-monokai'
-Bundle 'tpope/vim-vividchalk'
+" Bundle 'rickharris/vim-monokai'
+" Bundle 'tpope/vim-vividchalk'
 
 filetype plugin indent on     " required!
