@@ -4,5 +4,6 @@ ln -sf ~/.vim/vimrc ~/.vimrc
 ln -sf ~/.vim/zshrc ~/.zshrc
 ln -sf ~/.vim/zshrc.local ~/.zshrc.local
 ln -sf ~/.vim/tmux.conf ~/.tmux.conf
+echo "" > /etc/vim/vimrc
 echo "Please execute :BundleInstall" > /tmp/readme
 vim /tmp/readme
