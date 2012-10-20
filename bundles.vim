@@ -13,7 +13,7 @@ Bundle 'gmarik/vundle'
 "-----------------
 Bundle 'ervandew/supertab'
 Bundle 'Shougo/neocomplcache'
-Bundle 'Shougo/neocomplcache-snippets-complete'
+Bundle 'Shougo/neosnippet'
 Bundle 'mattn/zencoding-vim'
 Bundle 'honza/snipmate-snippets'
 
