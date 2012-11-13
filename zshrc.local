@@ -1,3 +1,4 @@
+alias 'myip'='curl --silent ifconfig.me'
 alias 'syslog'='tail -f /var/log/syslog'
 export PS1='%{$fg[magenta]%}%(?..%?%1v )%n%{$reset_color%}@%{$fg[green]%}%m%{$reset_color%} %{$fg[cyan]%}%c%{$reset_color%} ${vcs_info_msg_0_}%# '
 
