@@ -78,6 +78,9 @@ nmap <F5> :TagbarToggle<cr>
 nmap <F6> :NERDTreeToggle<cr>
 nmap <F3> :GundoToggle<cr>
 
+" vim-session
+:let g:session_autosave = 'no'
+
 " easier navigation between split windows
 nnoremap <c-j> <c-w>j
 nnoremap <c-k> <c-w>k
