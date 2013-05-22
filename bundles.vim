@@ -15,11 +15,12 @@ Bundle 'ervandew/supertab'
 Bundle 'Shougo/neocomplcache'
 Bundle 'mattn/zencoding-vim'
 Bundle 'scrooloose/nerdcommenter'
+" Bundle 'Shougo/neosnippet'
 
 "-----------------------
 " Surrounding Operation
 "-----------------------
-Bundle 'Raimondi/delimitMate'
+" Bundle 'Raimondi/delimitMate'
 Bundle 'tsaleh/vim-matchit'
 Bundle 'tpope/vim-surround'
 
@@ -36,6 +37,9 @@ Bundle 'kien/ctrlp.vim'
 " ------------
 Bundle 'Lokaltog/vim-powerline'
 Bundle 'xolox/vim-session'
+" Bundle 'tpope/vim-fugitive'
+Bundle 'Lokaltog/vim-powerline'
+" Bundle 'sjl/gundo.vim'
 Bundle 'vim-scripts/mru.vim'
 Bundle 'scrooloose/syntastic'
 
@@ -50,6 +54,8 @@ Bundle 'kchmck/vim-coffee-script'
 Bundle 'rodjek/vim-puppet'
 " Bundle 'nvie/vim-flake8'
 Bundle 'klen/python-mode'
+" Bundle '2072/PHP-Indenting-for-VIm'
+" Bundle 'tpope/vim-haml'
 
 "--------------
 " Color Scheme
