@@ -13,9 +13,8 @@ Bundle 'gmarik/vundle'
 "-----------------
 Bundle 'ervandew/supertab'
 Bundle 'Shougo/neocomplcache'
-Bundle 'Shougo/neosnippet'
 Bundle 'mattn/zencoding-vim'
-Bundle 'honza/snipmate-snippets'
+Bundle 'scrooloose/nerdcommenter'
 
 "-----------------------
 " Surrounding Operation
@@ -28,24 +27,17 @@ Bundle 'tpope/vim-surround'
 " Code Reading
 "--------------
 Bundle 'scrooloose/nerdtree'
-Bundle 'scrooloose/nerdcommenter'
 Bundle 'majutsushi/tagbar'
-" Bundle 'humiaozuzu/TabBar'
-Bundle 'godlygeek/tabular'
 Bundle 'mileszs/ack.vim'
 Bundle 'kien/ctrlp.vim'
 
 "-------------
 " Other Utils
 " ------------
-Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-powerline'
-" Bundle 'humiaozuzu/fcitx-status'
-Bundle 'sjl/gundo.vim'
+Bundle 'xolox/vim-session'
 Bundle 'vim-scripts/mru.vim'
 Bundle 'scrooloose/syntastic'
-" Bundle 'nvie/vim-togglemouse'
-Bundle 'xolox/vim-session'
 
 "----------------------------------------
 " Syntax/Indent for language enhancement
@@ -53,18 +45,18 @@ Bundle 'xolox/vim-session'
 Bundle 'tpope/vim-markdown'
 Bundle 'nono/jquery.vim'
 Bundle 'pangloss/vim-javascript'
-Bundle '2072/PHP-Indenting-for-VIm'
-Bundle 'tpope/vim-haml'
 Bundle 'othree/html5.vim'
 Bundle 'kchmck/vim-coffee-script'
 Bundle 'rodjek/vim-puppet'
+" Bundle 'nvie/vim-flake8'
+Bundle 'klen/python-mode'
 
 "--------------
 " Color Scheme
 "--------------
-" Bundle 'rickharris/vim-blackboard'
 Bundle 'altercation/vim-colors-solarized'
-" Bundle 'rickharris/vim-monokai'
-" Bundle 'tpope/vim-vividchalk'
+Bundle 'rickharris/vim-monokai'
+Bundle 'tpope/vim-vividchalk'
+Bundle 'chriskempson/vim-tomorrow-theme'
 
 filetype plugin indent on     " required!
