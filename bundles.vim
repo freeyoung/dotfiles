@@ -60,9 +60,10 @@ Bundle 'klen/python-mode'
 "--------------
 " Color Scheme
 "--------------
-Bundle 'altercation/vim-colors-solarized'
-Bundle 'rickharris/vim-monokai'
-Bundle 'tpope/vim-vividchalk'
+" Bundle 'altercation/vim-colors-solarized'
+" Bundle 'tomasr/molokai'
+" Bundle 'rickharris/vim-monokai'
+" Bundle 'tpope/vim-vividchalk'
 Bundle 'chriskempson/vim-tomorrow-theme'
 
 filetype plugin indent on     " required!
