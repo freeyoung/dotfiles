@@ -74,9 +74,9 @@ let g:html_indent_script1 = "inc"
 let g:html_indent_style1 = "inc"
 
 " Keybindings for plugin toggle
+nmap <F4> :PyLintAuto<cr>
 nmap <F5> :TagbarToggle<cr>
 nmap <F6> :NERDTreeToggle<cr>
-nmap <F3> :GundoToggle<cr>
 
 " easier navigation between split windows
 nnoremap <c-j> <c-w>j
@@ -126,7 +126,84 @@ let NERDTreeWinPos = "right"
 let g:user_zen_expandabbr_key='<C-j>'
 
 " powerline
-"let g:Powerline_symbols = 'fancy'
+let g:Powerline_symbols = 'fancy'
+
+" Sytastic Settings
+" let g:syntastic_python_checkers = ["flake8"]
+let g:syntastic_python_flake8_args = "--max-line-length=120"
+
+" python-mode
+let g:pymode_folding = 0
+" let g:pymode_motion = 1
+" let g:pymode_virtualenv = 1
+" 
+let g:pymode_syntax = 1
+let g:pymode_syntax_all = 1
+let g:pymode_syntax_print_as_function = 0
+let g:pymode_syntax_indent_errors = g:pymode_syntax_all
+let g:pymode_syntax_space_errors = g:pymode_syntax_all
+let g:pymode_syntax_string_formatting = g:pymode_syntax_all
+let g:pymode_syntax_string_format = g:pymode_syntax_all
+let g:pymode_syntax_string_templates = g:pymode_syntax_all
+let g:pymode_syntax_doctests = g:pymode_syntax_all
+let g:pymode_syntax_builtin_objs = g:pymode_syntax_all
+let g:pymode_syntax_builtin_funcs = g:pymode_syntax_all
+let g:pymode_syntax_highlight_exceptions = g:pymode_syntax_all
+let g:pymode_syntax_highlight_equal_operator = g:pymode_syntax_all
+let g:pymode_syntax_highlight_stars_operator = g:pymode_syntax_all
+let g:pymode_syntax_highlight_self = g:pymode_syntax_all
+" let g:pymode_syntax_slow_sync = 0
+" 
+" let g:pymode_run = 1
+" let g:pymode_run_key = '<leader>r'
+" 
+" let g:pymode_lint = 1
+" let g:pymode_lint_config = "$HOME/.pylintrc"
+" let g:pymode_lint_cwindow = 0
+" let g:pymode_lint_jump = 0
+" let g:pymode_lint_hold = 0
+" let g:pymode_lint_signs = 1
+" let g:pymode_lint_mccabe_complexity = 8
+" let g:pymode_lint_minheight = 3
+" let g:pymode_lint_maxheight = 6
+" let g:pymode_lint_checker = "pep8,pyflakes,mccabe"
+" let g:pymode_lint_select = ""
+" let g:pymode_lint_ignore = ""
+" let g:pymode_lint_onfly = 1
+let g:pymode_lint_write = 0
+" let g:pymode_lint_buffer = 1
+" let g:pymode_lint_message = 1
+" 
+" let g:pymode_rope = 1
+" let g:pymode_rope_map_space = 1
+" let g:pymode_rope_short_prefix = 1
+" let g:pymode_rope_vim_completion = 1
+" let g:pymode_rope_always_show_complete_menu = 0
+" let g:pymode_rope_auto_project = 1
+" let g:pymode_rope_enable_autoimport = 1
+" let g:pymode_rope_autoimport_generate = 1
+" let g:pymode_rope_autoimport_underlineds = 0
+" let g:pymode_rope_codeassist_maxfixes = 10
+" let g:pymode_rope_sorted_completions = 1
+" let g:pymode_rope_extended_complete = 1
+" let g:pymode_rope_autoimport_modules = ["os","shutil","datetime"]
+" let g:pymode_rope_confirm_saving = 1
+" let g:pymode_rope_global_prefix = "<C-x>p"
+" let g:pymode_rope_local_prefix = "<C-c>r"
+" let g:pymode_rope_guess_project = 1
+" let g:pymode_rope_goto_def_newwin = ""
+" let g:pymode_rope_always_show_complete_menu = 0
+" 
+" let g:pymode_breakpoint = 1
+" let g:pymode_breakpoint_key = '<leader>b'
+" 
+" let g:pymode_utils_whitespaces = 1
+" 
+" let g:pymode_doc = 1
+" let g:pymode_doc_key = 'K'
+
+" vim-session
+let g:session_autosave = 'no'
 
 " NeoComplCache
 set completeopt-=preview
@@ -143,6 +220,9 @@ smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 "smap <C-t> <Plug>(neocomplcache_snippets_jump)
 imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
 smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
+
+" w!!
+cmap w!! w !sudo tee > /dev/null %
 
 " Enable omni completion.
 autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
@@ -174,6 +254,12 @@ function! <SID>SynStack()
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
 
+" quick quickfix
+aug QFClose
+  au!
+  au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&buftype") == "quickfix"|q|endif
+aug END
+
 " for macvim
 if has("gui_running")
     set go=aAce  " remove toolbar
@@ -195,4 +281,3 @@ if has("gui_running")
     map <D-9> 9gt
     map <D-0> :tablast<CR>
 endif
-
