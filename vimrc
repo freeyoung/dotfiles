@@ -76,11 +76,8 @@ let g:html_indent_style1 = "inc"
 
 " Keybindings for plugin toggle
 nmap <F4> :PyLintAuto<cr>
-nmap <F5> :TagbarToggle<cr>
-nmap <F6> :NERDTreeToggle<cr>
-
-" vim-session
-:let g:session_autosave = 'no'
+nmap <F5> :NERDTreeToggle<cr>
+nmap <F6> :TagbarToggle<cr>
 
 " easier navigation between split windows
 nnoremap <c-j> <c-w>j
@@ -91,11 +88,11 @@ map <F1> :w<kEnter>
 imap <F1> <Esc>:w<kEnter>a
 
 " tabbar
-let g:Tb_MaxSize = 2
-let g:Tb_TabWrap = 1
+" let g:Tb_MaxSize = 2
+" let g:Tb_TabWrap = 1
 
 " Tagbar
-let g:tagbar_left=1
+let g:tagbar_left=0
 let g:tagbar_width=30
 let g:tagbar_autofocus = 1
 let g:tagbar_sort = 0 
@@ -124,7 +121,7 @@ let NERDTreeChDirMode=2
 let NERDTreeIgnore=['\.vim$', '\~$', '\.pyc$', '\.swp$']
 let NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$',  '\~$']
 let NERDTreeShowBookmarks=1
-let NERDTreeWinPos = "right"
+let NERDTreeWinPos = "left"
 
 " ZenCoding
 let g:user_zen_expandabbr_key='<C-j>'
