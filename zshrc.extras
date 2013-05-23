@@ -78,17 +78,6 @@ function zurl() {
     fi
 }
 
-# Set all ulimit parameters to \kbd{unlimited}
-allulimit() {
-    ulimit -c unlimited
-    ulimit -d unlimited
-    ulimit -f unlimited
-    ulimit -l unlimited
-    ulimit -n unlimited
-    ulimit -s unlimited
-    ulimit -t unlimited
-}
-
 #f5# Backup \kbd{file {\rm to} file\_timestamp}
 bk() {
     emulate -L zsh
@@ -99,20 +88,6 @@ bk() {
 cl() {
     emulate -L zsh
     cd $1 && ls -a
-}
-
-#f5# Create Directoy and \kbd{cd} to it
-mkcd() {
-    if (( ARGC != 1 )); then
-        printf 'usage: mkcd <new-directory>\n'
-        return 1;
-    fi
-    if [[ ! -d "$1" ]]; then
-        command mkdir -p "$1"
-    else
-        printf '`%s'\'' already exists: cd-ing.\n' "$1"
-    fi
-    builtin cd "$1"
 }
 
 #f5# Create temporary directory and \kbd{cd} to it
@@ -136,6 +111,7 @@ any() {
 }
 
 # listing stuff
+alias ls="ls --color=auto"
 #a2# Execute \kbd{ls -lSrah}
 alias dir="ls -lSrah"
 #a2# Only show dot-directories
