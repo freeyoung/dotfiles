@@ -36,8 +36,8 @@ set updatecount=0                                                 " dont use swa
 " display settings
 set t_Co=256                                                      " Explicitly tell vim that the terminal has 256 colors "
 " set mouse=a                                                       " use mouse in all modes
-set report=0                                                      " always report number of lines changed                "
-" set nowrap                                                        " dont wrap lines
+set report=0                                                      " always report number of lines changed"
+set wrap                                                          " dont wrap lines
 set scrolloff=2                                                   " 2 lines above/below cursor when scrolling
 set number                                                        " show line numbers
 set showmatch                                                     " show matching bracket (briefly jump)
@@ -64,10 +64,10 @@ set smartindent     " indent when
 set tabstop=8       " tab width
 set softtabstop=4   " backspace & 
 set shiftwidth=4    " indent width
-"set textwidth=79
+" set textwidth=79
 set expandtab       " expand tab to space
 autocmd FileType html,htmldjango,xhtml,haml,sass,scss,ruby,javascript,php,css setlocal tabstop=4 shiftwidth=2 softtabstop=2
-autocmd FileType python set textwidth=0
+autocmd FileType python set textwidth=0 wrap
 autocmd Syntax javascript set syntax=jquery   " JQuery syntax support
 " js
 let g:html_indent_inctags = "html,body,head,tbody"
@@ -84,6 +84,14 @@ nnoremap <c-j> <c-w>j
 nnoremap <c-k> <c-w>k
 nnoremap <c-h> <c-w>h
 nnoremap <c-l> <c-w>l
+
+nnoremap <leader>+ <c-w>+
+nnoremap <leader>- <c-w>-
+nnoremap <leader>_ <c-w>_
+nnoremap <leader>= <c-w>=
+nnoremap <leader>[ <c-w><
+nnoremap <leader>] <c-w>>
+
 map <F1> :w<kEnter>
 imap <F1> <Esc>:w<kEnter>a
 
