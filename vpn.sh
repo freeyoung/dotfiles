@@ -1,7 +1,7 @@
 #!/bin/bash
 
 opr=$1
-vpnip=$(ifconfig tun0 | grep inet | cut -f2 | cut -d' ' -f2)
+vpnip=$(ifconfig tun0 | grep 'inet' | perl -ne 'print $1 if /(1\d+\.\d+\.\d+\.\d+)/')
 
 [ "$opr" == "" ] && exit 2
 
