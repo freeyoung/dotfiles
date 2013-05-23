@@ -1,0 +1,168 @@
+# utility functions
+# this function checks if a command exists and returns either true
+# or false. This avoids using 'which' and 'whence', which will
+# avoid problems with aliases for which on certain weird systems. :-)
+# Usage: check_com [-c|-g] word
+#   -c  only checks for external commands
+#   -g  does the usual tests and also checks for global aliases
+check_com() {
+    emulate -L zsh
+    local -i comonly gatoo
+
+    if [[ $1 == '-c' ]] ; then
+        (( comonly = 1 ))
+        shift
+    elif [[ $1 == '-g' ]] ; then
+        (( gatoo = 1 ))
+    else
+        (( comonly = 0 ))
+        (( gatoo = 0 ))
+    fi
+
+    if (( ${#argv} != 1 )) ; then
+        printf 'usage: check_com [-c] <command>\n' >&2
+        return 1
+    fi
+
+    if (( comonly > 0 )) ; then
+        [[ -n ${commands[$1]}  ]] && return 0
+        return 1
+    fi
+
+    if   [[ -n ${commands[$1]}    ]] \
+      || [[ -n ${functions[$1]}   ]] \
+      || [[ -n ${aliases[$1]}     ]] \
+      || [[ -n ${reswords[(r)$1]} ]] ; then
+
+        return 0
+    fi
+
+    if (( gatoo > 0 )) && [[ -n ${galiases[$1]} ]] ; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Create small urls via http://goo.gl using curl(1).
+# API reference: https://code.google.com/apis/urlshortener/
+function zurl() {
+    emulate -L zsh
+    if [[ -z $1 ]]; then
+        print "USAGE: zurl <URL>"
+        return 1
+    fi
+
+    local PN url prog api json data
+    PN=$0
+    url=$1
+
+    # Prepend 'http://' to given URL where necessary for later output.
+    if [[ ${url} != http(s|)://* ]]; then
+        url='http://'${url}
+    fi
+
+    if check_com -c curl; then
+        prog=curl
+    else
+        print "curl is not available, but mandatory for ${PN}. Aborting."
+        return 1
+    fi
+    api='https://www.googleapis.com/urlshortener/v1/url'
+    contenttype="Content-Type: application/json"
+    json="{\"longUrl\": \"${url}\"}"
+    data=$($prog --silent -H ${contenttype} -d ${json} $api)
+    # Match against a regex and print it
+    if [[ $data =~ '"id": "(http://goo.gl/[[:alnum:]]+)"' ]]; then
+        print $match;
+    fi
+}
+
+# Set all ulimit parameters to \kbd{unlimited}
+allulimit() {
+    ulimit -c unlimited
+    ulimit -d unlimited
+    ulimit -f unlimited
+    ulimit -l unlimited
+    ulimit -n unlimited
+    ulimit -s unlimited
+    ulimit -t unlimited
+}
+
+#f5# Backup \kbd{file {\rm to} file\_timestamp}
+bk() {
+    emulate -L zsh
+    cp -b $1 $1_`date --iso-8601=m`
+}
+
+#f5# cd to directoy and list files
+cl() {
+    emulate -L zsh
+    cd $1 && ls -a
+}
+
+#f5# Create Directoy and \kbd{cd} to it
+mkcd() {
+    if (( ARGC != 1 )); then
+        printf 'usage: mkcd <new-directory>\n'
+        return 1;
+    fi
+    if [[ ! -d "$1" ]]; then
+        command mkdir -p "$1"
+    else
+        printf '`%s'\'' already exists: cd-ing.\n' "$1"
+    fi
+    builtin cd "$1"
+}
+
+#f5# Create temporary directory and \kbd{cd} to it
+cdt() {
+    local t
+    t=$(mktemp -d)
+    echo "$t"
+    builtin cd "$t"
+}
+
+# grep for running process, like: 'any vim'
+any() {
+    emulate -L zsh
+    unsetopt KSH_ARRAYS
+    if [[ -z "$1" ]] ; then
+        echo "any - grep for process(es) by keyword" >&2
+        echo "Usage: any <keyword>" >&2 ; return 1
+    else
+        ps xauwww | grep -i "${grep_options[@]}" "[${1[1]}]${1[2,-1]}"
+    fi
+}
+
+# listing stuff
+#a2# Execute \kbd{ls -lSrah}
+alias dir="ls -lSrah"
+#a2# Only show dot-directories
+alias lad='ls -d .*(/)'
+#a2# Only show dot-files
+alias lsa='ls -a .*(.)'
+#a2# Only files with setgid/setuid/sticky flag
+alias lss='ls -l *(s,S,t)'
+#a2# Only show symlinks
+alias lsl='ls -l *(@)'
+#a2# Display only executables
+alias lsx='ls -l *(*)'
+#a2# Display world-{readable,writable,executable} files
+alias lsw='ls -ld *(R,W,X.^ND/)'
+#a2# Display the ten biggest files
+alias lsbig="ls -flh *(.OL[1,10])"
+#a2# Only show directories
+alias lsd='ls -d *(/)'
+#a2# Only show empty directories
+alias lse='ls -d *(/^F)'
+#a2# Display the ten newest files
+alias lsnew="ls -rtlh *(D.om[1,10])"
+#a2# Display the ten oldest files
+alias lsold="ls -rtlh *(D.Om[1,10])"
+#a2# Display the ten smallest files
+alias lssmall="ls -Srl *(.oL[1,10])"
+#a2# Display the ten newest directories and ten newest .directories
+alias lsnewdir="ls -rthdl *(/om[1,10]) .*(D/om[1,10])"
+#a2# Display the ten oldest directories and ten oldest .directories
+alias lsolddir="ls -rthdl *(/Om[1,10]) .*(D/Om[1,10])"

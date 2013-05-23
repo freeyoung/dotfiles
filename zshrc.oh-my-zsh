@@ -36,7 +36,7 @@ export PATH=$PATH:$HOME/.rvm/bin
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew osx virtualenvwrapper autojump npm ssh-agent colorize python rsync copydir cp extract gnu-utils web-search)
+plugins=(git brew virtualenvwrapper autojump ssh-agent colorize python rsync copydir cp extract gnu-utils web-search)
 
 # virtualenv
 export WORKON_HOME=$HOME/.venv
@@ -48,8 +48,10 @@ source $ZSH/oh-my-zsh.sh
 export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}'$PS1
 
 # alias
+alias l="ls"
 alias vpn="sudo ~/.vim/vpn.sh >/dev/null 2>&1"
 alias lx="/Users/qianlong/code/python/xunlei-lixian/lixian_cli.py"
 alias ccat="colorize"
 alias vsp="vsplit_tab"
 
+source $HOME/.zshrc.extras
