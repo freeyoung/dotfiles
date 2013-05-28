@@ -33,12 +33,17 @@ set history=1000
 set backspace=indent,eol,start                                    " More powerful backspacing
 set updatecount=0                                                 " dont use swapfile 
 
+" persistent_undo
+set undofile
+set undolevels=1000
+set undoreload=10000
+
 " display settings
 set t_Co=256                                                      " Explicitly tell vim that the terminal has 256 colors "
 " set mouse=a                                                       " use mouse in all modes
 set report=0                                                      " always report number of lines changed"
-set wrap                                                          " dont wrap lines
-set scrolloff=2                                                   " 2 lines above/below cursor when scrolling
+set wrap                                                          " wrap lines
+set scrolloff=5                                                   " 2 lines above/below cursor when scrolling
 set number                                                        " show line numbers
 set showmatch                                                     " show matching bracket (briefly jump)
 set showmode                                                      " show mode in status bar (insert/replace/...)
@@ -49,6 +54,9 @@ set laststatus=2                                                  " use 2 lines 
 set matchtime=2                                                   " show matching bracket for 0.2 seconds
 set matchpairs+=<:>                                               " specially for html
 set list listchars=tab:<+                                         " display TAB as <+++
+
+" paste mode
+set pastetoggle=<F12>
 
  " When editing a file, always jump to the last cursor position
 autocmd BufReadPost *
@@ -85,6 +93,10 @@ nnoremap <c-k> <c-w>k
 nnoremap <c-h> <c-w>h
 nnoremap <c-l> <c-w>l
 
+" easier navigation between tabs
+map <S-H> gT
+map <S-L> gt
+
 nnoremap <leader>+ <c-w>+
 nnoremap <leader>- <c-w>-
 nnoremap <leader>_ <c-w>_
@@ -92,12 +104,15 @@ nnoremap <leader>= <c-w>=
 nnoremap <leader>[ <c-w><
 nnoremap <leader>] <c-w>>
 
+" Wrapped lines goes down/up to next row, rather than next line in file.
+nnoremap j gj
+nnoremap k gk
+
+" map F1, F2 to :w, :q
 map <F1> :w<kEnter>
 imap <F1> <Esc>:w<kEnter>a
-
-" tabbar
-" let g:Tb_MaxSize = 2
-" let g:Tb_TabWrap = 1
+map <F2> :q<kEnter>
+imap <F2> <Esc>:q<kEnter>
 
 " Tagbar
 let g:tagbar_left=0
@@ -129,6 +144,7 @@ let NERDTreeChDirMode=2
 let NERDTreeIgnore=['\.vim$', '\~$', '\.pyc$', '\.swp$']
 let NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$',  '\~$']
 let NERDTreeShowBookmarks=1
+let NERDTreeQuitOnOpen=1
 let NERDTreeWinPos = "left"
 
 " ZenCoding
@@ -212,14 +228,25 @@ let g:pymode_lint_write = 0
 " let g:pymode_doc_key = 'K'
 
 " vim-session
-let g:session_autosave = 'no'
+" let g:session_autosave = 'no'
+
+" sessionman
+" Session List {
+    set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
+    nmap <silent> <leader>sl :SessionList<CR>
+    nmap <leader>ss :SessionSave<CR>
+" }
 
 " NeoComplCache
 set completeopt-=preview
 let g:neocomplcache_enable_at_startup=1
 "let g:neoComplcache_disableautocomplete=1
 let g:neocomplcache_enable_smart_case=1
+let g:neocomplcache_enable_camel_case_completion=1
+let g:neocomplcache_enable_underbar_completion=1
+let g:neocomplcache_enable_auto_delimiter=1
 let g:neocomplcache_min_syntax_length = 3
+let g:neocomplcache_force_overwrite_completefunc=1
 let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
 imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
@@ -229,6 +256,28 @@ smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 "smap <C-t> <Plug>(neocomplcache_snippets_jump)
 imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
 smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
+" Define dictionary
+let g:neocomplcache_dictionary_filetype_lists = {
+    \ 'default' : '',
+    \ 'vimshell' : $HOME.'/.vimshell_hist',
+    \ 'scheme' : $HOME.'/.gosh_completions'
+    \ }
+" Define keyword.
+if !exists('g:neocomplcache_keyword_patterns')
+    let g:neocomplcache_keyword_patterns = {}
+endif
+let g:neocomplcache_keyword_patterns._ = '\h\w*'
+
+" Fugitive {
+    nnoremap <silent> <leader>gs :Gstatus<CR>
+    nnoremap <silent> <leader>gd :Gdiff<CR>
+    nnoremap <silent> <leader>gc :Gcommit<CR>
+    nnoremap <silent> <leader>gb :Gblame<CR>
+    nnoremap <silent> <leader>gl :Glog<CR>
+    nnoremap <silent> <leader>gp :Git push<CR>
+    nnoremap <silent> <leader>gw :Gwrite<CR>:GitGutter<CR>
+    nnoremap <silent> <leader>gg :GitGutterToggle<CR>
+"}
 
 " w!!
 cmap w!! w !sudo tee > /dev/null %
@@ -246,22 +295,40 @@ let g:SuperTabDefaultCompletionType="<c-n>"
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,.DS_Store  " MacOSX/Linux
 let g:ctrlp_custom_ignore = '\.git$\|\.hg$\|\.svn$'
 
-" eggcache vim
-:command W w
-:command WQ wq
-:command Wq wq
-:command Q q
-:command Qa qa
-:command QA qa
+" eggache vim
+if has("user_commands")
+    command! -bang -nargs=* -complete=file E e<bang> <args>
+    command! -bang -nargs=* -complete=file W w<bang> <args>
+    command! -bang -nargs=* -complete=file Wq wq<bang> <args>
+    command! -bang -nargs=* -complete=file WQ wq<bang> <args>
+    command! -bang Wa wa<bang>
+    command! -bang WA wa<bang>
+    command! -bang Q q<bang>
+    command! -bang QA qa<bang>
+    command! -bang Qa qa<bang>
+endif
 
-" show syntax highlighting groups for word under cursor
-nmap <C-P> :call <SID>SynStack()<CR>
-function! <SID>SynStack()
-  if !exists("*synstack")
-    return
-  endif
-  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
-endfunc
+cmap Tabe tabe
+
+" Change Working Directory to that of the current file
+cmap cwd lcd %:p:h
+cmap cd. lcd %:p:h
+
+" Visual shifting (does not exit Visual mode)
+vnoremap < <gv
+vnoremap > >gv
+
+" http://vimcasts.org/e/14
+" for e, sp, vsp, tabe
+cnoremap %% <C-R>=expand('%:h').'/'<cr>
+map <leader>ew :e %%
+map <leader>es :sp %%
+map <leader>ev :vsp %%
+map <leader>et :tabe %%
+
+" Map <Leader>ff to display all lines with keyword under cursor
+" and ask which one to jump to
+nmap <Leader>ff [I:let nr = input("Which one: ")<Bar>exe "normal " . nr ."[\t"<CR>
 
 " quick quickfix
 aug QFClose
