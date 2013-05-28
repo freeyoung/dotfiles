@@ -31,17 +31,18 @@ Bundle 'scrooloose/nerdtree'
 Bundle 'majutsushi/tagbar'
 Bundle 'mileszs/ack.vim'
 Bundle 'kien/ctrlp.vim'
+Bundle 'scrooloose/syntastic'
 
 "-------------
 " Other Utils
 " ------------
 Bundle 'Lokaltog/vim-powerline'
 Bundle 'xolox/vim-session'
-" Bundle 'tpope/vim-fugitive'
+Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-powerline'
 " Bundle 'sjl/gundo.vim'
 Bundle 'vim-scripts/mru.vim'
-Bundle 'scrooloose/syntastic'
+Bundle 'carlobaldassi/ConqueTerm'
 
 "----------------------------------------
 " Syntax/Indent for language enhancement

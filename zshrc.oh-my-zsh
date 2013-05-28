@@ -48,7 +48,11 @@ source $ZSH/oh-my-zsh.sh
 export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}'$PS1
 
 # alias
+alias v="vim"
 alias l="ls"
+alias s="ssh"
+alias sv="ssh -v"
+alias svr="ssh -v -l root"
 alias vpn="sudo ~/.vim/vpn.sh >/dev/null 2>&1"
 alias lx="/Users/qianlong/code/python/xunlei-lixian/lixian_cli.py"
 alias ccat="colorize"
