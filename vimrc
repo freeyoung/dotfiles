@@ -233,7 +233,7 @@ let g:pymode_lint_write = 0
 " sessionman
 " Session List {
     set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
-    nmap <silent> <leader>sl :SessionList<CR>
+    nmap <leader>sl :SessionList<CR>
     nmap <leader>ss :SessionSave<CR>
 " }
 
@@ -271,7 +271,7 @@ let g:neocomplcache_keyword_patterns._ = '\h\w*'
 " Fugitive {
     nnoremap <silent> <leader>gs :Gstatus<CR>
     nnoremap <silent> <leader>gd :Gdiff<CR>
-    nnoremap <silent> <leader>gc :Gcommit<CR>
+    nmap <silent> <leader>gc :Gcommit<CR>
     nnoremap <silent> <leader>gb :Gblame<CR>
     nnoremap <silent> <leader>gl :Glog<CR>
     nnoremap <silent> <leader>gp :Git push<CR>
