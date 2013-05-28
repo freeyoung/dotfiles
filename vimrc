@@ -108,11 +108,13 @@ nnoremap <leader>] <c-w>>
 nnoremap j gj
 nnoremap k gk
 
-" map F1, F2 to :w, :q
+" map F1, F2, F3 to :w, :q, :x
 map <F1> :w<kEnter>
 imap <F1> <Esc>:w<kEnter>a
 map <F2> :q<kEnter>
 imap <F2> <Esc>:q<kEnter>
+map <F3> :x<kEnter>
+imap <F3> <Esc>:x<kEnter>
 
 " Tagbar
 let g:tagbar_left=0
@@ -269,15 +271,30 @@ endif
 let g:neocomplcache_keyword_patterns._ = '\h\w*'
 
 " Fugitive {
+    nnoremap <leader>gc :Gcommit -v 
+    nnoremap <leader>ge :Gedit 
+    nnoremap <leader>gg :Ggrep 
     nnoremap <silent> <leader>gs :Gstatus<CR>
     nnoremap <silent> <leader>gd :Gdiff<CR>
-    nmap <silent> <leader>gc :Gcommit<CR>
     nnoremap <silent> <leader>gb :Gblame<CR>
     nnoremap <silent> <leader>gl :Glog<CR>
     nnoremap <silent> <leader>gp :Git push<CR>
-    nnoremap <silent> <leader>gw :Gwrite<CR>:GitGutter<CR>
-    nnoremap <silent> <leader>gg :GitGutterToggle<CR>
+    nnoremap <silent> <leader>gr :Gread<CR>
+    nnoremap <silent> <leader>gw :Gwrite<CR>
 "}
+
+" ConqueTerm
+let g:ConqueTerm_FastMode = 1
+let g:ConqueTerm_CloseOnEnd = 1
+let g:ConqueTerm_StartMessages = 1
+let g:ConqueTerm_CWInsert = 1
+let g:ConqueTerm_ToggleKey = '<leader><F8>'
+nnoremap <F7> :ConqueTermTab zsh<CR>
+inoremap <F7> <ESC>:ConqueTermTab zsh<CR>
+nnoremap <F8> :ConqueTermVSplit zsh<CR>
+inoremap <F8> <ESC>:ConqueTermVSplit zsh<CR>
+nnoremap <F9> :ConqueTermSplit zsh<CR>
+inoremap <F9> <ESC>:ConqueTermSplit zsh<CR>
 
 " w!!
 cmap w!! w !sudo tee > /dev/null %
