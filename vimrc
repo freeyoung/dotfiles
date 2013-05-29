@@ -250,14 +250,14 @@ let g:neocomplcache_enable_auto_delimiter=1
 let g:neocomplcache_min_syntax_length = 3
 let g:neocomplcache_force_overwrite_completefunc=1
 let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
-imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
-smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
+"imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
+"smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 "imap <C-l> <Plug>(neocomplcache_snippets_expand)
 "smap <C-l> <Plug>(neocomplcache_snippets_expand)
 "imap <C-t> <Plug>(neocomplcache_snippets_jump)
 "smap <C-t> <Plug>(neocomplcache_snippets_jump)
-imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
-smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
+"imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
+"smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
 " Define dictionary
 let g:neocomplcache_dictionary_filetype_lists = {
     \ 'default' : '',
