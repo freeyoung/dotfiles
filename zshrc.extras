@@ -145,7 +145,3 @@ alias lsolddir="ls -rthdl *(/Om[1,10]) .*(D/Om[1,10])"
 
 #a3# remove vim undo history files
 alias unclean="rm -f .*.un~"
-
-if [ -f ~/.zshrc.local ]; then
-    source ~/.zshrc.local
-fi
