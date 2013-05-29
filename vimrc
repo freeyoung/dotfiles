@@ -13,7 +13,7 @@ syntax on
 " color theme
 " set background=dark
 " color solarized 
-color tomorrow-night-bright
+color Tomorrow-Night-Bright
 
 " highlight current line
 au WinLeave * set nocursorline nocursorcolumn
