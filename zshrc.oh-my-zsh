@@ -53,9 +53,13 @@ alias l="ls"
 alias s="ssh"
 alias sv="ssh -v"
 alias svr="ssh -v -l root"
-alias vpn="sudo ~/.vim/vpn.sh >/dev/null 2>&1"
-alias lx="/Users/qianlong/code/python/xunlei-lixian/lixian_cli.py"
 alias ccat="colorize"
-alias vsp="vsplit_tab"
+alias plz="please"
+alias dsh="ulimit -n 8192; dsh"
+alias myip="curl --silent ifconfig.me"
+
+if [ -f /var/log/syslog ]; then
+    alias syslog="tail -f /var/log/syslog -n30"
+fi
 
 source $HOME/.zshrc.extras
