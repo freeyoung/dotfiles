@@ -44,10 +44,12 @@ export PROJECT_HOME=$HOME/code/python
 export PROJECT_PATHS=$HOME/code/python:$/HOME/code/other
 export VIRTUALENV_DISTRIBUTE=true
 
-source $ZSH/oh-my-zsh.sh
-export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}'$PS1
+# local config
+if [ -f ~/.zshrc.local ]; then
+    source ~/.zshrc.local
+fi
 
-# alias
+# aliases
 alias v="vim"
 alias l="ls"
 alias s="ssh"
@@ -61,5 +63,9 @@ alias myip="curl --silent ifconfig.me"
 if [ -f /var/log/syslog ]; then
     alias syslog="tail -f /var/log/syslog -n30"
 fi
+
+# source oh-my-zsh
+source $ZSH/oh-my-zsh.sh
+export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}'$PS1
 
 source $HOME/.zshrc.extras
