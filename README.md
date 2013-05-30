@@ -4,32 +4,38 @@ Not only .vimrc ...
 * oh-my-zsh
 * tmux.conf
 
-# Installation
+## Installation
 
 1. Backup your old vim configurations
 
+``` bash
     mv -f ~/.vim ~/.vim.orig
     mv -f ~/.vimrc ~/.vimrc.orig
+```
 
 2. Clone this repo
 
+``` bash
     git clone https://github.com/freeyoung/dotfiles.git ~/.vim
+```
 
 3. Execute the bootstrap script
 
+``` bash
     sh ~/.vim/init.sh
+```
 
-# Features
+## Features
 
 * Need to be described in detail ..
 
-## vim
+### vim
 
-## oh-my-zsh
+### oh-my-zsh
 
-## tmux
+### tmux
 
-# References
+## References
 
 * [humiaozuzu/dot-vimrc](https://github.com/humiaozuzu/dot-vimrc)
 * [klen/python-mode](https://github.com/klen/python-mode)
