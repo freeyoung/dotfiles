@@ -8,7 +8,7 @@ git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 unlink ~/.vimrc
 echo "source ~/.vim/bundles.vim" > ~/.vimrc
 #echo "" > /etc/vim/vimrc
-vim -c "execute \"BundleInstall\" | q | q"
+vim -c "execute \"BundleInstall!\" | q | q"
 ln -sf ~/.vim/vimrc ~/.vimrc
 
 # oh-my-zsh
