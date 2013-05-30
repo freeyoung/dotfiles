@@ -4,6 +4,9 @@
 ln -sf ~/.vim/tmux.conf ~/.tmux.conf
 
 # vim
+if [ -d ~/.vim/bundle/vundle ]; then
+    rm -rf ~/.vim/bundle/vundle
+fi
 git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 unlink ~/.vimrc
 echo "source ~/.vim/bundles.vim" > ~/.vimrc
