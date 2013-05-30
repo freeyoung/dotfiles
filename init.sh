@@ -13,7 +13,7 @@ vim -c "execute \"BundleInstall\" | q | q"
 if [ -d ~/.oh-my-zsh ]; then
     mv -f ~/.oh-my-zsh ~/.oh-my-zsh.bak
 fi
-git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 ln -sf ~/.vim/zshrc.oh-my-zsh ~/.zshrc
 ln -sf ~/.vim/zshrc.extras ~/.zshrc.extras
 
