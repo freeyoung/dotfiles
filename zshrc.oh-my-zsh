@@ -57,7 +57,6 @@ alias sv="ssh -v"
 alias svr="ssh -v -l root"
 alias ccat="colorize"
 alias plz="please"
-alias dsh="ulimit -n 8192; dsh"
 alias myip="curl --silent ifconfig.me"
 
 if [ -f /var/log/syslog ]; then
