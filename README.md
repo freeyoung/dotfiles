@@ -6,23 +6,23 @@ Not only .vimrc ...
 
 ## Installation
 
-1. Backup your old vim configurations
+* Backup your old vim configurations
 
 ``` bash
-    mv -f ~/.vim ~/.vim.orig
-    mv -f ~/.vimrc ~/.vimrc.orig
+mv -f ~/.vim ~/.vim.orig
+mv -f ~/.vimrc ~/.vimrc.orig
 ```
 
-2. Clone this repo
+* Clone this repo
 
 ``` bash
-    git clone https://github.com/freeyoung/dotfiles.git ~/.vim
+git clone https://github.com/freeyoung/dotfiles.git ~/.vim
 ```
 
-3. Execute the bootstrap script
+* Execute the bootstrap script
 
 ``` bash
-    sh ~/.vim/init.sh
+sh ~/.vim/init.sh
 ```
 
 ## Features
