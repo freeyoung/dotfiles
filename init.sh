@@ -13,6 +13,7 @@ echo "source ~/.vim/bundles.vim" > ~/.vimrc
 #echo "" > /etc/vim/vimrc
 vim -c "execute \"BundleInstall!\" | q | q"
 ln -sf ~/.vim/vimrc ~/.vimrc
+mkdir -p ~/.vim/undodir
 
 # oh-my-zsh
 if [ -d ~/.oh-my-zsh ]; then

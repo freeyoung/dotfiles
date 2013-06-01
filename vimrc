@@ -35,6 +35,7 @@ set updatecount=0                                                 " dont use swa
 
 " persistent_undo
 set undofile
+set undodir=~/.vim/undodir
 set undolevels=1000
 set undoreload=10000
 
