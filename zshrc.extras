@@ -149,7 +149,7 @@ alias unclean="rm -f .*.un~"
 # svn aliases
 alias sd="svn diff"
 alias sc="svn commit"
-alias sp="svn update"
+alias scm="svn commit -m"
 alias sup="svn update"
-alias so="svn checkout"
 alias sco="svn checkout"
+    
