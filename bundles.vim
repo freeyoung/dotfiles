@@ -14,13 +14,13 @@ Bundle 'gmarik/vundle'
 Bundle 'ervandew/supertab'
 Bundle 'Shougo/neocomplcache'
 Bundle 'mattn/zencoding-vim'
-Bundle 'scrooloose/nerdcommenter'
+" Bundle 'scrooloose/nerdcommenter'
 " Bundle 'Shougo/neosnippet'
 
 "-----------------------
 " Surrounding Operation
 "-----------------------
-" Bundle 'Raimondi/delimitMate'
+Bundle 'Raimondi/delimitMate'
 Bundle 'tsaleh/vim-matchit'
 Bundle 'tpope/vim-surround'
 
