@@ -13,7 +13,7 @@ Bundle 'gmarik/vundle'
 "-----------------
 Bundle 'ervandew/supertab'
 Bundle 'Shougo/neocomplcache'
-Bundle 'mattn/zencoding-vim'
+" Bundle 'mattn/zencoding-vim'
 " Bundle 'scrooloose/nerdcommenter'
 " Bundle 'Shougo/neosnippet'
 
@@ -28,9 +28,9 @@ Bundle 'tpope/vim-surround'
 " Code Reading
 "--------------
 Bundle 'scrooloose/nerdtree'
-Bundle 'majutsushi/tagbar'
-Bundle 'mileszs/ack.vim'
-Bundle 'kien/ctrlp.vim'
+" Bundle 'majutsushi/tagbar'
+" Bundle 'mileszs/ack.vim'
+" Bundle 'kien/ctrlp.vim'
 Bundle 'scrooloose/syntastic'
 
 "-------------
@@ -38,18 +38,18 @@ Bundle 'scrooloose/syntastic'
 " ------------
 Bundle 'Lokaltog/vim-powerline'
 " Bundle 'xolox/vim-session'
-Bundle 'vim-scripts/sessionman.vim'
-Bundle 'tpope/vim-fugitive'
+" Bundle 'vim-scripts/sessionman.vim'
+" Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-powerline'
 " Bundle 'sjl/gundo.vim'
-Bundle 'vim-scripts/mru.vim'
-Bundle 'carlobaldassi/ConqueTerm'
+" Bundle 'vim-scripts/mru.vim'
+" Bundle 'carlobaldassi/ConqueTerm'
 
 "----------------------------------------
 " Syntax/Indent for language enhancement
 "----------------------------------------
 Bundle 'tpope/vim-markdown'
-Bundle 'nono/jquery.vim'
+" Bundle 'nono/jquery.vim'
 Bundle 'pangloss/vim-javascript'
 Bundle 'othree/html5.vim'
 " Bundle 'kchmck/vim-coffee-script'
