@@ -30,7 +30,7 @@ ZSH_THEME="gentoo"
 # COMPLETION_WAITING_DOTS="true"
 
 # PATH
-export PATH=/usr/local/bin:/usr/local/share/python:/usr/local/share/npm/bin:$PATH
+export PATH=/usr/local/bin:/usr/local/sbin:/usr/local/share/python:/usr/local/share/npm/bin:$PATH
 export PATH=$PATH:$HOME/.rvm/bin
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)

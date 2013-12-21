@@ -36,7 +36,6 @@ Bundle 'scrooloose/syntastic'
 "-------------
 " Other Utils
 " ------------
-Bundle 'Lokaltog/vim-powerline'
 " Bundle 'xolox/vim-session'
 " Bundle 'vim-scripts/sessionman.vim'
 " Bundle 'tpope/vim-fugitive'
