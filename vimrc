@@ -1,5 +1,8 @@
 source ~/.vim/bundles.vim
 
+" encoding utf-8
+set encoding=utf-8
+
 " encoding dectection
 set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1
 
@@ -353,6 +356,9 @@ aug QFClose
   au!
   au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&buftype") == "quickfix"|q|endif
 aug END
+
+" airline
+let g:airline_powerline_fonts=1
 
 " for macvim
 if has("gui_running")
