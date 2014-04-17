@@ -21,7 +21,7 @@ Bundle 'Shougo/neocomplcache'
 " Surrounding Operation
 "-----------------------
 Bundle 'Raimondi/delimitMate'
-Bundle 'tsaleh/vim-matchit'
+Bundle 'vim-scripts/matchit.zip'
 Bundle 'tpope/vim-surround'
 
 "--------------
