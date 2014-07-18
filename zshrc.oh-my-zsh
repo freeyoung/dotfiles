@@ -40,7 +40,7 @@ export LC_ALL="en_US.UTF-8"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git virtualenvwrapper ssh-agent colorize python rsync cp extract gnu-utils sudo z)
+plugins=(git virtualenvwrapper colorize python rsync cp extract sudo z)
 
 # virtualenv
 export WORKON_HOME=$HOME/.venv
