@@ -40,7 +40,7 @@ export LC_ALL="en_US.UTF-8"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git virtualenvwrapper ssh-agent colorize python rsync cp extract gnu-utils sudo z)
+plugins=(git virtualenvwrapper colorize python rsync cp extract gnu-utils sudo z)
 
 # virtualenv
 export WORKON_HOME=$HOME/.venv
@@ -72,3 +72,26 @@ source $ZSH/oh-my-zsh.sh
 export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}'$PS1
 
 source $HOME/.zshrc.extras
+
+# Keypad
+# 0 . Enter
+bindkey -s "^[Op" "0"
+bindkey -s "^[Ol" "."
+bindkey -s "^[OM" "^M"
+# 1 2 3
+bindkey -s "^[Oq" "1"
+bindkey -s "^[Or" "2"
+bindkey -s "^[Os" "3"
+# 4 5 6
+bindkey -s "^[Ot" "4"
+bindkey -s "^[Ou" "5"
+bindkey -s "^[Ov" "6"
+# 7 8 9
+bindkey -s "^[Ow" "7"
+bindkey -s "^[Ox" "8"
+bindkey -s "^[Oy" "9"
+# + -  * /
+bindkey -s "^[Ok" "+"
+bindkey -s "^[Om" "-"
+bindkey -s "^[Oj" "*"
+bindkey -s "^[Oo" "/"
