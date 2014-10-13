@@ -188,7 +188,7 @@ let g:pymode_syntax_highlight_self = g:pymode_syntax_all
 " let g:pymode_run = 1
 " let g:pymode_run_key = '<leader>r'
 " 
-" let g:pymode_lint = 1
+let g:pymode_lint = 1
 " let g:pymode_lint_config = "$HOME/.pylintrc"
 " let g:pymode_lint_cwindow = 0
 " let g:pymode_lint_jump = 0
@@ -205,7 +205,7 @@ let g:pymode_lint_write = 0
 " let g:pymode_lint_buffer = 1
 " let g:pymode_lint_message = 1
 " 
-" let g:pymode_rope = 1
+let g:pymode_rope = 0
 " let g:pymode_rope_map_space = 1
 " let g:pymode_rope_short_prefix = 1
 " let g:pymode_rope_vim_completion = 1

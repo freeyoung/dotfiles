@@ -48,6 +48,11 @@ export PROJECT_HOME=$HOME/code/python
 export PROJECT_PATHS=$HOME/code/python:$/HOME/code/other
 export VIRTUALENV_DISTRIBUTE=true
 
+# golang
+[ ! -d $HOME/.go ] && mkdir -p $HOME/.go
+export GOPATH=$HOME/.go
+export PATH=$PATH:$GOPATH/bin
+
 # local config
 if [ -f ~/.zshrc.local ]; then
     source ~/.zshrc.local
