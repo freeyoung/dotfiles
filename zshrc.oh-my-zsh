@@ -67,6 +67,7 @@ alias svr="ssh -v -l root"
 alias ccat="colorize"
 alias plz="please"
 alias myip="curl --silent ifconfig.me"
+alias psa="ps aufx"
 
 if [ -f /var/log/syslog ]; then
     alias syslog="tail -f /var/log/syslog -n30"
