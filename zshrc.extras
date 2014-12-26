@@ -78,6 +78,14 @@ function zurl() {
     fi
 }
 
+sub() {
+    if [[ -z $2 ]] then
+        print "Usage: sub from_string to_string"
+        exit 1
+    fi
+    grep -rl "$1" * | xargs replace "$1" "$2" --
+}
+
 #f5# Backup \kbd{file {\rm to} file\_timestamp}
 bk() {
     emulate -L zsh
@@ -152,4 +160,3 @@ alias sc="svn commit"
 alias scm="svn commit -m"
 alias sup="svn update"
 alias sco="svn checkout"
-    
