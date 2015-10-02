@@ -160,3 +160,23 @@ alias sc="svn commit"
 alias scm="svn commit -m"
 alias sup="svn update"
 alias sco="svn checkout"
+
+insert-first-word() {
+    zle insert-last-word -- -1 1
+}
+
+insert-first-arg() {
+    zle insert-last-word -- -1 2
+}
+
+insert-second-arg() {
+    zle insert-last-word -- -1 3
+}
+
+zle -N insert-first-word
+zle -N insert-first-arg
+zle -N insert-second-arg
+
+bindkey '^[0' insert-first-word
+bindkey '^[-' insert-first-arg
+bindkey '^[=' insert-second-arg
