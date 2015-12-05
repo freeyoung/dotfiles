@@ -118,6 +118,10 @@ any() {
     fi
 }
 
+100m() {
+    wget -O /dev/null http://$1/100mb.bin
+}
+
 # listing stuff
 alias ls="ls --color=auto"
 #a2# Execute \kbd{ls -lSrah}
