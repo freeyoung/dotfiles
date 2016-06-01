@@ -3,6 +3,16 @@ source ~/.vim/bundles.vim
 " encoding utf-8
 set encoding=utf-8
 
+" Reduce the delay when switching from insert to normal
+if ! has('gui_running')
+  set ttimeoutlen=10
+  augroup FastEscape
+    autocmd!
+    au InsertEnter * set timeoutlen=0
+    au InsertLeave * set timeoutlen=1000
+  augroup END
+endif
+
 " encoding dectection
 set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1
 
