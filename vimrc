@@ -369,6 +369,7 @@ aug END
 
 " airline
 let g:airline_powerline_fonts=1
+let g:airline_theme='powerlineish'
 
 :inoremap <Esc>Oq 1
 :inoremap <Esc>Or 2
