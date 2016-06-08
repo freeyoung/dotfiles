@@ -10,7 +10,7 @@ fi
 ln -sf ~/.vim/tmux.conf ~/.tmux.conf
 
 # vim
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+curl -sfLo ~/.vim/autoload/plug.vim --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 rm -f ~/.vimrc
