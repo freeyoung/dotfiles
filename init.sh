@@ -21,9 +21,7 @@ ln -sf ~/.vim/vimrc ~/.vimrc
 mkdir -p ~/.vim/undodir
 
 # oh-my-zsh
-if [ -d ~/.oh-my-zsh ]; then
-    mv -f ~/.oh-my-zsh ~/.oh-my-zsh.bak
-fi
+[ -d ~/.oh-my-zsh ] && rm -rf ~/.oh-my-zsh
 
 git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 ln -sf ~/.vim/zshrc.oh-my-zsh ~/.zshrc
