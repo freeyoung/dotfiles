@@ -37,6 +37,7 @@ Plug 'vim-airline/vim-airline-themes'
 " Plug 'sjl/gundo.vim'
 " Plug 'vim-scripts/mru.vim'
 " Plug 'carlobaldassi/ConqueTerm'
+Plug 'airblade/vim-gitgutter'
 
 "----------------------------------------
 " Syntax/Indent for language enhancement
