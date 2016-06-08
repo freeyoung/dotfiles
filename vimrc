@@ -19,13 +19,13 @@ set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1
 " enable filetype dectection and ft specific plugin/indent
 filetype plugin indent on
 
-" enable syntax hightlight and completion 
+" enable syntax hightlight and completion
 syntax enable
 syntax on
 
 " color theme
 " set background=dark
-" color solarized 
+" color solarized
 color Tomorrow-Night-Bright
 
 " highlight current line
@@ -44,7 +44,7 @@ set nocompatible
 set confirm                                                       " prompt when existing from an unsaved file
 set history=1000
 set backspace=indent,eol,start                                    " More powerful backspacing
-set updatecount=0                                                 " dont use swapfile 
+set updatecount=0                                                 " dont use swapfile
 
 " persistent_undo
 set undofile
@@ -84,7 +84,7 @@ autocmd BufReadPost *
 set autoindent
 set smartindent     " indent when
 set tabstop=8       " tab width
-set softtabstop=4   " backspace & 
+set softtabstop=4   " backspace &
 set shiftwidth=4    " indent width
 " set textwidth=79
 set expandtab       " expand tab to space
@@ -134,7 +134,7 @@ imap <F3> <Esc>:x<kEnter>
 let g:tagbar_left=0
 let g:tagbar_width=30
 let g:tagbar_autofocus = 1
-let g:tagbar_sort = 0 
+let g:tagbar_sort = 0
 let g:tagbar_compact = 1
 " tag for coffee
 if executable('coffeetags')
@@ -153,7 +153,7 @@ if executable('coffeetags')
         \ }
 endif
 
-" Nerd Tree 
+" Nerd Tree
 let NERDChristmasTree=0
 let NERDTreeWinSize=30
 let NERDTreeChDirMode=2
@@ -177,7 +177,7 @@ let g:syntastic_python_flake8_args = "--max-line-length=120"
 let g:pymode_folding = 0
 " let g:pymode_motion = 1
 " let g:pymode_virtualenv = 1
-" 
+"
 let g:pymode_syntax = 1
 let g:pymode_syntax_all = 1
 let g:pymode_syntax_print_as_function = 0
@@ -194,10 +194,10 @@ let g:pymode_syntax_highlight_equal_operator = g:pymode_syntax_all
 let g:pymode_syntax_highlight_stars_operator = g:pymode_syntax_all
 let g:pymode_syntax_highlight_self = g:pymode_syntax_all
 " let g:pymode_syntax_slow_sync = 0
-" 
+"
 " let g:pymode_run = 1
 " let g:pymode_run_key = '<leader>r'
-" 
+"
 let g:pymode_lint = 1
 " let g:pymode_lint_config = "$HOME/.pylintrc"
 " let g:pymode_lint_cwindow = 0
@@ -214,7 +214,7 @@ let g:pymode_lint_ignore = "E501,E701,E731"
 let g:pymode_lint_write = 0
 " let g:pymode_lint_buffer = 1
 " let g:pymode_lint_message = 1
-" 
+"
 let g:pymode_rope = 0
 " let g:pymode_rope_map_space = 1
 " let g:pymode_rope_short_prefix = 1
@@ -234,12 +234,12 @@ let g:pymode_rope = 0
 " let g:pymode_rope_guess_project = 1
 " let g:pymode_rope_goto_def_newwin = ""
 " let g:pymode_rope_always_show_complete_menu = 0
-" 
+"
 " let g:pymode_breakpoint = 1
 " let g:pymode_breakpoint_key = '<leader>b'
-" 
+"
 " let g:pymode_utils_whitespaces = 1
-" 
+"
 " let g:pymode_doc = 1
 " let g:pymode_doc_key = 'K'
 
@@ -285,9 +285,9 @@ endif
 let g:neocomplcache_keyword_patterns._ = '\h\w*'
 
 " Fugitive {
-    nnoremap <leader>gc :Gcommit -v 
-    nnoremap <leader>ge :Gedit 
-    nnoremap <leader>gg :Ggrep 
+    nnoremap <leader>gc :Gcommit -v
+    nnoremap <leader>ge :Gedit
+    nnoremap <leader>gg :Ggrep
     nnoremap <silent> <leader>gs :Gstatus<CR>
     nnoremap <silent> <leader>gd :Gdiff<CR>
     nnoremap <silent> <leader>gb :Gblame<CR>
