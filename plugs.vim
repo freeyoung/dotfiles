@@ -42,7 +42,7 @@ Plug 'airblade/vim-gitgutter'
 "----------------------------------------
 " Syntax/Indent for language enhancement
 "----------------------------------------
-Plug 'tpope/vim-markdown'
+Plug 'tpope/vim-markdown', {'For': 'markdown'}
 " Plug 'nono/jquery.vim'
 Plug 'pangloss/vim-javascript'
 Plug 'othree/html5.vim'
