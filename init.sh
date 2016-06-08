@@ -13,6 +13,9 @@ ln -sf ~/.vim/tmux.conf ~/.tmux.conf
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
+rm -f ~/.vimrc
+echo "source ~/.vim/plugs.vim" > ~/.vimrc
+
 vim -c "execute \"PlugInstall!\" | q | q"
 ln -sf ~/.vim/vimrc ~/.vimrc
 mkdir -p ~/.vim/undodir
