@@ -1,4 +1,4 @@
-source ~/.vim/bundles.vim
+source ~/.vim/plugs.vim
 
 " encoding utf-8
 set encoding=utf-8
