@@ -172,6 +172,8 @@ let g:Powerline_symbols = 'fancy'
 " Sytastic Settings
 " let g:syntastic_python_checkers = ["flake8"]
 let g:syntastic_python_flake8_args = "--max-line-length=120"
+let g:syntastic_eruby_ruby_quiet_messages =
+    \ {'regex': 'possibly useless use of a variable in void context'}
 
 " python-mode
 let g:pymode_folding = 0
