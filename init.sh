@@ -28,5 +28,5 @@ ln -sf ~/.vim/zshrc.oh-my-zsh ~/.zshrc
 ln -sf ~/.vim/zshrc.extras ~/.zshrc.extras
 
 chsh -s `which zsh`
-/usr/bin/env zsh
+exec /usr/bin/env zsh
 . ~/.zshrc
