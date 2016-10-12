@@ -119,7 +119,9 @@ any() {
 }
 
 100m() {
-    wget -O /dev/null http://$1/100mb.bin
+    local url=$1
+    echo $url | grep ^https >/dev/null && local args=--no-check-certificate
+    wget $args -O /dev/null $url/100mb.bin
 }
 
 # listing stuff
