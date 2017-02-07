@@ -100,10 +100,8 @@ let g:html_indent_script1 = "inc"
 let g:html_indent_style1 = "inc"
 
 " Keybindings for plugin toggle
-nmap <F4> :PyLintAuto<cr>
 nmap <F5> :NERDTreeToggle<cr>
 nmap <C-N> <F5>
-nmap <F6> :TagbarToggle<cr>
 
 " easier navigation between split windows
 nnoremap <c-j> <c-w>j
