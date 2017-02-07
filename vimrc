@@ -127,10 +127,16 @@ nnoremap k gk
 " map F1, F2, F3 to :w, :q, :x
 map <F1> :w<kEnter>
 imap <F1> <Esc>:w<kEnter>a
+map <C-W> :w<kEnter>
+imap <C-W> <Esc>:w<kEnter>a
 map <F2> :q<kEnter>
 imap <F2> <Esc>:q<kEnter>
+map <C-Q> :q<kEnter>
+imap <C-Q> <Esc>:q<kEnter>
 map <F3> :x<kEnter>
 imap <F3> <Esc>:x<kEnter>
+map <C-X> :x<kEnter>
+imap <C-X> <Esc>:x<kEnter>
 
 " Tagbar
 let g:tagbar_left=0
