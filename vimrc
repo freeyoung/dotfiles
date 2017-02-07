@@ -91,7 +91,7 @@ set shiftwidth=4    " indent width
 " set textwidth=79
 set expandtab       " expand tab to space
 autocmd FileType html,htmldjango,xhtml,haml,sass,scss,ruby,javascript,php,css setlocal tabstop=4 shiftwidth=2 softtabstop=2
-autocmd FileType json,eruby setlocal tabstop=2 shiftwidth=2 softtabstop=0
+autocmd FileType json,eruby,yaml setlocal tabstop=2 shiftwidth=2 softtabstop=0
 autocmd FileType python set textwidth=0 wrap
 autocmd Syntax javascript set syntax=jquery   " JQuery syntax support
 " js
