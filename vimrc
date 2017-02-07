@@ -72,6 +72,7 @@ set list listchars=tab:<+                                         " display TAB 
 " paste mode
 set pastetoggle=<F12>
 nmap <F11> <F12>
+nmap <C-I> <F12>
 
  " When editing a file, always jump to the last cursor position
 autocmd BufReadPost *
