@@ -52,6 +52,7 @@ Plug 'othree/html5.vim'
 Plug 'klen/python-mode'
 " Plug '2072/PHP-Indenting-for-VIm'
 " Plug 'tpope/vim-haml'
+Plug 'stephpy/vim-yaml'
 
 "--------------
 " Color Scheme
