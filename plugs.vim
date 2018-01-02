@@ -49,7 +49,7 @@ Plug 'othree/html5.vim'
 " Plug 'kchmck/vim-coffee-script'
 " Plug 'rodjek/vim-puppet'
 " Plug 'nvie/vim-flake8'
-Plug 'klen/python-mode'
+Plug 'klen/python-mode', {'branch': 'develop'}
 " Plug '2072/PHP-Indenting-for-VIm'
 " Plug 'tpope/vim-haml'
 Plug 'stephpy/vim-yaml'
