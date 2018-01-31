@@ -53,7 +53,7 @@ Plug 'klen/python-mode', {'branch': 'develop'}
 " Plug '2072/PHP-Indenting-for-VIm'
 " Plug 'tpope/vim-haml'
 Plug 'stephpy/vim-yaml'
-Plug 'google/yapf'
+Plug 'google/yapf', { 'rtp': 'plugins/vim', 'for': 'python' }
 
 "--------------
 " Color Scheme
