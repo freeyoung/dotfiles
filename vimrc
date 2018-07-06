@@ -419,3 +419,9 @@ if has("gui_running")
     map <D-9> 9gt
     map <D-0> :tablast<CR>
 endif
+
+" workaround for python3.7
+" https://github.com/vim/vim/issues/3117
+if has("python3")
+    silent! python3 1
+endif
