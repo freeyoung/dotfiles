@@ -245,7 +245,7 @@ let g:pymode_rope = 0
 " let g:pymode_rope_goto_def_newwin = ""
 " let g:pymode_rope_always_show_complete_menu = 0
 "
-" let g:pymode_breakpoint = 1
+let g:pymode_breakpoint = 0
 " let g:pymode_breakpoint_key = '<leader>b'
 "
 " let g:pymode_utils_whitespaces = 1
