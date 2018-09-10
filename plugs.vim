@@ -4,7 +4,7 @@ call plug#begin('~/.vim/plugged')
 " Code Completion
 "-----------------
 Plug 'ervandew/supertab'
-Plug 'Shougo/neocomplcache'
+Plug 'Shougo/neocomplete'
 " Plug 'mattn/zencoding-vim'
 " Plug 'scrooloose/nerdcommenter'
 " Plug 'Shougo/neosnippet'
@@ -23,7 +23,7 @@ Plug 'scrooloose/nerdtree'
 " Plug 'majutsushi/tagbar'
 " Plug 'mileszs/ack.vim'
 " Plug 'kien/ctrlp.vim'
-Plug 'scrooloose/syntastic'
+Plug 'w0rp/ale'
 
 "-------------
 " Other Utils

@@ -177,11 +177,8 @@ let g:user_zen_expandabbr_key='<C-j>'
 " powerline
 let g:Powerline_symbols = 'fancy'
 
-" Sytastic Settings
-let g:syntastic_python_checkers = ["flake8"]
-let g:syntastic_python_flake8_args = "--max-line-length=120"
-let g:syntastic_eruby_ruby_quiet_messages =
-    \ {'regex': 'possibly useless use of a variable in void context'}
+" Ale
+let g:ale_python_flake8_options = "--max-line-length=119"
 
 " python-mode
 let g:pymode_folding = 0
@@ -208,7 +205,7 @@ let g:pymode_syntax_highlight_self = g:pymode_syntax_all
 " let g:pymode_run = 1
 " let g:pymode_run_key = '<leader>r'
 "
-let g:pymode_lint = 1
+let g:pymode_lint = 0
 " let g:pymode_lint_config = "$HOME/.pylintrc"
 " let g:pymode_lint_cwindow = 0
 " let g:pymode_lint_jump = 0
