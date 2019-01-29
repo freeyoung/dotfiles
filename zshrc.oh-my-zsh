@@ -75,7 +75,7 @@ fi
 
 # source oh-my-zsh
 source $ZSH/oh-my-zsh.sh
-export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}'$PS1
+export PS1='%{$fg[red]%}%(?..%?%1v )%{$reset_color%}[%D{%K:%M:%S}] '$PS1
 
 source $HOME/.zshrc.extras
 
