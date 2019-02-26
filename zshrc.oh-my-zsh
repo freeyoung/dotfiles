@@ -58,6 +58,9 @@ if [ -f ~/.zshrc.local ]; then
     source ~/.zshrc.local
 fi
 
+# https://bugs.python.org/issue35219
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
 # aliases
 alias v="vim"
 alias l="ls"
