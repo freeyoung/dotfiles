@@ -186,3 +186,5 @@ zle -N insert-second-arg
 bindkey '^[0' insert-first-word
 bindkey '^[-' insert-first-arg
 bindkey '^[=' insert-second-arg
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
