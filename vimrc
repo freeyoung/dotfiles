@@ -435,7 +435,9 @@ endif
 
 if &term =~ '^xterm'
   " normal mode
-  let &t_EI .= "\<Esc>[0 q"
+  let &t_EI .= "\<Esc>[2 q"
   " insert mode
   let &t_SI .= "\<Esc>[6 q"
+  " reset cursor when vim exits
+  autocmd VimLeave * silent !echo -ne "\033]112\007"
 endif
