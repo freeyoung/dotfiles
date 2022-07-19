@@ -110,4 +110,7 @@ bindkey "^[[1;2B" down-line-or-history
 bindkey "^[[1;2C" forward-char
 bindkey "^[[1;2D" backward-char
 
+bindkey '^[[5C' emacs-forward-word
+bindkey '^[[5D' emacs-backward-word
+
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh" || true
