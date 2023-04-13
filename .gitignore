@@ -4,3 +4,4 @@ init.vim
 /plugged
 /autoload
 /undodir
+/pack

@@ -395,6 +395,21 @@ let g:airline_theme='powerlineish'
 :inoremap <Esc>OS -
 :inoremap <Esc>OM <Enter>
 
+" copilot
+imap <silent><script><expr> <C-F> copilot#Accept("\<CR>")
+let g:copilot_filetypes = {
+  \ '*': v:false,
+  \ 'javascript': v:true,
+  \ 'typescript': v:true,
+  \ 'lua': v:true,
+  \ 'rust': v:true,
+  \ 'c': v:true,
+  \ 'c#': v:true,
+  \ 'c++': v:true,
+  \ 'go': v:true,
+  \ 'python': v:true,
+  \ }
+
 " for macvim
 if has("gui_running")
     set go=aAce  " remove toolbar
