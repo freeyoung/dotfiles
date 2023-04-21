@@ -408,6 +408,7 @@ let g:copilot_filetypes = {
   \ 'c++': v:true,
   \ 'go': v:true,
   \ 'python': v:true,
+  \ 'yaml': v:true,
   \ }
 
 " for macvim
