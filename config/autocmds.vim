@@ -23,3 +23,14 @@ augroup vim_quickfix_window
   autocmd!
   autocmd WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), '&buftype') ==# 'quickfix' | quit | endif
 augroup END
+
+" Skip undo history and syntax highlighting for large files so opening them
+" doesn't stall the editor.
+let g:vim_large_file_bytes = 5 * 1024 * 1024
+augroup vim_large_file
+  autocmd!
+  autocmd BufReadPre * if getfsize(expand('<afile>')) > g:vim_large_file_bytes
+        \ |   setlocal noundofile noswapfile
+        \ |   syntax off
+        \ | endif
+augroup END

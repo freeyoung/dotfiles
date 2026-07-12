@@ -45,6 +45,10 @@ set listchars=tab:<+
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,.DS_Store
 set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
 
+" Cap syntax highlighting scan width so very long lines (minified JS, data
+" dumps) don't slow down scrolling.
+set synmaxcol=500
+
 " Indentation defaults
 set autoindent
 set smartindent

@@ -9,11 +9,6 @@ if has('gui_running')
   set lines=40
 endif
 
-" Work around Python 3.7 initialization issues in older Vim builds.
-if has('python3')
-  silent! python3 1
-endif
-
 if &term =~# '^xterm'
   let &t_EI .= "\<Esc>[2 q"
   let &t_SI .= "\<Esc>[6 q"

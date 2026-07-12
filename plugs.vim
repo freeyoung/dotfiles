@@ -48,7 +48,7 @@ Plug 'airblade/vim-gitgutter'
 "----------------------------------------
 " Syntax/Indent for language enhancement
 "----------------------------------------
-Plug 'tpope/vim-markdown', {'For': 'markdown'}
+Plug 'tpope/vim-markdown', {'for': 'markdown'}
 Plug 'pangloss/vim-javascript'
 Plug 'othree/html5.vim'
 " Plug 'kchmck/vim-coffee-script'
