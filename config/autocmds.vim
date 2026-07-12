@@ -7,11 +7,11 @@ if !has('gui_running')
   augroup END
 endif
 
-set cursorline cursorcolumn
+set cursorline
 augroup vim_cursorline
   autocmd!
-  autocmd WinLeave * setlocal nocursorline nocursorcolumn
-  autocmd WinEnter * setlocal cursorline cursorcolumn
+  autocmd WinLeave * setlocal nocursorline
+  autocmd WinEnter * setlocal cursorline
 augroup END
 
 augroup vim_restore_cursor_position
