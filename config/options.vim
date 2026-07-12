@@ -49,6 +49,12 @@ set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
 " dumps) don't slow down scrolling.
 set synmaxcol=500
 
+" Default updatetime (4000ms) makes gitgutter/CursorHold-driven updates feel
+" sluggish; a fixed signcolumn stops ALE/gitgutter signs from shifting text
+" when they appear.
+set updatetime=250
+set signcolumn=yes
+
 " Indentation defaults
 set autoindent
 set smartindent
