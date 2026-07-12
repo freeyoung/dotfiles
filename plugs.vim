@@ -55,7 +55,6 @@ Plug 'othree/html5.vim'
 " Plug '2072/PHP-Indenting-for-VIm'
 " Plug 'tpope/vim-haml'
 Plug 'stephpy/vim-yaml'
-Plug 'google/yapf', { 'rtp': 'plugins/vim', 'for': 'python' }
 
 "--------------
 " Color Scheme

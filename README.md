@@ -48,12 +48,24 @@ The leader is explicitly set to `\`.
 | `\ew`, `\es`, `\ev`, `\et` | Normal | Open a path relative to the current file |
 | `\ff` | Normal | Find identifiers matching the word under the cursor |
 | `gd`, `gD`, `gr`, `gi`, `K` | Normal | LSP definition, declaration, references, implementation, hover |
-| `\rn`, `\ca` | Normal | LSP rename / code action |
+| `\rn`, `\ca`, `\f` | Normal | LSP rename / code action / manual format |
 | `Tab`, `Shift-Tab`, `Enter`, `Ctrl-Space` | Insert | Select, accept, or manually trigger LSP completion |
 | `<` / `>` | Visual | Indent while keeping the selection |
 
 `j` and `k` move by screen line when wrapping is enabled. `config/keymaps.vim`
-is the complete source of truth, including command-line, keypad, and GUI-only mappings.
+contains general mappings; `config/lsp.vim` contains LSP and formatting mappings.
+`\f` formats Python with Ruff and formats other supported buffers through LSP. It
+never formats automatically on save.
+
+### Language tooling
+
+ALE is the sole diagnostics provider; LSP supplies navigation, completion, code
+actions, and formatting. The configured servers are Pyright (Python), gopls
+(Go), TypeScript Language Server (JavaScript/TypeScript), and YAML Language
+Server. Install npm-managed servers with `:LspInstallServer`; install gopls and
+Ruff separately. Ruff is used for Python formatting (`uv tool install ruff@latest`).
+The legacy YAPF Vim plugin has been replaced; run `:PlugClean` after updating
+plugins to remove its local checkout.
 
 ### oh-my-zsh
 
