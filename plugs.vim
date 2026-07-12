@@ -3,9 +3,13 @@ call plug#begin('~/.vim/plugged')
 "-----------------
 " Code Completion
 "-----------------
-Plug 'ervandew/supertab'
-Plug 'Shougo/neocomplete'
-" Plug 'mattn/zencoding-vim'
+" Replaced by vim-lsp + asyncomplete; do not load competing completion engines.
+" Plug 'ervandew/supertab'
+" Plug 'Shougo/neocomplete'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
 " Plug 'scrooloose/nerdcommenter'
 " Plug 'Shougo/neosnippet'
 
@@ -36,20 +40,17 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 " Plug 'sjl/gundo.vim'
 " Plug 'vim-scripts/mru.vim'
-" Plug 'carlobaldassi/ConqueTerm'
 Plug 'airblade/vim-gitgutter'
 
 "----------------------------------------
 " Syntax/Indent for language enhancement
 "----------------------------------------
 Plug 'tpope/vim-markdown', {'For': 'markdown'}
-" Plug 'nono/jquery.vim'
 Plug 'pangloss/vim-javascript'
 Plug 'othree/html5.vim'
 " Plug 'kchmck/vim-coffee-script'
 " Plug 'rodjek/vim-puppet'
 " Plug 'nvie/vim-flake8'
-Plug 'klen/python-mode', {'branch': 'develop'}
 " Plug '2072/PHP-Indenting-for-VIm'
 " Plug 'tpope/vim-haml'
 Plug 'stephpy/vim-yaml'

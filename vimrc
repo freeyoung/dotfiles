@@ -93,7 +93,6 @@ set expandtab       " expand tab to space
 autocmd FileType html,htmldjango,xhtml,haml,sass,scss,ruby,javascript,php,css setlocal tabstop=4 shiftwidth=2 softtabstop=2
 autocmd FileType json,eruby,yaml setlocal tabstop=2 shiftwidth=2 softtabstop=0
 autocmd FileType python set textwidth=0 wrap
-autocmd Syntax javascript set syntax=jquery   " JQuery syntax support
 " js
 let g:html_indent_inctags = "html,body,head,tbody"
 let g:html_indent_script1 = "inc"
@@ -138,29 +137,6 @@ imap <F3> <Esc>:x<kEnter>
 map <C-X> :x<kEnter>
 imap <C-X> <Esc>:x<kEnter>
 
-" Tagbar
-let g:tagbar_left=0
-let g:tagbar_width=30
-let g:tagbar_autofocus = 1
-let g:tagbar_sort = 0
-let g:tagbar_compact = 1
-" tag for coffee
-if executable('coffeetags')
-  let g:tagbar_type_coffee = {
-        \ 'ctagsbin' : 'coffeetags',
-        \ 'ctagsargs' : '',
-        \ 'kinds' : [
-        \ 'f:functions',
-        \ 'o:object',
-        \ ],
-        \ 'sro' : ".",
-        \ 'kind2scope' : {
-        \ 'f' : 'object',
-        \ 'o' : 'object',
-        \ }
-        \ }
-endif
-
 " Nerd Tree
 let NERDChristmasTree=0
 let NERDTreeWinSize=30
@@ -171,151 +147,28 @@ let NERDTreeShowBookmarks=1
 let NERDTreeQuitOnOpen=1
 let NERDTreeWinPos = "left"
 
-" ZenCoding
-let g:user_zen_expandabbr_key='<C-j>'
-
-" powerline
-let g:Powerline_symbols = 'fancy'
-
 " Ale
 let g:ale_python_flake8_options = "--max-line-length=119"
 
-" python-mode
-let g:pymode_folding = 0
-" let g:pymode_motion = 1
-" let g:pymode_virtualenv = 1
-"
-let g:pymode_syntax = 0
-let g:pymode_syntax_all = 0
-let g:pymode_syntax_print_as_function = 0
-let g:pymode_syntax_indent_errors = g:pymode_syntax_all
-let g:pymode_syntax_space_errors = g:pymode_syntax_all
-let g:pymode_syntax_string_formatting = g:pymode_syntax_all
-let g:pymode_syntax_string_format = g:pymode_syntax_all
-let g:pymode_syntax_string_templates = g:pymode_syntax_all
-let g:pymode_syntax_doctests = g:pymode_syntax_all
-let g:pymode_syntax_builtin_objs = g:pymode_syntax_all
-let g:pymode_syntax_builtin_funcs = g:pymode_syntax_all
-let g:pymode_syntax_highlight_exceptions = g:pymode_syntax_all
-let g:pymode_syntax_highlight_equal_operator = g:pymode_syntax_all
-let g:pymode_syntax_highlight_stars_operator = g:pymode_syntax_all
-let g:pymode_syntax_highlight_self = g:pymode_syntax_all
-" let g:pymode_syntax_slow_sync = 0
-"
-" let g:pymode_run = 1
-" let g:pymode_run_key = '<leader>r'
-"
-let g:pymode_lint = 0
-" let g:pymode_lint_config = "$HOME/.pylintrc"
-" let g:pymode_lint_cwindow = 0
-" let g:pymode_lint_jump = 0
-" let g:pymode_lint_hold = 0
-" let g:pymode_lint_signs = 1
-" let g:pymode_lint_mccabe_complexity = 8
-" let g:pymode_lint_minheight = 3
-" let g:pymode_lint_maxheight = 6
-let g:pymode_lint_checkers = ['pyflakes', 'pep8']
-" let g:pymode_lint_select = ""
-let g:pymode_lint_ignore = ["E501", "E701", "E731", "C901"]
-" let g:pymode_lint_onfly = 1
-let g:pymode_lint_write = 0
-" let g:pymode_lint_buffer = 1
-" let g:pymode_lint_message = 1
-"
-let g:pymode_rope = 0
-" let g:pymode_rope_map_space = 1
-" let g:pymode_rope_short_prefix = 1
-" let g:pymode_rope_vim_completion = 1
-" let g:pymode_rope_always_show_complete_menu = 0
-" let g:pymode_rope_auto_project = 1
-" let g:pymode_rope_enable_autoimport = 1
-" let g:pymode_rope_autoimport_generate = 1
-" let g:pymode_rope_autoimport_underlineds = 0
-" let g:pymode_rope_codeassist_maxfixes = 10
-" let g:pymode_rope_sorted_completions = 1
-" let g:pymode_rope_extended_complete = 1
-" let g:pymode_rope_autoimport_modules = ["os","shutil","datetime"]
-" let g:pymode_rope_confirm_saving = 1
-" let g:pymode_rope_global_prefix = "<C-x>p"
-" let g:pymode_rope_local_prefix = "<C-c>r"
-" let g:pymode_rope_guess_project = 1
-" let g:pymode_rope_goto_def_newwin = ""
-" let g:pymode_rope_always_show_complete_menu = 0
-"
-let g:pymode_breakpoint = 0
-" let g:pymode_breakpoint_key = '<leader>b'
-"
-" let g:pymode_utils_whitespaces = 1
-"
-" let g:pymode_doc = 1
-" let g:pymode_doc_key = 'K'
+set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
 
-" vim-session
-" let g:session_autosave = 'no'
+" vim-lsp / asyncomplete
+" ALE remains the diagnostics provider to avoid duplicate signs and messages.
+let g:lsp_diagnostics_enabled = 0
+let g:lsp_document_highlight_enabled = 0
 
-" sessionman
-" Session List {
-    set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
-    nmap <leader>sl :SessionList<CR>
-    nmap <leader>ss :SessionSave<CR>
-" }
+nnoremap <silent> gd :LspDefinition<CR>
+nnoremap <silent> gD :LspDeclaration<CR>
+nnoremap <silent> gr :LspReferences<CR>
+nnoremap <silent> gi :LspImplementation<CR>
+nnoremap <silent> K :LspHover<CR>
+nnoremap <silent> <leader>rn :LspRename<CR>
+nnoremap <silent> <leader>ca :LspCodeAction<CR>
 
-" NeoComplCache
-set completeopt-=preview
-let g:neocomplcache_enable_at_startup=1
-"let g:neoComplcache_disableautocomplete=1
-let g:neocomplcache_enable_smart_case=1
-let g:neocomplcache_enable_camel_case_completion=1
-let g:neocomplcache_enable_underbar_completion=1
-let g:neocomplcache_enable_auto_delimiter=1
-let g:neocomplcache_min_syntax_length = 3
-let g:neocomplcache_force_overwrite_completefunc=1
-let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
-"imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
-"smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
-"imap <C-l> <Plug>(neocomplcache_snippets_expand)
-"smap <C-l> <Plug>(neocomplcache_snippets_expand)
-"imap <C-t> <Plug>(neocomplcache_snippets_jump)
-"smap <C-t> <Plug>(neocomplcache_snippets_jump)
-"imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
-"smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
-" Define dictionary
-let g:neocomplcache_dictionary_filetype_lists = {
-    \ 'default' : '',
-    \ 'vimshell' : $HOME.'/.vimshell_hist',
-    \ 'scheme' : $HOME.'/.gosh_completions'
-    \ }
-" Define keyword.
-if !exists('g:neocomplcache_keyword_patterns')
-    let g:neocomplcache_keyword_patterns = {}
-endif
-let g:neocomplcache_keyword_patterns._ = '\h\w*'
-
-" Fugitive {
-    nnoremap <leader>gc :Gcommit -v
-    nnoremap <leader>ge :Gedit
-    nnoremap <leader>gg :Ggrep
-    nnoremap <silent> <leader>gs :Gstatus<CR>
-    nnoremap <silent> <leader>gd :Gdiff<CR>
-    nnoremap <silent> <leader>gb :Gblame<CR>
-    nnoremap <silent> <leader>gl :Glog<CR>
-    nnoremap <silent> <leader>gp :Git push<CR>
-    nnoremap <silent> <leader>gr :Gread<CR>
-    nnoremap <silent> <leader>gw :Gwrite<CR>
-"}
-
-" ConqueTerm
-let g:ConqueTerm_FastMode = 1
-let g:ConqueTerm_CloseOnEnd = 1
-let g:ConqueTerm_StartMessages = 1
-let g:ConqueTerm_CWInsert = 1
-let g:ConqueTerm_ToggleKey = '<leader><F8>'
-nnoremap <F7> :ConqueTermTab zsh<CR>
-inoremap <F7> <ESC>:ConqueTermTab zsh<CR>
-nnoremap <F8> :ConqueTermVSplit zsh<CR>
-inoremap <F8> <ESC>:ConqueTermVSplit zsh<CR>
-nnoremap <F9> :ConqueTermSplit zsh<CR>
-inoremap <F9> <ESC>:ConqueTermSplit zsh<CR>
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <CR> pumvisible() ? asyncomplete#close_popup() : "\<CR>"
+imap <C-Space> <Plug>(asyncomplete_force_refresh)
 
 " w!!
 cmap w!! w !sudo tee > /dev/null %
@@ -326,13 +179,8 @@ autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
 autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
 autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
 
-" SuperTab
-let g:SuperTabDefaultCompletionType="<c-n>"
-
 " ctrlp
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,.DS_Store  " MacOSX/Linux
-let g:ctrlp_custom_ignore = '\.git$\|\.hg$\|\.svn$'
-
 " eggache vim
 if has("user_commands")
     command! -bang -nargs=* -complete=file E e<bang> <args>
@@ -394,22 +242,6 @@ let g:airline_theme='powerlineish'
 :inoremap <Esc>Ol +
 :inoremap <Esc>OS -
 :inoremap <Esc>OM <Enter>
-
-" copilot
-imap <silent><script><expr> <C-F> copilot#Accept("\<CR>")
-let g:copilot_filetypes = {
-  \ '*': v:false,
-  \ 'javascript': v:true,
-  \ 'typescript': v:true,
-  \ 'lua': v:true,
-  \ 'rust': v:true,
-  \ 'c': v:true,
-  \ 'c#': v:true,
-  \ 'c++': v:true,
-  \ 'go': v:true,
-  \ 'python': v:true,
-  \ 'yaml': v:true,
-  \ }
 
 " for macvim
 if has("gui_running")
