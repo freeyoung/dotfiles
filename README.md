@@ -68,7 +68,7 @@ types, plugin settings, LSP, mappings, autocmds, and terminal settings.
 [`freeyoung/vim-tomorrow-theme`](https://github.com/freeyoung/vim-tomorrow-theme)
 (`Tomorrow-Night-Bright`) is the active default, a fork of
 [`chriskempson/vim-tomorrow-theme`](https://github.com/chriskempson/vim-tomorrow-theme)
-with two fixes upstream never made:
+with fixes upstream never made:
 
 * The color-setting logic was gated only on the legacy `&t_Co`, which Vim and
   Neovim can report differently, so Vim silently kept `Normal` unset while
@@ -80,8 +80,24 @@ with two fixes upstream never made:
   community-contributed airline themes — has no dedicated commandline-mode
   palette and silently reuses Normal's colors. The fork adds
   `autoload/airline/themes/tomorrow_bright.vim` with full mode coverage,
-  including commandline, using the same hex values as the colorscheme
+  including commandline (orange, not Replace's red — less alarming for
+  routine `:` commands), using the same hex values as the colorscheme
   itself.
+* The colorscheme's own `StatusLine`/`StatusLineNC` used a `"reverse"`
+  attribute (a 2013-era convention predating airline-style per-segment
+  statuslines). Neovim's TUI leaks that into the *entire* statusline row as
+  unconditional reverse video — including airline's own segment colors and
+  the separator colors airline computes by reading back already-applied
+  group colors — which Vim does not replicate. sonokai's colorscheme, by
+  contrast, never puts `"reverse"` on `StatusLine` at all, which is why
+  sonokai-based setups never hit this. Fixed at the source (dropped
+  `"reverse"`, colors swapped to preserve the exact original look without
+  depending on it) and defended in `config/plugins.vim` (`has('nvim')` only:
+  clears `StatusLine`/`StatusLineNC`'s reverse attribute on every
+  `ColorScheme` event, in case some other theme has the same issue).
+  Verified via raw PTY capture, not just `:highlight` introspection — the
+  highlight definitions looked correct in isolation even when the actual
+  rendering wasn't.
 
 ```vim
 :colorscheme Tomorrow-Night-Bright | :AirlineTheme tomorrow_bright
