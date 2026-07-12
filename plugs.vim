@@ -20,9 +20,9 @@ Plug 'tpope/vim-surround'
 "--------------
 " Code Reading
 "--------------
-Plug 'scrooloose/nerdtree'
+Plug 'scrooloose/nerdtree', {'on': ['NERDTreeToggle', 'NERDTree', 'NERDTreeFind']}
 Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf.vim', {'on': ['Files', 'Buffers', 'History', 'Rg']}
 Plug 'w0rp/ale'
 
 "-------------
@@ -36,9 +36,9 @@ Plug 'airblade/vim-gitgutter'
 " Syntax/Indent for language enhancement
 "----------------------------------------
 Plug 'tpope/vim-markdown', {'for': 'markdown'}
-Plug 'pangloss/vim-javascript'
-Plug 'othree/html5.vim'
-Plug 'stephpy/vim-yaml'
+Plug 'pangloss/vim-javascript', {'for': 'javascript'}
+Plug 'othree/html5.vim', {'for': 'html'}
+Plug 'stephpy/vim-yaml', {'for': 'yaml'}
 
 "--------------
 " Color Scheme
