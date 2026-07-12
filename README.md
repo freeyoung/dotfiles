@@ -6,13 +6,6 @@ Not only .vimrc ...
 
 ## Installation
 
-* Backup your old vim configurations
-
-``` bash
-mv -f ~/.vim ~/.vim.orig
-mv -f ~/.vimrc ~/.vimrc.orig
-```
-
 * Clone this repo
 
 ``` bash
@@ -25,11 +18,42 @@ git clone https://github.com/freeyoung/dotfiles.git ~/.vim
 sh ~/.vim/init.sh
 ```
 
+The script creates timestamped backups before replacing conflicting dotfiles,
+keeps an existing `~/.oh-my-zsh` directory, and does not change your login shell.
+It prints the `chsh` command if you want to make zsh your login shell.
+
 ## Features
 
 * Need to be described in detail ..
 
 ### vim
+
+The Vim configuration is split into `config/` by responsibility: options,
+file types, plugin settings, LSP, mappings, autocmds, and GUI/terminal settings.
+
+## Key mappings
+
+The leader is explicitly set to `\`.
+
+| Keys | Mode | Action |
+| --- | --- | --- |
+| `F1`, `\w` | Normal | Save the current file |
+| `F2`, `Ctrl-Q` | Normal | Quit the current window |
+| `F3` | Normal | Save and quit |
+| `F5`, `Ctrl-N` | Normal | Toggle NERDTree |
+| `F11` / `F12` | Normal | Toggle paste mode |
+| `Ctrl-H/J/K/L` | Normal | Move between split windows |
+| `Shift-H/L` | Normal | Previous / next tab |
+| `\+`, `\-`, `\_`, `\=`, `\[`, `\]` | Normal | Resize / equalize splits |
+| `\ew`, `\es`, `\ev`, `\et` | Normal | Open a path relative to the current file |
+| `\ff` | Normal | Find identifiers matching the word under the cursor |
+| `gd`, `gD`, `gr`, `gi`, `K` | Normal | LSP definition, declaration, references, implementation, hover |
+| `\rn`, `\ca` | Normal | LSP rename / code action |
+| `Tab`, `Shift-Tab`, `Enter`, `Ctrl-Space` | Insert | Select, accept, or manually trigger LSP completion |
+| `<` / `>` | Visual | Indent while keeping the selection |
+
+`j` and `k` move by screen line when wrapping is enabled. `config/keymaps.vim`
+is the complete source of truth, including command-line, keypad, and GUI-only mappings.
 
 ### oh-my-zsh
 

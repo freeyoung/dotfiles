@@ -1,4 +1,5 @@
-call plug#begin('~/.vim/plugged')
+let s:vim_root = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+call plug#begin(s:vim_root . '/plugged')
 
 "-----------------
 " Code Completion
@@ -65,3 +66,4 @@ Plug 'google/yapf', { 'rtp': 'plugins/vim', 'for': 'python' }
 " Plug 'tpope/vim-vividchalk'
 Plug 'chriskempson/vim-tomorrow-theme'
 call plug#end()
+unlet s:vim_root

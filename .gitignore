@@ -5,3 +5,4 @@ init.vim
 /autoload
 /undodir
 /pack
+/state
