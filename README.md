@@ -15,7 +15,7 @@ git clone https://github.com/freeyoung/dotfiles.git ~/.vim
 * Execute the bootstrap script
 
 ``` bash
-sh ~/.vim/init.sh
+bash ~/.vim/init.sh
 ```
 
 The fzf mappings require the external `fzf` and `rg` (ripgrep) commands. On
@@ -26,6 +26,24 @@ do not silently install these system dependencies.
 The script creates timestamped backups before replacing conflicting dotfiles,
 keeps an existing `~/.oh-my-zsh` directory, and does not change your login shell.
 It prints the `chsh` command if you want to make zsh your login shell.
+
+Run the non-interactive configuration check after installation (this is a
+configuration smoke test; it does not install language servers):
+
+```bash
+bash ~/.vim/scripts/check-vim-config.sh
+```
+
+Plugin revisions are recorded in [`plugins.lock.vim`](plugins.lock.vim), and
+`init.sh` restores that snapshot during bootstrap. After updating plugins
+intentionally, regenerate it from the repository directory with:
+
+```vim
+:PlugSnapshot! ~/.vim/plugins.lock.vim
+```
+
+Commit the resulting change. Sourcing the snapshot runs vim-plug's pinned
+`PlugUpdate!`, so it may access the network and change plugin checkouts.
 
 ## Features
 

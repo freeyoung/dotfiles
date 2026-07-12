@@ -35,6 +35,8 @@ require_command zsh
 require_command vim
 require_command curl
 require_command git
+require_command fzf
+require_command rg
 
 backup_and_link "$repo_dir/tmux.conf" "$HOME/.tmux.conf"
 backup_and_link "$repo_dir/vimrc" "$HOME/.vimrc"
@@ -47,11 +49,19 @@ if [[ ! -f "$repo_dir/autoload/plug.vim" ]]; then
 fi
 
 mkdir -p "$repo_dir/state/undo" "$repo_dir/state/swap" "$repo_dir/state/backup"
-vim -Nu NONE -n -es \
-  -c "execute 'source' fnameescape('$repo_dir/autoload/plug.vim')" \
-  -c "execute 'source' fnameescape('$repo_dir/plugs.vim')" \
-  -c 'PlugInstall --sync' \
-  -c 'qa'
+if [[ -f "$repo_dir/plugins.lock.vim" ]]; then
+  vim -Nu NONE -n -es \
+    -c "execute 'source' fnameescape('$repo_dir/autoload/plug.vim')" \
+    -c "execute 'source' fnameescape('$repo_dir/plugs.vim')" \
+    -c "execute 'source' fnameescape('$repo_dir/plugins.lock.vim')" \
+    -c 'qa'
+else
+  vim -Nu NONE -n -es \
+    -c "execute 'source' fnameescape('$repo_dir/autoload/plug.vim')" \
+    -c "execute 'source' fnameescape('$repo_dir/plugs.vim')" \
+    -c 'PlugInstall --sync' \
+    -c 'qa'
+fi
 
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   git clone https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh"
