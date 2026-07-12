@@ -1,3 +1,17 @@
+if has('nvim')
+  " Neovim's built-in StatusLine/StatusLineNC default to cterm=reverse/
+  " gui=reverse, which leaks into the whole statusline row (including
+  " airline's own per-segment colors, and the separators airline computes
+  " by reading back already-applied group colors) as an unconditional
+  " reverse-video effect Vim doesn't have. Clearing it lets every airline
+  " theme render identically on both editors with no per-theme workaround.
+  augroup vim_nvim_statusline_reverse
+    autocmd!
+    autocmd ColorScheme * highlight StatusLine cterm=NONE gui=NONE term=NONE
+    autocmd ColorScheme * highlight StatusLineNC cterm=NONE gui=NONE term=NONE
+  augroup END
+endif
+
 colorscheme Tomorrow-Night-Bright
 
 " NERDTree
