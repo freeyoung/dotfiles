@@ -62,10 +62,3 @@ set tabstop=8
 set softtabstop=4
 set shiftwidth=4
 set expandtab
-
-" Keep the legacy paste toggle without overriding jump-list navigation.
-" Neovim dropped 'paste'/'pastetoggle'; bracketed paste makes it unnecessary
-" there.
-if !has('nvim')
-  set pastetoggle=<F12>
-endif

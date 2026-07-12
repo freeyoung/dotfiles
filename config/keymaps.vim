@@ -1,3 +1,10 @@
+" Toggle paste mode. Neovim has no 'pastetoggle' option (E519), so map it
+" directly instead; this also works identically in Vim. Mostly moot on
+" terminals with bracketed-paste support, which avoid the autoindent-mangled
+" paste problem without needing 'paste' at all.
+nnoremap <F12> :set paste!<CR>
+inoremap <F12> <C-o>:set paste!<CR>
+
 " Files and windows
 nnoremap <F11> <F12>
 nnoremap <F5> :NERDTreeToggle<CR>
