@@ -47,10 +47,10 @@ Plug 'pearofducks/ansible-vim', {'for': ['yaml.ansible', 'ansible', 'ansible_hos
 "--------------
 " Color Scheme
 "--------------
-" Keeping a small rotation installed permanently (not just for a one-time
-" comparison) to switch between with :colorscheme + :AirlineTheme.
-Plug 'sainnhe/sonokai'
-Plug 'joshdick/onedark.vim'
-Plug 'NLKNguyen/papercolor-theme'
+" Fork of the original pre-refactor theme with two fixes upstream never
+" made: &termguicolors is checked alongside the legacy &t_Co gate (so Vim
+" and Neovim render identically), and it ships its own airline theme
+" (tomorrow_bright) with full mode coverage including commandline.
+Plug 'freeyoung/vim-tomorrow-theme'
 call plug#end()
 unlet s:vim_root

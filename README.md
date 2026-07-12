@@ -65,22 +65,35 @@ types, plugin settings, LSP, mappings, autocmds, and terminal settings.
 
 ### Colorscheme
 
-`sonokai`, `onedark.vim`, and `papercolor-theme` are all installed as a
-standing rotation; `sonokai` is the active default (`config/plugins.vim`).
-Switch either editor's look at any time:
+[`freeyoung/vim-tomorrow-theme`](https://github.com/freeyoung/vim-tomorrow-theme)
+(`Tomorrow-Night-Bright`) is the active default, a fork of
+[`chriskempson/vim-tomorrow-theme`](https://github.com/chriskempson/vim-tomorrow-theme)
+with two fixes upstream never made:
+
+* The color-setting logic was gated only on the legacy `&t_Co`, which Vim and
+  Neovim can report differently, so Vim silently kept `Normal` unset while
+  Neovim applied the theme correctly. The fork also checks `&termguicolors`,
+  so both editors render identically (verified by diffing `:highlight`
+  output directly) without a global `set t_Co=256` workaround.
+* The original shipped no airline theme at all, falling back to
+  `vim-airline-themes`' generic `tomorrow.vim`, which — like most
+  community-contributed airline themes — has no dedicated commandline-mode
+  palette and silently reuses Normal's colors. The fork adds
+  `autoload/airline/themes/tomorrow_bright.vim` with full mode coverage,
+  including commandline, using the same hex values as the colorscheme
+  itself.
 
 ```vim
-:colorscheme onedark   | :AirlineTheme onedark
-:colorscheme PaperColor | :AirlineTheme papercolor
-:colorscheme sonokai   | :AirlineTheme sonokai
+:colorscheme Tomorrow-Night-Bright | :AirlineTheme tomorrow_bright
 ```
 
-All three render identically between Vim and Neovim (verified by diffing
-`:highlight` output directly) since they're plain vimscript colorschemes
-without legacy `&t_Co`-style branching. To make a switch permanent, update
-the `colorscheme`/`g:airline_theme` lines in `config/plugins.vim`; to add or
-retire one from the rotation, edit the `Plug` lines in `plugs.vim` and run
-`:PlugClean` for removals.
+Several other colorschemes (sonokai, onedark.vim, edge, everforest,
+gruvbox-material, catppuccin, papercolor-theme, ayu-vim, base16-tomorrow-night
+via tinted-vim) were evaluated and rejected along the way — mainly for
+missing airline commandline coverage, being Neovim/Lua-only (breaks the
+shared-config setup), or, for base16, having `Identifier` equal `Normal`
+(no color distinction for YAML/Ansible keys). See git history on
+`config/plugins.vim` and `plugs.vim` for the full trail.
 
 ### Performance
 
