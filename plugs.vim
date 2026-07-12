@@ -47,6 +47,10 @@ Plug 'pearofducks/ansible-vim', {'for': ['yaml.ansible', 'ansible', 'ansible_hos
 "--------------
 " Color Scheme
 "--------------
+" Keeping a small rotation installed permanently (not just for a one-time
+" comparison) to switch between with :colorscheme + :AirlineTheme.
 Plug 'sainnhe/sonokai'
+Plug 'joshdick/onedark.vim'
+Plug 'NLKNguyen/papercolor-theme'
 call plug#end()
 unlet s:vim_root
