@@ -18,6 +18,18 @@ let g:lsp_settings = {
       \ },
       \}
 
+" ansible-language-server isn't in vim-lsp-settings' catalog, so register it
+" directly. ansible-vim sets ft=yaml.ansible under Vim but plain ft=ansible
+" under Neovim; allowlist both. Install with:
+"   npm install -g @ansible/ansible-language-server
+if executable('ansible-language-server')
+  autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'ansible-language-server',
+        \ 'cmd': {server_info -> ['ansible-language-server', '--stdio']},
+        \ 'allowlist': ['yaml.ansible', 'ansible'],
+        \ })
+endif
+
 function! s:format_with_ruff() abort
   if !executable('ruff')
     echoerr 'Ruff is not installed or is not on PATH.'

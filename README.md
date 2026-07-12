@@ -88,11 +88,23 @@ fzf handles quick selection and search. `termguicolors` is enabled when supporte
 
 ALE is the sole diagnostics provider; LSP supplies navigation, completion, code
 actions, and formatting. The configured servers are Pyright (Python), gopls
-(Go), TypeScript Language Server (JavaScript/TypeScript), and YAML Language
-Server. Install npm-managed servers with `:LspInstallServer`; install gopls and
-Ruff separately. Ruff is used for Python formatting (`uv tool install ruff@latest`).
+(Go), TypeScript Language Server (JavaScript/TypeScript), YAML Language
+Server, and ansible-language-server. Install npm-managed servers with
+`:LspInstallServer`; install gopls, Ruff, and ansible-language-server
+separately (ansible-language-server isn't in vim-lsp-settings' catalog, so
+it's registered directly in `config/lsp.vim` and only activates when the
+binary is on `$PATH`: `npm install -g @ansible/ansible-language-server`).
+Ruff is used for Python formatting (`uv tool install ruff@latest`).
 The legacy YAPF Vim plugin has been replaced; run `:PlugClean` after updating
 plugins to remove its local checkout.
+
+`ansible-vim` detects Ansible YAML by path (`tasks/`, `roles/`, `handlers/`,
+`group_vars/`, `host_vars/`) and by filename (`playbook.yml`, `site.yml`,
+`main.yml`, etc.); a supplemental rule in `config/filetypes.vim` also covers a
+generic `playbooks/` directory with arbitrary filenames. It sets
+`filetype=yaml.ansible` under Vim and plain `filetype=ansible` under Neovim
+(ansible-vim's own upstream difference); both are handled everywhere they
+matter (LSP allowlist, plugin lazy-loading).
 
 ### oh-my-zsh
 
