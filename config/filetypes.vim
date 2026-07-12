@@ -18,3 +18,13 @@ augroup vim_filetype_settings
   autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
   autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
 augroup END
+
+" ansible-vim's own ftdetect covers tasks/roles/handlers/ paths and
+" group_vars/host_vars, plus playbook.yml-style filenames, but not a generic
+" playbooks/ directory with arbitrary filenames. It sets ft=yaml.ansible under
+" Vim but plain ft=ansible under Neovim; match that per editor.
+augroup vim_ansible_playbooks_dir
+  autocmd!
+  autocmd BufNewFile,BufRead */playbooks/*.yml,*/playbooks/*.yaml
+        \ execute 'set filetype=' . (has('nvim') ? 'ansible' : 'yaml.ansible')
+augroup END

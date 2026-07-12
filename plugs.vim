@@ -39,6 +39,10 @@ Plug 'tpope/vim-markdown', {'for': 'markdown'}
 Plug 'pangloss/vim-javascript', {'for': 'javascript'}
 Plug 'othree/html5.vim', {'for': 'html'}
 Plug 'stephpy/vim-yaml', {'for': 'yaml'}
+" ansible-vim's ftdetect sets ft=yaml.ansible under Vim but plain ft=ansible
+" under Neovim (its own deliberate difference); its ftplugin/syntax/indent
+" files target the 'ansible' component either way.
+Plug 'pearofducks/ansible-vim', {'for': ['yaml.ansible', 'ansible', 'ansible_hosts']}
 
 "--------------
 " Color Scheme
