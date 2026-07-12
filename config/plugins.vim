@@ -1,3 +1,7 @@
+" Tomorrow-Night-Bright gates its color logic on the legacy &t_Co instead of
+" &termguicolors; Vim and Neovim detect/report &t_Co differently, so force it
+" to keep both editors on the same code path inside the colorscheme.
+set t_Co=256
 colorscheme Tomorrow-Night-Bright
 
 " NERDTree
