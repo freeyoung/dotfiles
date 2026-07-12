@@ -26,3 +26,8 @@ let g:ale_lint_on_insert_leave = 1
 " Airline
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'powerlineish'
+" These auto-enable under has('nvim') regardless of whether their backing
+" library is present; diagnostics come from ALE/vim-lsp, not native vim.lsp,
+" and there's no IME-switcher library configured.
+let g:airline#extensions#xkblayout#enabled = 0
+let g:airline#extensions#nvimlsp#enabled = 0
