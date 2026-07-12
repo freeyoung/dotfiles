@@ -18,6 +18,10 @@ let g:fzf_layout = {'window': {'width': 0.9, 'height': 0.8}}
 
 " ALE
 let g:ale_python_flake8_options = '--max-line-length=119'
+" Default lints on every keystroke; only re-lint on normal-mode edits and
+" leaving insert mode to avoid linter churn while typing.
+let g:ale_lint_on_text_changed = 'normal'
+let g:ale_lint_on_insert_leave = 1
 
 " Airline
 let g:airline_powerline_fonts = 1
