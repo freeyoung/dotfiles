@@ -25,6 +25,8 @@ Plug 'tpope/vim-surround'
 " Code Reading
 "--------------
 Plug 'scrooloose/nerdtree'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
 " Plug 'majutsushi/tagbar'
 " Plug 'mileszs/ack.vim'
 " Plug 'kien/ctrlp.vim'

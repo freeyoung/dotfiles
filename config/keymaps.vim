@@ -44,6 +44,16 @@ nnoremap <leader>ev :vsp %%
 nnoremap <leader>et :tabe %%
 nnoremap <leader>ff [I:let nr = input('Which one: ')<Bar>exe 'normal ' . nr . '[\t'<CR>
 
+" fzf navigation. Keep \ff for the historical identifier lookup.
+nnoremap <silent> <leader>sf :Files<CR>
+nnoremap <silent> <leader>sb :Buffers<CR>
+nnoremap <silent> <leader>sr :History<CR>
+if executable('rg')
+  nnoremap <silent> <leader>sg :Rg<Space>
+else
+  nnoremap <silent> <leader>sg :echoerr 'ripgrep (rg) is not installed.'<CR>
+endif
+
 " Preserve visual selection when indenting.
 vnoremap < <gv
 vnoremap > >gv

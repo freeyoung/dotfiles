@@ -18,6 +18,11 @@ git clone https://github.com/freeyoung/dotfiles.git ~/.vim
 sh ~/.vim/init.sh
 ```
 
+The fzf mappings require the external `fzf` and `rg` (ripgrep) commands. On
+macOS, install them with `brew install fzf ripgrep`; on other systems use the
+equivalent package-manager packages. The Vim plugins provide integration but
+do not silently install these system dependencies.
+
 The script creates timestamped backups before replacing conflicting dotfiles,
 keeps an existing `~/.oh-my-zsh` directory, and does not change your login shell.
 It prints the `chsh` command if you want to make zsh your login shell.
@@ -47,6 +52,7 @@ The leader is explicitly set to `\`.
 | `\+`, `\-`, `\_`, `\=`, `\[`, `\]` | Normal | Resize / equalize splits |
 | `\ew`, `\es`, `\ev`, `\et` | Normal | Open a path relative to the current file |
 | `\ff` | Normal | Find identifiers matching the word under the cursor |
+| `\sf`, `\sb`, `\sr`, `\sg` | Normal | fzf files, buffers, history, ripgrep search |
 | `gd`, `gD`, `gr`, `gi`, `K` | Normal | LSP definition, declaration, references, implementation, hover |
 | `\rn`, `\ca`, `\f` | Normal | LSP rename / code action / manual format |
 | `Tab`, `Shift-Tab`, `Enter`, `Ctrl-Space` | Insert | Select, accept, or manually trigger LSP completion |
@@ -56,6 +62,9 @@ The leader is explicitly set to `\`.
 contains general mappings; `config/lsp.vim` contains LSP and formatting mappings.
 `\f` formats Python with Ruff and formats other supported buffers through LSP. It
 never formats automatically on save.
+
+NERDTree remains available through `F5` / `Ctrl-N` as a directory-oriented view;
+fzf handles quick selection and search. `termguicolors` is enabled when supported.
 
 ### Language tooling
 

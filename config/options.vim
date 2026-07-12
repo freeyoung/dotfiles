@@ -25,6 +25,9 @@ set backup
 set writebackup
 
 " Display
+if exists('+termguicolors')
+  set termguicolors
+endif
 set report=0
 set wrap
 set scrolloff=5

@@ -10,6 +10,12 @@ let NERDTreeShowBookmarks = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeWinPos = 'left'
 
+" fzf.vim uses the system fzf binary; ripgrep supplies the file list and grep.
+if executable('rg')
+  let $FZF_DEFAULT_COMMAND = 'rg --files'
+endif
+let g:fzf_layout = {'window': {'width': 0.9, 'height': 0.8}}
+
 " ALE
 let g:ale_python_flake8_options = '--max-line-length=119'
 
