@@ -18,7 +18,8 @@ Plug 'prabirshrestha/asyncomplete-lsp.vim'
 " Surrounding Operation
 "-----------------------
 Plug 'Raimondi/delimitMate'
-Plug 'vim-scripts/matchit.zip'
+" matchit is loaded from Vim's bundled optional package instead; see
+" config/filetypes.vim.
 Plug 'tpope/vim-surround'
 
 "--------------
