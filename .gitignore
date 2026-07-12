@@ -1,5 +1,4 @@
 *.un~
-init.vim
 
 /plugged
 /autoload

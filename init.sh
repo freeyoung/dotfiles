@@ -43,6 +43,9 @@ backup_and_link "$repo_dir/vimrc" "$HOME/.vimrc"
 backup_and_link "$repo_dir/zshrc.oh-my-zsh" "$HOME/.zshrc"
 backup_and_link "$repo_dir/zshrc.extras" "$HOME/.zshrc.extras"
 
+mkdir -p "$HOME/.config/nvim"
+backup_and_link "$repo_dir/nvim_init.vim" "$HOME/.config/nvim/init.vim"
+
 if [[ ! -f "$repo_dir/autoload/plug.vim" ]]; then
   curl -fsSL --create-dirs -o "$repo_dir/autoload/plug.vim" \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
