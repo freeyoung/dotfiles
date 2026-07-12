@@ -43,6 +43,6 @@ Plug 'stephpy/vim-yaml'
 "--------------
 " Color Scheme
 "--------------
-Plug 'chriskempson/vim-tomorrow-theme'
+Plug 'sainnhe/sonokai'
 call plug#end()
 unlet s:vim_root

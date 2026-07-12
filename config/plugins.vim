@@ -1,8 +1,4 @@
-" Tomorrow-Night-Bright gates its color logic on the legacy &t_Co instead of
-" &termguicolors; Vim and Neovim detect/report &t_Co differently, so force it
-" to keep both editors on the same code path inside the colorscheme.
-set t_Co=256
-colorscheme Tomorrow-Night-Bright
+colorscheme sonokai
 
 " NERDTree
 let NERDChristmasTree = 0
@@ -29,7 +25,7 @@ let g:ale_lint_on_insert_leave = 1
 
 " Airline
 let g:airline_powerline_fonts = 1
-let g:airline_theme = 'powerlineish'
+let g:airline_theme = 'sonokai'
 " These auto-enable under has('nvim') regardless of whether their backing
 " library is present; diagnostics come from ALE/vim-lsp, not native vim.lsp,
 " and there's no IME-switcher library configured.
