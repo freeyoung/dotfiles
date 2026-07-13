@@ -60,9 +60,10 @@ backup_and_link() {
   printf 'Linked: %s -> %s\n' "$target" "$source"
 }
 
-backup_and_link "$repo_dir" "$HOME/.vim"
-backup_and_link "$repo_dir/vimrc" "$HOME/.vimrc"
-backup_and_link "$repo_dir/nvim_init.vim" "$HOME/.config/nvim/init.vim"
+vim_dir="$repo_dir/vim"
+backup_and_link "$vim_dir" "$HOME/.vim"
+backup_and_link "$vim_dir/vimrc" "$HOME/.vimrc"
+backup_and_link "$vim_dir/nvim_init.vim" "$HOME/.config/nvim/init.vim"
 backup_and_link "$repo_dir/tmux.conf" "$HOME/.tmux.conf"
 backup_and_link "$repo_dir/zsh/zshrc" "$HOME/.zshrc"
 backup_and_link "$repo_dir/zsh/zprofile" "$HOME/.zprofile"
@@ -118,7 +119,7 @@ if command -v zsh >/dev/null 2>&1; then
 fi
 
 if command -v vim >/dev/null 2>&1; then
-  vim -Nu NONE -n -es -c "source $repo_dir/vimrc" -c 'qa' || {
+  vim -Nu NONE -n -es -c "source $vim_dir/vimrc" -c 'qa' || {
     printf 'Warning: Vim configuration smoke test failed; run scripts/check-vim-config.sh for details.\n' >&2
   }
 fi

@@ -4,6 +4,7 @@
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+vim_dir="$repo_dir/vim"
 
 warn() {
   printf 'Warning: %s\n' "$*" >&2
@@ -45,9 +46,9 @@ if [[ ! -r "$plug_vim" ]]; then
 fi
 
 vim -Nu NONE -n -es \
-  -c "execute 'source' fnameescape('$repo_dir/config/paths.vim')" \
+  -c "execute 'source' fnameescape('$vim_dir/config/paths.vim')" \
   -c "execute 'source' fnameescape('$plug_vim')" \
-  -c "execute 'source' fnameescape('$repo_dir/plugs.vim')" \
-  -c "execute 'source' fnameescape('$repo_dir/plugins.lock.vim')" \
+  -c "execute 'source' fnameescape('$vim_dir/plugs.vim')" \
+  -c "execute 'source' fnameescape('$vim_dir/plugins.lock.vim')" \
   -c 'qa!'
 printf 'Restored pinned Vim plugins.\n'
