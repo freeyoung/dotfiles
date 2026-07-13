@@ -1,18 +1,28 @@
 " Keep diagnostics in the LSP stack: signs and a current-line message are
 " useful, while suppressing updates in Insert mode avoids visual churn while
 " typing. Inline virtual text remains off to keep diagnostics unobtrusive.
+" Enable diagnostics globally.
 let g:lsp_diagnostics_enabled = 1
+" Echo the diagnostic under the cursor in the command area.
 let g:lsp_diagnostics_echo_cursor = 1
+" Avoid changing signs while text is being inserted.
 let g:lsp_diagnostics_signs_insert_mode_enabled = 0
+" Avoid changing diagnostic highlights while text is being inserted.
 let g:lsp_diagnostics_highlights_insert_mode_enabled = 0
+" Keep diagnostics out of the buffer text itself.
 let g:lsp_diagnostics_virtual_text_enabled = 0
+" Do not highlight every occurrence of the symbol under the cursor.
 let g:lsp_document_highlight_enabled = 0
+" Use Pyright and Ruff for Python language features.
 let g:lsp_settings_filetype_python = ['pyright-langserver', 'ruff']
+" Use gopls for Go language features.
 let g:lsp_settings_filetype_go = ['gopls']
+" Use the TypeScript server for TypeScript and JavaScript variants.
 let g:lsp_settings_filetype_typescript = ['typescript-language-server']
 let g:lsp_settings_filetype_javascript = ['typescript-language-server']
 let g:lsp_settings_filetype_typescriptreact = ['typescript-language-server']
 let g:lsp_settings_filetype_javascriptreact = ['typescript-language-server']
+" Use the YAML server for YAML files.
 let g:lsp_settings_filetype_yaml = ['yaml-language-server']
 
 " The upstream default skips JS/TS unless a node_modules directory is found.
@@ -29,6 +39,7 @@ let g:lsp_settings = {
 " under Neovim; allowlist both. It stays on-demand rather than becoming a
 " bootstrap dependency: opening an Ansible buffer explains how to install it.
 if executable('ansible-language-server')
+  " Register Ansible's server only when the user installed it.
   autocmd User lsp_setup call lsp#register_server({
         \ 'name': 'ansible-language-server',
         \ 'cmd': {server_info -> ['ansible-language-server', '--stdio']},
@@ -37,12 +48,14 @@ if executable('ansible-language-server')
 else
   augroup dotfiles_missing_ansible_language_server
     autocmd!
+    " Explain the optional installation when an Ansible buffer is opened.
     autocmd FileType yaml.ansible,ansible echohl WarningMsg | echom
           \ 'Install ansible-language-server with: npm install -g @ansible/ansible-language-server' | echohl None
   augroup END
 endif
 
 function! s:format_with_ruff() abort
+  " Format a saved Python buffer through Ruff's stdin interface.
   if !executable('ruff')
     echoerr 'Ruff is not installed or is not on PATH.'
     return
@@ -72,6 +85,7 @@ function! s:format_with_ruff() abort
 endfunction
 
 function! s:format_buffer() abort
+  " Prefer Ruff for Python, then use the first LSP formatter available.
   if &filetype ==# 'python'
     call s:format_with_ruff()
     return
