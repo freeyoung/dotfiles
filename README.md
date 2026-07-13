@@ -142,8 +142,8 @@ shared-config setup), or, for base16, having `Identifier` equal `Normal`
   (`vim-markdown`, `vim-javascript`, `html5.vim`, `vim-yaml`, `ansible-vim`)
   are lazy-loaded via vim-plug's `on`/`for`, not sourced at startup unless
   actually used.
-* ALE only re-lints on normal-mode edits and leaving insert mode
-  (`g:ale_lint_on_text_changed`), not on every keystroke.
+* LSP diagnostics keep their signs and highlights quiet during Insert mode,
+  then refresh when you return to Normal mode.
 * `%`-matching comes from Vim's bundled `matchit` package (`packadd!` in
   `vim/config/filetypes.vim`) instead of a vim-plug-managed checkout.
 
@@ -176,15 +176,17 @@ NERDTree remains available through `F5` as a directory-oriented view.
 
 ### Language tooling
 
-ALE is the sole diagnostics provider; LSP supplies navigation, completion, code
-actions, and formatting. The configured servers are Pyright (Python), gopls
-(Go), TypeScript Language Server (JavaScript/TypeScript), YAML Language
-Server, and ansible-language-server. Install npm-managed servers with
-`:LspInstallServer`; install gopls, Ruff, and ansible-language-server
-separately (ansible-language-server isn't in vim-lsp-settings' catalog, so
-it's registered directly in `vim/config/lsp.vim` and only activates when the
-binary is on `$PATH`: `npm install -g @ansible/ansible-language-server`).
-Ruff is used for Python formatting (`uv tool install ruff@latest`).
+`vim-lsp` supplies diagnostics, navigation, completion, code actions, and
+formatting. The configured servers are Pyright and Ruff (Python), gopls (Go),
+TypeScript Language Server (JavaScript/TypeScript), YAML Language Server, and
+ansible-language-server. Language servers are deliberately not bootstrap
+dependencies: when a catalogued server is missing, opening its file type
+suggests `:LspInstallServer`; run that command to download it. Ruff is used for
+both Python diagnostics and formatting (`uv tool install ruff@latest`).
+
+ansible-language-server is not in vim-lsp-settings' catalog. Opening an
+Ansible buffer without it shows the corresponding on-demand command:
+`npm install -g @ansible/ansible-language-server`.
 
 `ansible-vim` detects Ansible YAML by path (`tasks/`, `roles/`, `handlers/`,
 `group_vars/`, `host_vars/`) and by filename (`playbook.yml`, `site.yml`,

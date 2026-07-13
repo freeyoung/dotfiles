@@ -26,18 +26,11 @@ let NERDTreeShowBookmarks = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeWinPos = 'left'
 
-" ALE
-let g:ale_python_flake8_options = '--max-line-length=119'
-" Default lints on every keystroke; only re-lint on normal-mode edits and
-" leaving insert mode to avoid linter churn while typing.
-let g:ale_lint_on_text_changed = 'normal'
-let g:ale_lint_on_insert_leave = 1
-
 " Airline
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'tomorrow_bright'
 " These auto-enable under has('nvim') regardless of whether their backing
-" library is present; diagnostics come from ALE/vim-lsp, not native vim.lsp,
-" and there's no IME-switcher library configured.
+" library is present; diagnostics come from vim-lsp, not native vim.lsp, and
+" there's no IME-switcher library configured.
 let g:airline#extensions#xkblayout#enabled = 0
 let g:airline#extensions#nvimlsp#enabled = 0

@@ -50,7 +50,7 @@ set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
 set synmaxcol=500
 
 " Default updatetime (4000ms) makes gitgutter/CursorHold-driven updates feel
-" sluggish; a fixed signcolumn stops ALE/gitgutter signs from shifting text
+" sluggish; a fixed signcolumn stops LSP/gitgutter signs from shifting text
 " when they appear.
 set updatetime=250
 set signcolumn=yes
