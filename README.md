@@ -23,9 +23,10 @@ Use `bash ~/dotfiles/install --links-only` when only links and local
 configuration should be refreshed, or `--skip-plugins` when dependencies are
 welcome but plugin downloads should wait.
 
-The script links `~/.vim` to this repository for compatibility with existing
-Vim tooling, while plugin files and Vim state live outside the checkout under
-`~/.local/share/vim` and `~/.local/state/vim` (or their XDG equivalents).
+The script links `~/.vim` to `vim/` for compatibility with existing Vim
+tooling. Plugin files are shared under `~/.local/share/vim`, while persistent
+state is separate under `~/.local/state/vim` and `~/.local/state/nvim` (or
+their XDG equivalents).
 
 On macOS, the installer installs Homebrew when necessary and applies the
 shared [`Brewfile`](Brewfile). Linuxbrew uses the same path. On native Linux,
@@ -47,7 +48,7 @@ Run the non-interactive Vim smoke test after installation:
 bash ~/dotfiles/scripts/check-vim-config.sh
 ```
 
-Vim plugin revisions are recorded in [`plugins.lock.vim`](plugins.lock.vim),
+Vim plugin revisions are recorded in [`vim/plugins.lock.vim`](vim/plugins.lock.vim),
 which the default installer restores after downloading vim-plug. After
 updating plugins intentionally, regenerate the snapshot from the repository
 directory with:
@@ -64,17 +65,18 @@ checks out the pinned revisions.
 ### Vim and Neovim
 
 Both editors share one configuration: `~/.vimrc` and `~/.config/nvim/init.vim`
-(the latter symlinked by `install` to [`nvim_init.vim`](nvim_init.vim)) both
-source `vimrc`. `nvim_init.vim` extends `runtimepath` to this repo first,
+(the latter symlinked by `install` to [`vim/nvim_init.vim`](vim/nvim_init.vim)) both
+source [`vim/vimrc`](vim/vimrc). `nvim_init.vim` extends `runtimepath` to the
+Vim configuration directory first,
 since Neovim's default runtimepath doesn't include `~/.vim`. A handful of
 `has('nvim')` branches account for real differences between the two (Neovim
-dropped the `paste`/`pastetoggle` options, so paste toggling is an explicit
+dropped the `pastetoggle` option, so paste toggling is an explicit
 `<F12>` mapping instead; some vim-airline extensions auto-enable under
 Neovim regardless of whether their backing library is present and are
-explicitly disabled in `config/plugins.vim`). Neovim is optional — `install`
+explicitly disabled in `vim/config/plugins.vim`). Neovim is optional — `install`
 links its config the same way regardless of whether `nvim` is installed.
 
-The configuration is split into `config/` by responsibility: options, file
+The configuration is split into `vim/config/` by responsibility: options, file
 types, plugin settings, LSP, mappings, autocmds, and terminal settings.
 
 ### Colorscheme
@@ -106,7 +108,7 @@ with fixes upstream never made:
   contrast, never puts `"reverse"` on `StatusLine` at all, which is why
   sonokai-based setups never hit this. Fixed at the source (dropped
   `"reverse"`, colors swapped to preserve the exact original look without
-  depending on it) and defended in `config/plugins.vim` (`has('nvim')` only:
+  depending on it) and defended in `vim/config/plugins.vim` (`has('nvim')` only:
   clears `StatusLine`/`StatusLineNC`'s reverse attribute on every
   `ColorScheme` event, in case some other theme has the same issue).
   Verified via raw PTY capture, not just `:highlight` introspection — the
@@ -123,11 +125,11 @@ via tinted-vim) were evaluated and rejected along the way — mainly for
 missing airline commandline coverage, being Neovim/Lua-only (breaks the
 shared-config setup), or, for base16, having `Identifier` equal `Normal`
 (no color distinction for YAML/Ansible keys). See git history on
-`config/plugins.vim` and `plugs.vim` for the full trail.
+`vim/config/plugins.vim` and `vim/plugs.vim` for the full trail.
 
 ### Performance
 
-* Files over 5MB (`g:vim_large_file_bytes` in `config/autocmds.vim`) skip
+* Files over 5MB (`g:vim_large_file_bytes` in `vim/config/autocmds.vim`) skip
   undo history and syntax highlighting on open.
 * `synmaxcol=500` caps syntax scanning on very long lines (minified JS, data
   dumps).
@@ -138,7 +140,7 @@ shared-config setup), or, for base16, having `Identifier` equal `Normal`
 * ALE only re-lints on normal-mode edits and leaving insert mode
   (`g:ale_lint_on_text_changed`), not on every keystroke.
 * `%`-matching comes from Vim's bundled `matchit` package (`packadd!` in
-  `config/filetypes.vim`) instead of a vim-plug-managed checkout.
+  `vim/config/filetypes.vim`) instead of a vim-plug-managed checkout.
 
 ## Key mappings
 
@@ -159,8 +161,8 @@ The leader is explicitly set to `\`.
 | `Tab`, `Shift-Tab`, `Enter`, `Ctrl-Space` | Insert | Select, accept, or manually trigger LSP completion |
 | `:w!!` | Command-line | Write the current buffer through sudo |
 
-`j` and `k` move by screen line when wrapping is enabled. `config/keymaps.vim`
-contains general mappings; `config/lsp.vim` contains LSP and formatting mappings.
+`j` and `k` move by screen line when wrapping is enabled. `vim/config/keymaps.vim`
+contains general mappings; `vim/config/lsp.vim` contains LSP and formatting mappings.
 `\f` formats Python with Ruff and formats other supported buffers through LSP. It
 never formats automatically on save.
 
@@ -175,13 +177,13 @@ actions, and formatting. The configured servers are Pyright (Python), gopls
 Server, and ansible-language-server. Install npm-managed servers with
 `:LspInstallServer`; install gopls, Ruff, and ansible-language-server
 separately (ansible-language-server isn't in vim-lsp-settings' catalog, so
-it's registered directly in `config/lsp.vim` and only activates when the
+it's registered directly in `vim/config/lsp.vim` and only activates when the
 binary is on `$PATH`: `npm install -g @ansible/ansible-language-server`).
 Ruff is used for Python formatting (`uv tool install ruff@latest`).
 
 `ansible-vim` detects Ansible YAML by path (`tasks/`, `roles/`, `handlers/`,
 `group_vars/`, `host_vars/`) and by filename (`playbook.yml`, `site.yml`,
-`main.yml`, etc.); a supplemental rule in `config/filetypes.vim` also covers a
+`main.yml`, etc.); a supplemental rule in `vim/config/filetypes.vim` also covers a
 generic `playbooks/` directory with arbitrary filenames. It sets
 `filetype=yaml.ansible` under Vim and plain `filetype=ansible` under Neovim
 (ansible-vim's own upstream difference); both are handled everywhere they
