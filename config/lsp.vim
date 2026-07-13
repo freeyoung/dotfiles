@@ -75,15 +75,20 @@ function! s:format_buffer() abort
   echoerr 'No document formatter is available for this buffer.'
 endfunction
 
+" LSP navigation and actions (Normal mode).
+" gd / gD / gr / gi / K: Definition / declaration / references / implementation / docs.
 nnoremap <silent> gd :LspDefinition<CR>
 nnoremap <silent> gD :LspDeclaration<CR>
 nnoremap <silent> gr :LspReferences<CR>
 nnoremap <silent> gi :LspImplementation<CR>
 nnoremap <silent> K :LspHover<CR>
+" \rn / \ca / \f: Rename symbol / show code actions / format buffer.
 nnoremap <silent> <leader>rn :LspRename<CR>
 nnoremap <silent> <leader>ca :LspCodeAction<CR>
 nnoremap <silent> <leader>f :<C-U>call <SID>format_buffer()<CR>
 
+" Completion menu controls in Insert mode; otherwise retain normal Tab/Enter.
+" Tab / Shift-Tab: next / previous item; Enter: accept; Ctrl-Space: request.
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <expr> <CR> pumvisible() ? asyncomplete#close_popup() : "\<CR>"
