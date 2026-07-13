@@ -64,4 +64,4 @@ style = "bright-red"
 
 [character]
 success_symbol = "[\\$](cyan)"
-error_symbol = "[\\$](bright-red)"
+error_symbol = "[\\$](cyan)"
