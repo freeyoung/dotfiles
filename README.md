@@ -38,6 +38,11 @@ Copy `zsh/local.zsh.example` to `~/.config/zsh/local.zsh` to add private
 machine settings. The installer does this once automatically and preserves it
 on later runs.
 
+Shared Zsh settings are loaded in a deliberate order from `zsh/rc.d/`:
+environment, runtimes, commands, completion, Node/tool integrations, prompt,
+plugins, then interactive bindings. `zsh/zshrc` is only the interactive guard
+and loader; keep machine-specific settings in `~/.config/zsh/local.zsh`.
+
 On first run, an existing `~/.gitconfig` is moved to
 `~/.config/git/local.gitconfig`, then replaced with a link to the shared Git
 defaults. This keeps credential helpers and private URL rewrites out of Git.
