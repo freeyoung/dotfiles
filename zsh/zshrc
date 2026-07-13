@@ -15,3 +15,6 @@ source "$_zsh_rc_dir/modules/prompt.zsh"
 source "$_zsh_rc_dir/modules/plugins.zsh"
 source "$_zsh_rc_dir/modules/interaction.zsh"
 unset _zsh_rc_dir
+
+# Load machine-specific overrides after all shared modules.
+[[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"
