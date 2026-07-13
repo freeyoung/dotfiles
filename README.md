@@ -131,7 +131,7 @@ shared-config setup), or, for base16, having `Identifier` equal `Normal`
   undo history and syntax highlighting on open.
 * `synmaxcol=500` caps syntax scanning on very long lines (minified JS, data
   dumps).
-* `NERDTree`, `fzf.vim`, and the filetype-specific syntax plugins
+* `NERDTree` and the filetype-specific syntax plugins
   (`vim-markdown`, `vim-javascript`, `html5.vim`, `vim-yaml`, `ansible-vim`)
   are lazy-loaded via vim-plug's `on`/`for`, not sourced at startup unless
   actually used.
@@ -146,29 +146,26 @@ The leader is explicitly set to `\`.
 
 | Keys | Mode | Action |
 | --- | --- | --- |
-| `F1`, `\w` | Normal | Save the current file |
-| `F2`, `Ctrl-Q` | Normal | Quit the current window |
-| `F3` | Normal | Save and quit |
-| `F5`, `Ctrl-N` | Normal | Toggle NERDTree |
-| `F11` / `F12` | Normal | Toggle paste mode |
+| `F1`, `\w` | Normal / Insert | Save the current file |
+| `F2`, `Ctrl-Q` | Normal / Insert | Quit the current window |
+| `F3` | Normal / Insert | Save and quit |
+| `F5` | Normal | Toggle NERDTree |
+| `F12` | Normal / Insert | Toggle paste mode |
 | `Ctrl-H/J/K/L` | Normal | Move between split windows |
 | `Shift-H/L` | Normal | Previous / next tab |
 | `\+`, `\-`, `\_`, `\=`, `\[`, `\]` | Normal | Resize / equalize splits |
-| `\ew`, `\es`, `\ev`, `\et` | Normal | Open a path relative to the current file |
-| `\ff` | Normal | Find identifiers matching the word under the cursor |
-| `\sf`, `\sb`, `\sr`, `\sg` | Normal | fzf files, buffers, history, ripgrep search |
 | `gd`, `gD`, `gr`, `gi`, `K` | Normal | LSP definition, declaration, references, implementation, hover |
 | `\rn`, `\ca`, `\f` | Normal | LSP rename / code action / manual format |
 | `Tab`, `Shift-Tab`, `Enter`, `Ctrl-Space` | Insert | Select, accept, or manually trigger LSP completion |
-| `<` / `>` | Visual | Indent while keeping the selection |
+| `:w!!` | Command-line | Write the current buffer through sudo |
 
 `j` and `k` move by screen line when wrapping is enabled. `config/keymaps.vim`
 contains general mappings; `config/lsp.vim` contains LSP and formatting mappings.
 `\f` formats Python with Ruff and formats other supported buffers through LSP. It
 never formats automatically on save.
 
-NERDTree remains available through `F5` / `Ctrl-N` as a directory-oriented view;
-fzf handles quick selection and search. `termguicolors` is enabled when supported.
+NERDTree remains available through `F5` as a directory-oriented view.
+`termguicolors` is enabled when supported.
 
 ### Language tooling
 
