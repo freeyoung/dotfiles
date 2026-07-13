@@ -20,8 +20,6 @@ Plug 'tpope/vim-surround'
 " Code Reading
 "--------------
 Plug 'scrooloose/nerdtree', {'on': ['NERDTreeToggle', 'NERDTree', 'NERDTreeFind']}
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim', {'on': ['Files', 'Buffers', 'History', 'Rg']}
 Plug 'w0rp/ale'
 
 "-------------
