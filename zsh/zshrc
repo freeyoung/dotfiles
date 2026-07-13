@@ -1,8 +1,7 @@
 # Personal interactive Zsh configuration.
 #
-# The fish-era configuration and migration snapshots are preserved in
-# ~/zsh-backups. The ordered modules below keep related concerns together
-# without altering the startup sequence or materially affecting latency.
+# Ordered modules keep related concerns together without altering the startup
+# sequence or materially affecting latency.
 
 [[ -o interactive ]] || return
 

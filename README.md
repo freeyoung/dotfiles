@@ -194,10 +194,6 @@ generic `playbooks/` directory with arbitrary filenames. It sets
 (ansible-vim's own upstream difference); both are handled everywhere they
 matter (LSP allowlist, plugin lazy-loading).
 
-### oh-my-zsh
-
-### tmux
-
 ## References
 
 * [humiaozuzu/dot-vimrc](https://github.com/humiaozuzu/dot-vimrc)
