@@ -52,10 +52,5 @@ export BUN_INSTALL="$HOME/.bun"
 export LANG="${LANG:-en_US.UTF-8}"
 export LC_ALL="${LC_ALL:-$LANG}"
 
-# This file is deliberately outside the repository. It is for machine- and
-# employer-specific aliases, integrations, and paths; copy the committed
-# example on a fresh host before editing it.
-[[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"
-
 # Runtime modules and prompt hooks share this helper.
 autoload -Uz add-zsh-hook
