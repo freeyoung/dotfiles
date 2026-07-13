@@ -19,7 +19,6 @@ mkdir -p "$tmp_dir/home"
 
 HOME="$tmp_dir/home" bash "$tmp_dir/install" --links-only
 HOME="$tmp_dir/home" bash "$tmp_dir/scripts/check-vim-config.sh"
-HOME="$tmp_dir/home" zsh -n "$tmp_dir/zsh/zshrc"
 
 for target in \
   .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt \

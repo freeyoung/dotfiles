@@ -23,26 +23,6 @@ if [[ ! -r ${zsh_plugins}.zsh || ${zsh_plugins}.txt -nt ${zsh_plugins}.zsh ]]; t
 fi
 if [[ -r ${zsh_plugins}.zsh ]]; then
   source "${zsh_plugins}.zsh"
-else
-  # Keep the shell usable if a first-time manifest build is offline. These
-  # are the cached Antidote copies, not the obsolete Homebrew plugin formulae.
-  if [[ $OSTYPE == darwin* ]]; then
-    zsh_plugin_cache="${XDG_CACHE_HOME:-$HOME/Library/Caches}/antidote/github.com"
-  else
-    zsh_plugin_cache="${XDG_CACHE_HOME:-$HOME/.cache}/antidote/github.com"
-  fi
-  [[ -r "$zsh_plugin_cache/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh" ]] && \
-    source "$zsh_plugin_cache/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh"
-  [[ -r "$zsh_plugin_cache/zsh-users/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh" ]] && \
-    source "$zsh_plugin_cache/zsh-users/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh"
-  if [[ -r "$zsh_plugin_cache/romkatv/zsh-defer/zsh-defer.plugin.zsh" ]]; then
-    source "$zsh_plugin_cache/romkatv/zsh-defer/zsh-defer.plugin.zsh"
-    [[ -r "$zsh_plugin_cache/olets/zsh-abbr/zsh-abbr.plugin.zsh" ]] && \
-      zsh-defer source "$zsh_plugin_cache/olets/zsh-abbr/zsh-abbr.plugin.zsh"
-  fi
-  [[ -r "$zsh_plugin_cache/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] && \
-    source "$zsh_plugin_cache/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-  unset zsh_plugin_cache
 fi
 unset zsh_antidote
 
