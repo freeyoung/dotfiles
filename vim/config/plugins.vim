@@ -12,21 +12,15 @@ if has('nvim')
   augroup END
 endif
 
+" Load the preferred colorscheme when the plugin is installed.
 if !empty(globpath(&runtimepath, 'colors/Tomorrow-Night-Bright.vim'))
   colorscheme Tomorrow-Night-Bright
 endif
 
-" NERDTree
-let NERDChristmasTree = 0
-let NERDTreeWinSize = 30
-let NERDTreeChDirMode = 2
-let NERDTreeIgnore = ['\.vim$', '\~$', '\.pyc$', '\.swp$']
-let NERDTreeSortOrder = ['^__\.py$', '\/$', '*', '\.swp$', '\~$']
-let NERDTreeShowBookmarks = 1
+" NERDTree: close it after opening a file.
 let NERDTreeQuitOnOpen = 1
-let NERDTreeWinPos = 'left'
 
-" Airline
+" Airline: use powerline glyphs and the Tomorrow Night Bright theme.
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'tomorrow_bright'
 " These auto-enable under has('nvim') regardless of whether their backing
