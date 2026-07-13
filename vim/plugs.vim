@@ -20,7 +20,6 @@ Plug 'tpope/vim-surround'
 " Code Reading
 "--------------
 Plug 'scrooloose/nerdtree', {'on': ['NERDTreeToggle', 'NERDTree', 'NERDTreeFind']}
-Plug 'w0rp/ale'
 
 "-------------
 " Other Utils

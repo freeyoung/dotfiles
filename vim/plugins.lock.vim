@@ -3,7 +3,6 @@
 " :source this file in vim to restore the snapshot
 " or execute: vim -S snapshot.vim
 
-silent! let g:plugs['ale'].commit = '5087246c'
 silent! let g:plugs['ansible-vim'].commit = '6c42a44'
 silent! let g:plugs['asyncomplete-lsp.vim'].commit = 'da23f44'
 silent! let g:plugs['asyncomplete.vim'].commit = '17b654a'
