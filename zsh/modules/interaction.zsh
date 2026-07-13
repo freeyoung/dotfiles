@@ -15,7 +15,34 @@ fi
 bindkey '^I' expand-or-complete
 (( $+widgets[autosuggest-accept] )) && bindkey '^F' autosuggest-accept
 
-# This file is deliberately outside the repository. It is for machine- and
-# employer-specific aliases, integrations, and paths; copy the committed
-# example on a fresh host before editing it.
-[[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"
+# Make Ctrl-W remove one path component, like Fish:
+# "vim vim/config/filetypes.vim" becomes "vim vim/config".
+backward-kill-path-component() {
+  local left=$LBUFFER
+
+  # Ignore trailing whitespace while looking for the previous component.
+  if [[ ${left[-1]} == [[:space:]] ]]; then
+    while [[ ${left[-1]} == [[:space:]] ]]; do
+      left=${left[1,-2]}
+    done
+  fi
+
+  if [[ ${left[-1]} == / ]]; then
+    # Keep a trailing slash when deleting a component below it.
+    left=${left[1,-2]}
+    while [[ -n $left && ${left[-1]} != [[:space:]/] ]]; do
+      left=${left[1,-2]}
+    done
+    if [[ ${left[-1]} == / ]]; then
+      left=${left[1,-2]}/
+    fi
+  else
+    while [[ -n $left && ${left[-1]} != [[:space:]/] ]]; do
+      left=${left[1,-2]}
+    done
+  fi
+
+  LBUFFER=$left
+}
+zle -N backward-kill-path-component
+bindkey '^W' backward-kill-path-component
