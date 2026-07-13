@@ -113,7 +113,7 @@ if (( install_dependencies )); then
 fi
 
 if command -v zsh >/dev/null 2>&1; then
-  for zsh_config in "$repo_dir/zsh/zshrc" "$repo_dir/zsh/zprofile" "$repo_dir"/zsh/rc.d/*.zsh; do
+  for zsh_config in "$repo_dir/zsh/zshrc" "$repo_dir/zsh/zprofile" "$repo_dir"/zsh/modules/*.zsh; do
     zsh -n "$zsh_config"
   done
   printf 'Zsh syntax check passed.\n'

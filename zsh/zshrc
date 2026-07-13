@@ -7,12 +7,12 @@
 [[ -o interactive ]] || return
 
 typeset _zsh_rc_dir=${${(%):-%N}:A:h}
-source "$_zsh_rc_dir/rc.d/10-environment.zsh"
-source "$_zsh_rc_dir/rc.d/20-python.zsh"
-source "$_zsh_rc_dir/rc.d/30-commands.zsh"
-source "$_zsh_rc_dir/rc.d/40-completion.zsh"
-source "$_zsh_rc_dir/rc.d/50-node-and-tools.zsh"
-source "$_zsh_rc_dir/rc.d/60-prompt.zsh"
-source "$_zsh_rc_dir/rc.d/70-plugins.zsh"
-source "$_zsh_rc_dir/rc.d/80-interaction.zsh"
+source "$_zsh_rc_dir/modules/environment.zsh"
+source "$_zsh_rc_dir/modules/python.zsh"
+source "$_zsh_rc_dir/modules/commands.zsh"
+source "$_zsh_rc_dir/modules/completion.zsh"
+source "$_zsh_rc_dir/modules/node-and-tools.zsh"
+source "$_zsh_rc_dir/modules/prompt.zsh"
+source "$_zsh_rc_dir/modules/plugins.zsh"
+source "$_zsh_rc_dir/modules/interaction.zsh"
 unset _zsh_rc_dir

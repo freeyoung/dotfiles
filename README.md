@@ -38,7 +38,7 @@ Copy `zsh/local.zsh.example` to `~/.config/zsh/local.zsh` to add private
 machine settings. The installer does this once automatically and preserves it
 on later runs.
 
-Shared Zsh settings are loaded in a deliberate order from `zsh/rc.d/`:
+Shared Zsh settings are loaded in a deliberate order from `zsh/modules/`:
 environment, runtimes, commands, completion, Node/tool integrations, prompt,
 plugins, then interactive bindings. `zsh/zshrc` is only the interactive guard
 and loader; keep machine-specific settings in `~/.config/zsh/local.zsh`.
