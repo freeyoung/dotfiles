@@ -1,5 +1,4 @@
-let s:vim_root = fnamemodify(resolve(expand('<sfile>:p')), ':h')
-call plug#begin(s:vim_root . '/plugged')
+call plug#begin(g:dotfiles_vim_data_dir . '/plugged')
 
 "-----------------
 " Code Completion
@@ -53,4 +52,3 @@ Plug 'pearofducks/ansible-vim', {'for': ['yaml.ansible', 'ansible', 'ansible_hos
 " (tomorrow_bright) with full mode coverage including commandline.
 Plug 'freeyoung/vim-tomorrow-theme'
 call plug#end()
-unlet s:vim_root

@@ -5,3 +5,5 @@
 /undodir
 /pack
 /state
+/.ruff_cache
+/.DS_Store

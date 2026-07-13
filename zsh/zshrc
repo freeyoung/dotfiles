@@ -1,0 +1,535 @@
+# Personal interactive Zsh configuration.
+#
+# The fish-era configuration and migration snapshots are preserved in
+# ~/zsh-backups.  Keep this file self-contained and latency-conscious.
+
+[[ -o interactive ]] || return
+
+# Login shells initialise Homebrew in ~/.zprofile.  Keep this fallback for
+# editor terminals and manually-started non-login shells, without paying for a
+# second `brew shellenv` in normal iTerm login shells.
+if [[ -z ${HOMEBREW_PREFIX:-} ]]; then
+  if (( $+commands[brew] )); then
+    eval "$(brew shellenv zsh)"
+  elif [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+  elif [[ -x "$HOME/.linuxbrew/bin/brew" ]]; then
+    eval "$("$HOME/.linuxbrew/bin/brew" shellenv zsh)"
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+  fi
+fi
+
+# A nested non-login Zsh can inherit HOMEBREW_PREFIX without inheriting the
+# fpath mutation from `brew shellenv`.  Keep Homebrew completion functions
+# discoverable independently of whether the shellenv fallback ran.
+typeset -U path PATH fpath
+if [[ -n ${HOMEBREW_PREFIX:-} && -d "$HOMEBREW_PREFIX/share/zsh/site-functions" ]]; then
+  fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+fi
+
+typeset -a zsh_gnu_paths zsh_managed_paths
+# These must precede /usr/bin so `ls`, `grep`, etc. resolve to Homebrew GNU
+# tools even when the terminal starts with a plain macOS PATH.
+zsh_gnu_paths=(
+  "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/grep/libexec/gnubin"
+  "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/coreutils/libexec/gnubin"
+)
+for zsh_gnu_path in "${zsh_gnu_paths[@]}"; do
+  [[ -d "$zsh_gnu_path" ]] && path=("$zsh_gnu_path" $path)
+done
+zsh_managed_paths=(
+  "$HOME/.local/bin"
+  "$HOME/go/bin"
+  "$HOME/.antigravity/antigravity/bin"
+  "$HOME/.bun/bin"
+  "$HOME/.kimi-code/bin"
+)
+for zsh_managed_path in "${zsh_managed_paths[@]}"; do
+  [[ -d "$zsh_managed_path" ]] && path+=("$zsh_managed_path")
+done
+unset zsh_gnu_path zsh_gnu_paths zsh_managed_path zsh_managed_paths
+
+export EDITOR="${EDITOR:-vim}"
+export BUN_INSTALL="$HOME/.bun"
+# Preserve an existing host locale; use the familiar UTF-8 locale only when a
+# minimal environment has not set one. LC_ALL remains overridable by the host.
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-$LANG}"
+
+# Language runtimes and local machine integrations.
+autoload -Uz add-zsh-hook
+
+# Keep pyenv's startup minimal: shims select each project's configured Python
+# version without running pyenv's costly general-purpose initialiser.
+export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
+if [[ -d "$PYENV_ROOT" ]]; then
+  path=("$PYENV_ROOT/shims" "$PYENV_ROOT/bin" $path)
+fi
+
+# Activate/deactivate pyenv virtualenvs named by a project's .python-version.
+# Initialisation itself is deferred until such a project is entered; starting
+# pyenv just to emit its hook costs about 80 ms in ordinary shells.
+if (( $+commands[pyenv] )) && { [[ -d "$PYENV_ROOT/plugins/pyenv-virtualenv" ]] || [[ -n ${HOMEBREW_PREFIX:-} && -d "$HOMEBREW_PREFIX/opt/pyenv-virtualenv" ]]; }; then
+  export PYENV_SHELL=zsh
+  typeset -g _zsh_pyenv_virtualenv_initialized=0
+
+  _zsh_pyenv_virtualenv_version_file() {
+    local directory=$PWD
+    while [[ $directory != / ]]; do
+      if [[ -f "$directory/.python-version" || -L "$directory/.python-version" ]]; then
+        REPLY="$directory/.python-version"
+        return 0
+      fi
+      directory=${directory:h}
+    done
+    return 1
+  }
+
+  _zsh_pyenv_virtualenv_init() {
+    (( _zsh_pyenv_virtualenv_initialized )) && return
+    eval "$(pyenv virtualenv-init - zsh)"
+    typeset -g _zsh_pyenv_virtualenv_initialized=1
+  }
+
+  _zsh_pyenv_virtualenv_use() {
+    if _zsh_pyenv_virtualenv_version_file; then
+      _zsh_pyenv_virtualenv_init
+      _pyenv_virtualenv_hook
+    elif (( _zsh_pyenv_virtualenv_initialized )); then
+      _pyenv_virtualenv_hook
+    fi
+  }
+
+  add-zsh-hook chpwd _zsh_pyenv_virtualenv_use
+  _zsh_pyenv_virtualenv_use
+fi
+
+# General commands.
+alias ag='rg'
+alias ccat='bat --style=plain --paging=never'
+
+# Ansible.
+alias cas='ansible-playbook -i inventory/staging site.yml --diff --limit'
+alias cap='ansible-playbook -i inventory/production site.yml --diff --limit'
+alias cai='ansible-playbook -i inventory/internal site.yml --diff --limit'
+
+# Kubernetes.
+alias k='kubectl'
+
+# Filesystem and clipboard helpers.
+ls() {
+  local -a ls_options=(--color=auto)
+  [[ -t 1 ]] && ls_options+=(-F)
+  command ls "${ls_options[@]}" "$@"
+}
+alias l='ls -lah'
+copypath() {
+  if (( $+commands[pbcopy] )); then
+    print -rn -- "$PWD" | pbcopy
+  elif (( $+commands[wl-copy] )); then
+    print -rn -- "$PWD" | wl-copy
+  elif (( $+commands[xclip] )); then
+    print -rn -- "$PWD" | xclip -selection clipboard
+  else
+    print -u2 'copypath: install pbcopy, wl-clipboard, or xclip first'
+    return 127
+  fi
+}
+
+# SSH and transfers.
+alias sk='ssh-keygen -R'
+alias sv='ssh -v'
+alias svr='ssh -v -l root'
+alias cpv='rsync -ah --info=progress2'
+alias rsync-copy='rsync -avz --progress'
+alias rsync-move='rsync -avz --progress --remove-source-files'
+
+# Deliberately small Git shorthand set.  Static forms are zsh-abbr
+# abbreviations (defined after plugins load) so history keeps full commands;
+# dynamic forms remain functions below.
+
+_zsh_git_current_branch() {
+  command git symbolic-ref --quiet --short HEAD || {
+    print -u2 'error: not on a named Git branch'
+    return 1
+  }
+}
+
+_zsh_git_main_branch() {
+  local ref remote
+  for ref in refs/{heads,remotes/{origin,upstream}}/{main,trunk,mainline,default,stable,master}; do
+    if command git show-ref --quiet --verify "$ref"; then
+      print -r -- "${ref:t}"
+      return 0
+    fi
+  done
+
+  for remote in origin upstream; do
+    ref=$(command git symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null) || continue
+    if [[ $ref == "$remote/"* ]]; then
+      print -r -- "${ref#"$remote/"}"
+      return 0
+    fi
+  done
+
+  print -u2 'error: could not determine the Git main branch'
+  return 1
+}
+
+gcm() {
+  local branch
+  branch=$(_zsh_git_main_branch) || return
+  command git checkout "$branch"
+}
+
+ggpush() {
+  local branch
+  branch=$(_zsh_git_current_branch) || return
+  command git push origin "$branch" "$@"
+}
+
+ggpull() {
+  local branch
+  branch=$(_zsh_git_current_branch) || return
+  command git pull origin "$branch" "$@"
+}
+
+_zsh_100m() {
+  local target=${1:?usage: 100m <base-url>}
+  local -a wget_args
+  [[ "$target" == https://* ]] && wget_args+=(--no-check-certificate)
+  wget "${wget_args[@]}" -O /dev/null "${target%/}/100mb.bin"
+}
+alias 100m='_zsh_100m'
+
+gencsr() {
+  local domain=${1:-}
+  if [[ -z "$domain" ]]; then
+    print -u2 'FQDN required!'
+    return 2
+  fi
+  openssl req -out "${domain}.csr" -new -newkey rsa:2048 -nodes \
+    -keyout "${domain}.key" -sha256
+}
+
+mkpass() {
+  local length=${1:-32}
+  LC_ALL=C tr -dc '_A-Za-z0-9' </dev/urandom | head -c "$length"
+  print
+}
+
+# Search process command lines without matching the search command itself.
+any() {
+  if (( $# != 1 )); then
+    print -u2 'usage: any <process-pattern>'
+    return 2
+  fi
+  command pgrep -afil "$1"
+}
+
+# Preserve the familiar archive-extraction command. This intentionally
+# overrides /opt/X11/bin/x in interactive zsh sessions.
+x() {
+  if (( $# == 0 )); then
+    print -u2 'usage: x <archive> [...]'
+    return 2
+  fi
+  ouch decompress "$@"
+}
+
+_zsh_github_repo() {
+  local remote=$1
+  remote=${remote#*github.com[:/]}
+  remote=${remote%.git}
+  [[ "$remote" == */* ]] || return 1
+  print -r -- "$remote"
+}
+
+open-pr() {
+  local target=${1:-master}
+  local origin upstream branch repo origin_name upstream_repo upstream_name url
+
+  origin=$(git config --get remote.origin.url) || {
+    print -u2 'open-pr: the current repository has no origin remote'
+    return 1
+  }
+  branch=$(git branch --show-current) || return
+  [[ -n "$branch" ]] || {
+    print -u2 'open-pr: the current repository has no checked-out branch'
+    return 1
+  }
+  repo=$(_zsh_github_repo "$origin") || {
+    print -u2 'open-pr: origin is not a GitHub remote'
+    return 1
+  }
+
+  upstream=$(git config --get remote.upstream.url)
+  if [[ -z "$upstream" ]]; then
+    url="https://github.com/${repo}/pull/new/${target}...${branch}"
+  else
+    origin_name=${repo%%/*}
+    upstream_repo=$(_zsh_github_repo "$upstream") || {
+      print -u2 'open-pr: upstream is not a GitHub remote'
+      return 1
+    }
+    upstream_name=${upstream_repo%%/*}
+    url="https://github.com/${repo}/pull/new/${upstream_name}:${target}...${origin_name}:${branch}"
+  fi
+
+  if [[ "$(uname -s)" == Darwin ]]; then
+    open "$url"
+  else
+    xdg-open "$url"
+  fi
+}
+
+# History and completion.
+HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"
+HISTSIZE=100000
+SAVEHIST=100000
+setopt append_history inc_append_history share_history
+setopt hist_expire_dups_first hist_ignore_all_dups hist_ignore_space
+setopt hist_reduce_blanks hist_save_no_dups
+
+# Use fish-compatible Emacs-style bindings. The history-search plugin binds
+# the arrow widgets after it is loaded below.
+bindkey -e
+
+autoload -Uz compinit
+typeset -g ZSH_COMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump"
+
+# A full compaudit is useful, but scanning every completion directory at every
+# prompt startup is not.  Audit on first use and then once every 24 hours;
+# ordinary shells load the trusted dump directly.  `brewup` below explicitly
+# rebuilds this cache after packages add or update completion definitions.
+_zsh_init_completions() {
+  setopt localoptions extendedglob
+
+  if [[ ! -r $ZSH_COMPDUMP || -n ${ZSH_COMPDUMP}(#qN.mh+24) ]]; then
+    compinit -d "$ZSH_COMPDUMP"
+  else
+    compinit -C -d "$ZSH_COMPDUMP"
+  fi
+}
+
+_zsh_refresh_completions() {
+  rm -f -- "$ZSH_COMPDUMP"
+  compinit -d "$ZSH_COMPDUMP"
+  print 'Completion cache refreshed.'
+}
+
+# Fully update Homebrew and immediately rebuild Zsh completion metadata.
+brewup() {
+  command brew update && \
+    command brew upgrade -y && \
+    command brew cleanup --prune=all -s || return
+  _zsh_refresh_completions
+}
+
+# Use Zsh's native completion UI rather than a separate picker.  complist
+# renders option descriptions, colours match groups, and makes long lists
+# navigable with the arrow keys.
+zmodload zsh/complist
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' list-packed true
+zstyle ':completion:*' list-rows-first true
+zstyle ':completion:*' list-separator '  '
+zstyle ':completion:*' select-prompt '%F{242}[%p] %m/%M%f'
+zstyle ':completion:*' list-prompt '%F{242}… %m more matches%f'
+zstyle ':completion:*:descriptions' format '%F{220}-- %d --%f'
+zstyle ':completion:*:messages' format '%F{220}-- %d --%f'
+zstyle ':completion:*:warnings' format '%F{red}-- no matches found --%f'
+zstyle ':completion:*:corrections' format '%F{220}-- correct %d --%f'
+# Keep options cool-toned and their explanatory text warm, like the familiar
+# fish list while retaining native Zsh completion semantics.
+zstyle ':completion:*:options' list-colors \
+  '=(#b)(--|-)([[:alnum:]-]##)([[:space:]]##)(*)=0=39=39=0=220'
+_zsh_init_completions
+
+# Keep the familiar z command while letting zoxide learn directory frecency.
+# It follows compinit so zoxide's zsh completion is registered correctly.
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh --cmd z)"
+fi
+
+# Use fnm only for projects that explicitly opt in with .node-version or
+# .nvmrc. Outside such a project, Homebrew's Node and its global tools remain
+# authoritative.  Initialising fnm itself is deferred until such a project is
+# entered, so ordinary shells do not pay for its environment setup.
+if (( $+commands[fnm] )); then
+  typeset -g _zsh_fnm_initialized=0
+  typeset -g _zsh_fnm_multishell_bin=''
+
+  # A nested Zsh can inherit fnm's path from a parent shell.  Remove it until
+  # this shell enters a version-managed project.
+  if [[ -n ${FNM_MULTISHELL_PATH:-} ]]; then
+    path=("${(@)path:#${FNM_MULTISHELL_PATH}/bin}")
+  fi
+
+  _zsh_fnm_init() {
+    (( _zsh_fnm_initialized )) && return
+    eval "$(fnm env --shell zsh --resolve-engines=false)"
+    typeset -g _zsh_fnm_multishell_bin="${FNM_MULTISHELL_PATH}/bin"
+    path=("${(@)path:#${_zsh_fnm_multishell_bin}}")
+    typeset -g _zsh_fnm_initialized=1
+  }
+
+  _zsh_fnm_node_version_file() {
+    local directory=$PWD
+    while [[ $directory != / ]]; do
+      if [[ -f "$directory/.node-version" ]]; then
+        REPLY="$directory/.node-version"
+        return 0
+      fi
+      if [[ -f "$directory/.nvmrc" ]]; then
+        REPLY="$directory/.nvmrc"
+        return 0
+      fi
+      directory=${directory:h}
+    done
+    return 1
+  }
+
+  _zsh_fnm_use_node_version_file() {
+    local version_file version
+    if _zsh_fnm_node_version_file; then
+      version_file=$REPLY
+      version=$(<"$version_file")
+      version=${version%%$'\n'*}
+      _zsh_fnm_init
+      path=("$_zsh_fnm_multishell_bin" "${(@)path:#${_zsh_fnm_multishell_bin}}")
+      fnm use --silent-if-unchanged "$version" || print -u2 "fnm: could not use $version from $version_file"
+    elif [[ -n $_zsh_fnm_multishell_bin ]]; then
+      path=("${(@)path:#${_zsh_fnm_multishell_bin}}")
+    fi
+  }
+
+  add-zsh-hook chpwd _zsh_fnm_use_node_version_file
+  _zsh_fnm_use_node_version_file
+fi
+
+# Keep the kubectl completion when using its short alias.
+(( $+_comps[kubectl] )) && compdef k=kubectl
+
+# fzf uses the same menu height as the previous fish configuration.
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:---height 40%}"
+if [[ -n ${HOMEBREW_PREFIX:-} && -r "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]]; then
+  source "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+  source "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"
+elif [[ -r /usr/share/doc/fzf/examples/key-bindings.zsh ]]; then
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+  [[ -r /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+fi
+
+# Starship's built-in duration renderer uses e.g. "10s123ms". Preserve the
+# requested Duration: X.XXXs form and print it immediately after the command.
+zmodload zsh/datetime
+typeset -g _zsh_prompt_command_started_at=''
+
+_zsh_prompt_duration_preexec() {
+  _zsh_prompt_command_started_at=$EPOCHREALTIME
+}
+
+_zsh_prompt_duration_precmd() {
+  local command_status=$?
+  local elapsed
+  local duration
+
+  if [[ -n $_zsh_prompt_command_started_at ]]; then
+    (( elapsed = EPOCHREALTIME - _zsh_prompt_command_started_at ))
+    if (( elapsed > 10 )); then
+      printf -v duration 'Duration: %.3fs' "$elapsed"
+      print -P "%F{yellow}${duration}%f"
+    fi
+  fi
+  _zsh_prompt_command_started_at=''
+  return $command_status
+}
+
+# Register before Starship so the duration line is printed before the next
+# prompt is rendered, while preserving the original command status.
+add-zsh-hook preexec _zsh_prompt_duration_preexec
+add-zsh-hook precmd _zsh_prompt_duration_precmd
+
+# Starship owns the prompt and registers its prompt hooks before highlighting.
+if (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+fi
+
+# Fish-like suggestions should fall back to the completion engine when history
+# has no match (for example, gco site -> gco site.yml).
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+# Keep ghost completions muted.  Use a fixed 256-colour neutral grey (rather
+# than the terminal's mutable ANSI magenta) for history-search matches selected
+# with the up/down arrows.
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=240,fg=white,bold'
+
+# Antidote compiles the manifest into a static source file on manifest changes,
+# avoiding plugin-manager work in ordinary shell startups.
+zsh_plugins=${ZDOTDIR:-$HOME}/.zsh_plugins
+zsh_antidote=''
+if [[ -n ${HOMEBREW_PREFIX:-} && -r "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" ]]; then
+  zsh_antidote="$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
+elif [[ -r "$HOME/.antidote/antidote.zsh" ]]; then
+  zsh_antidote="$HOME/.antidote/antidote.zsh"
+fi
+if [[ ! -r ${zsh_plugins}.zsh || ${zsh_plugins}.txt -nt ${zsh_plugins}.zsh ]]; then
+  if [[ -r "$zsh_antidote" && -r ${zsh_plugins}.txt ]]; then
+    source "$zsh_antidote"
+    antidote bundle <"${zsh_plugins}.txt" >"${zsh_plugins}.zsh.new" && mv "${zsh_plugins}.zsh.new" "${zsh_plugins}.zsh"
+  fi
+fi
+if [[ -r ${zsh_plugins}.zsh ]]; then
+  source "${zsh_plugins}.zsh"
+else
+  # Keep the shell usable if a first-time manifest build is offline.  These
+  # are the cached Antidote copies, not the obsolete Homebrew plugin formulae.
+  if [[ $OSTYPE == darwin* ]]; then
+    zsh_plugin_cache="${XDG_CACHE_HOME:-$HOME/Library/Caches}/antidote/github.com"
+  else
+    zsh_plugin_cache="${XDG_CACHE_HOME:-$HOME/.cache}/antidote/github.com"
+  fi
+  [[ -r "$zsh_plugin_cache/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh" ]] && \
+    source "$zsh_plugin_cache/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh"
+  [[ -r "$zsh_plugin_cache/zsh-users/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh" ]] && \
+    source "$zsh_plugin_cache/zsh-users/zsh-history-substring-search/zsh-history-substring-search.plugin.zsh"
+  if [[ -r "$zsh_plugin_cache/romkatv/zsh-defer/zsh-defer.plugin.zsh" ]]; then
+    source "$zsh_plugin_cache/romkatv/zsh-defer/zsh-defer.plugin.zsh"
+    [[ -r "$zsh_plugin_cache/olets/zsh-abbr/zsh-abbr.plugin.zsh" ]] && \
+      zsh-defer source "$zsh_plugin_cache/olets/zsh-abbr/zsh-abbr.plugin.zsh"
+  fi
+  [[ -r "$zsh_plugin_cache/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] && \
+    source "$zsh_plugin_cache/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+  unset zsh_plugin_cache
+fi
+unset zsh_antidote
+
+# F-Sy-H already distinguishes real paths from invalid text.  Make every
+# existing filesystem object link-like and match the option cyan.
+if (( $+FAST_HIGHLIGHT_STYLES )); then
+  FAST_HIGHLIGHT_STYLES[path]='fg=cyan,underline'
+  FAST_HIGHLIGHT_STYLES[path-to-dir]='fg=cyan,underline'
+fi
+
+# zsh-history-substring-search is the Fish-compatible history widget. Bind
+# after F-Sy-H has loaded to avoid its unknown-widget startup warnings.
+# Its default is arbitrary-substring matching; Fish arrows search the current
+# command-line prefix, so opt into the plugin's prefix-only mode.
+HISTORY_SUBSTRING_SEARCH_PREFIXED=1
+[[ -n ${terminfo[kcuu1]} ]] && bindkey "${terminfo[kcuu1]}" history-substring-search-up
+[[ -n ${terminfo[kcud1]} ]] && bindkey "${terminfo[kcud1]}" history-substring-search-down
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# Keep native Tab completion. Ctrl+F accepts the inline history suggestion,
+# matching Fish's dark suggestion + accept interaction.
+bindkey '^I' expand-or-complete
+bindkey '^F' autosuggest-accept
+
+# This file is deliberately outside the repository.  It is for machine- and
+# employer-specific aliases, integrations, and paths; copy the committed
+# example on a fresh host before editing it.
+[[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"

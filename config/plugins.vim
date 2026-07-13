@@ -12,7 +12,9 @@ if has('nvim')
   augroup END
 endif
 
-colorscheme Tomorrow-Night-Bright
+if !empty(globpath(&runtimepath, 'colors/Tomorrow-Night-Bright.vim'))
+  colorscheme Tomorrow-Night-Bright
+endif
 
 " NERDTree
 let NERDChristmasTree = 0

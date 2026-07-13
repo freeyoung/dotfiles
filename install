@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+
+# Bootstrap a host from this repository. Existing files are moved into
+# ~/.dotfiles-backups/<timestamp>/ first.
+set -euo pipefail
+
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+backup_root="$HOME/.dotfiles-backups/$(date +%Y%m%d-%H%M%S)"
+install_dependencies=1
+install_plugins=1
+
+usage() {
+  cat <<'EOF'
+Usage: install [--links-only] [--skip-plugins]
+
+By default this installs dependencies, links dotfiles, and restores shell and
+Vim plugins. --links-only only creates/preserves links and local configuration.
+--skip-plugins still installs dependencies but does not fetch plugin sources.
+EOF
+}
+
+for argument in "$@"; do
+  case "$argument" in
+    --links-only)
+      install_dependencies=0
+      install_plugins=0
+      ;;
+    --skip-plugins)
+      install_plugins=0
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      printf 'Unknown option: %s\n' "$argument" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+backup_and_link() {
+  local source="$1" target="$2" backup
+
+  mkdir -p "$(dirname "$target")"
+  if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+    printf 'Already linked: %s\n' "$target"
+    return
+  fi
+
+  if [[ -e "$target" || -L "$target" ]]; then
+    backup="$backup_root/${target#"$HOME"/}"
+    mkdir -p "$(dirname "$backup")"
+    mv "$target" "$backup"
+    printf 'Backed up: %s -> %s\n' "$target" "$backup"
+  fi
+
+  ln -s "$source" "$target"
+  printf 'Linked: %s -> %s\n' "$target" "$source"
+}
+
+backup_and_link "$repo_dir" "$HOME/.vim"
+backup_and_link "$repo_dir/vimrc" "$HOME/.vimrc"
+backup_and_link "$repo_dir/nvim_init.vim" "$HOME/.config/nvim/init.vim"
+backup_and_link "$repo_dir/tmux.conf" "$HOME/.tmux.conf"
+backup_and_link "$repo_dir/zsh/zshrc" "$HOME/.zshrc"
+backup_and_link "$repo_dir/zsh/zprofile" "$HOME/.zprofile"
+backup_and_link "$repo_dir/zsh/plugins.txt" "$HOME/.zsh_plugins.txt"
+backup_and_link "$repo_dir/zsh/abbr" "$HOME/.config/zsh-abbr/user-abbreviations"
+backup_and_link "$repo_dir/starship/starship.toml" "$HOME/.config/starship.toml"
+
+git_local="$HOME/.config/git/local.gitconfig"
+if [[ ! -e "$git_local" && ! -L "$HOME/.gitconfig" && -e "$HOME/.gitconfig" ]]; then
+  mkdir -p "$(dirname "$git_local")"
+  mv "$HOME/.gitconfig" "$git_local"
+  printf 'Migrated machine-specific Git configuration: %s\n' "$git_local"
+fi
+backup_and_link "$repo_dir/git/config" "$HOME/.gitconfig"
+if [[ ! -e "$git_local" ]]; then
+  mkdir -p "$(dirname "$git_local")"
+  cp "$repo_dir/git/local.gitconfig.example" "$git_local"
+  chmod 600 "$git_local"
+  printf 'Created private Git configuration template: %s\n' "$git_local"
+else
+  printf 'Kept private Git configuration: %s\n' "$git_local"
+fi
+
+local_zsh="$HOME/.config/zsh/local.zsh"
+if [[ ! -e "$local_zsh" ]]; then
+  mkdir -p "$(dirname "$local_zsh")"
+  cp "$repo_dir/zsh/local.zsh.example" "$local_zsh"
+  chmod 600 "$local_zsh"
+  printf 'Created local configuration template: %s\n' "$local_zsh"
+else
+  printf 'Kept local configuration: %s\n' "$local_zsh"
+fi
+
+if (( install_dependencies )); then
+  "$repo_dir/scripts/install-dependencies.sh"
+
+  # Dependency installation can have created Homebrew in a child process;
+  # initialise its PATH here as well so the validation and plugin phase see it.
+  if ! command -v brew >/dev/null 2>&1; then
+    for brew_candidate in /opt/homebrew/bin/brew "$HOME/.linuxbrew/bin/brew" /home/linuxbrew/.linuxbrew/bin/brew; do
+      if [[ -x "$brew_candidate" ]]; then
+        eval "$("$brew_candidate" shellenv)"
+        break
+      fi
+    done
+  fi
+fi
+
+if command -v zsh >/dev/null 2>&1; then
+  zsh -n "$repo_dir/zsh/zshrc"
+  zsh -n "$repo_dir/zsh/zprofile"
+  printf 'Zsh syntax check passed.\n'
+fi
+
+if command -v vim >/dev/null 2>&1; then
+  vim -Nu NONE -n -es -c "source $repo_dir/vimrc" -c 'qa' || {
+    printf 'Warning: Vim configuration smoke test failed; run scripts/check-vim-config.sh for details.\n' >&2
+  }
+fi
+
+if (( install_plugins )); then
+  "$repo_dir/scripts/install-plugins.sh"
+fi
+
+printf '\nDone. Start a new Zsh session (exec zsh) to load the linked configuration.\n'

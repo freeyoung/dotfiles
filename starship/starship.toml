@@ -1,0 +1,67 @@
+# A compact rendition of the classic Oh My Zsh "gentoo" theme:
+# bright green primary metadata, bright blue path, and a white prompt symbol.
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+command_timeout = 3000
+format = "$status$time$username$hostname$directory${custom.git_branch}$git_state$git_status$character"
+
+# Display the current clock time at the beginning of every prompt.
+[time]
+disabled = false
+time_format = "%T"
+format = "[\\[$time\\]]($style) "
+style = "bright-white"
+
+# Starship suppresses this module for a successful command; failures remain
+# visible at the very start of the next prompt.
+[status]
+disabled = false
+format = "[$status]($style) "
+style = "bold red"
+
+# The identifying part of the original Gentoo prompt, also in bright green.
+[username]
+show_always = true
+format = "[$user@]($style)"
+style_user = "bold bright-green"
+style_root = "bright-red"
+
+[hostname]
+ssh_only = false
+format = "[$hostname]($style) "
+style = "bold bright-green"
+
+[directory]
+style = "bright-blue"
+truncation_length = 0
+truncate_to_repo = false
+
+[custom.git_branch]
+command = '''
+branch=$(git branch --show-current)
+if [ -z "$branch" ]; then
+  branch=$(git rev-parse --short HEAD)
+fi
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+  color=91
+else
+  color=96
+fi
+printf '\033[%sm[%s]\033[0m' "$color" "$branch"
+'''
+when = 'git rev-parse --is-inside-work-tree >/dev/null 2>&1'
+format = '$output'
+unsafe_no_escape = true
+
+[git_state]
+format = "[$state( $progress_current/$progress_total)]($style) "
+style = "red"
+
+[git_status]
+format = "[$all_status$ahead_behind]($style) "
+style = "bright-red"
+
+[character]
+success_symbol = "[\\$](cyan)"
+error_symbol = "[\\$](bright-red)"

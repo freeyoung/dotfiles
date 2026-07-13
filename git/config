@@ -1,0 +1,13 @@
+# Shared Git defaults. Machine-specific credentials, URL rewrites, and
+# platform integration belong in ~/.config/git/local.gitconfig instead.
+[user]
+    name = Eric Qian
+    email = lavave@gmail.com
+[init]
+    defaultBranch = master
+[pull]
+    rebase = true
+[push]
+    autoSetupRemote = true
+[include]
+    path = ~/.config/git/local.gitconfig

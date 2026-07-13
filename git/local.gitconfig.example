@@ -1,0 +1,7 @@
+# Private Git overrides — intentionally not versioned.
+#
+# Examples:
+# [credential]
+#     helper = osxkeychain
+# [url "git@github.com:organisation/private-repo.git"]
+#     insteadOf = https://github.com/organisation/private-repo.git
