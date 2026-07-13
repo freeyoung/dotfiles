@@ -44,6 +44,15 @@ if executable('ansible-language-server')
         \ 'name': 'ansible-language-server',
         \ 'cmd': {server_info -> ['ansible-language-server', '--stdio']},
         \ 'allowlist': ['yaml.ansible', 'ansible'],
+        \ 'workspace_config': {
+        \   'ansible': {
+        \     'validation': {
+        \       'lint': {
+        \         'arguments': '-x yaml[line-length]',
+        \       },
+        \     },
+        \   },
+        \ },
         \ })
 else
   augroup dotfiles_missing_ansible_language_server
