@@ -1,0 +1,13 @@
+# Local Zsh additions — intentionally not versioned.
+#
+# Copy this to ~/.config/zsh/local.zsh, then keep only machine- or
+# organisation-specific configuration here.
+
+# Examples (uncomment and adapt only on the relevant machine):
+# [[ -r "$HOME/.orbstack/shell/init.zsh" ]] && source "$HOME/.orbstack/shell/init.zsh"
+# if [[ -t 0 && -t 1 && -t 2 && -r "$HOME/.iterm2_shell_integration.zsh" ]]; then
+#   source "$HOME/.iterm2_shell_integration.zsh"
+# fi
+# [[ -d /Applications/Obsidian.app/Contents/MacOS ]] && path+=(/Applications/Obsidian.app/Contents/MacOS)
+# alias kc='kubectl config use-context my-cluster'
+# alias deploy-staging='ansible-playbook -i inventory/staging site.yml --diff'

@@ -1,63 +1,77 @@
-Not only .vimrc ...
-===================
-... but also:
-* oh-my-zsh
-* tmux.conf
+Eric's dotfiles
+===============
+
+One repository for shared Vim/Neovim, Zsh, Starship, and tmux configuration.
+Machine- and organisation-specific shell settings stay in
+`~/.config/zsh/local.zsh`, outside Git.
+Git follows the same pattern: shared defaults live in `git/config`, while
+credentials and host-specific overrides stay in `~/.config/git/local.gitconfig`.
 
 ## Installation
 
-* Clone this repo
-
-``` bash
-git clone https://github.com/freeyoung/dotfiles.git ~/.vim
+```bash
+git clone git@github.com:freeyoung/dotfiles.git ~/dotfiles
+bash ~/dotfiles/install
+exec zsh
 ```
 
-* Execute the bootstrap script
+`install` is idempotent and networked by default. It installs the shared
+command-line dependencies, creates symlinks, restores shell/Vim plugins, and
+backs up any conflicting target under `~/.dotfiles-backups/<timestamp>/`.
 
-``` bash
-bash ~/.vim/init.sh
-```
+Use `bash ~/dotfiles/install --links-only` when only links and local
+configuration should be refreshed, or `--skip-plugins` when dependencies are
+welcome but plugin downloads should wait.
 
-The fzf mappings require the external `fzf` and `rg` (ripgrep) commands. On
-macOS, install them with `brew install fzf ripgrep`; on other systems use the
-equivalent package-manager packages. The Vim plugins provide integration but
-do not silently install these system dependencies.
+The script links `~/.vim` to this repository for compatibility with existing
+Vim tooling, while plugin files and Vim state live outside the checkout under
+`~/.local/share/vim` and `~/.local/state/vim` (or their XDG equivalents).
 
-The script creates timestamped backups before replacing conflicting dotfiles,
-keeps an existing `~/.oh-my-zsh` directory, and does not change your login shell.
-It prints the `chsh` command if you want to make zsh your login shell.
+On macOS, the installer installs Homebrew when necessary and applies the
+shared [`Brewfile`](Brewfile). Linuxbrew uses the same path. On native Linux,
+APT, DNF, and Pacman get a best-effort baseline (`zsh`, Git, curl, Vim, tmux,
+fzf, ripgrep, and available `bat`/`zoxide`/`starship` packages); Linuxbrew is
+the full, pinned-tooling path. The installer never changes the login shell.
 
-Run the non-interactive configuration check after installation (this is a
-configuration smoke test; it does not install language servers):
+Copy `zsh/local.zsh.example` to `~/.config/zsh/local.zsh` to add private
+machine settings. The installer does this once automatically and preserves it
+on later runs.
+
+On first run, an existing `~/.gitconfig` is moved to
+`~/.config/git/local.gitconfig`, then replaced with a link to the shared Git
+defaults. This keeps credential helpers and private URL rewrites out of Git.
+
+Run the non-interactive Vim smoke test after installation:
 
 ```bash
-bash ~/.vim/scripts/check-vim-config.sh
+bash ~/dotfiles/scripts/check-vim-config.sh
 ```
 
-Plugin revisions are recorded in [`plugins.lock.vim`](plugins.lock.vim), and
-`init.sh` restores that snapshot during bootstrap. After updating plugins
-intentionally, regenerate it from the repository directory with:
+Vim plugin revisions are recorded in [`plugins.lock.vim`](plugins.lock.vim),
+which the default installer restores after downloading vim-plug. After
+updating plugins intentionally, regenerate the snapshot from the repository
+directory with:
 
 ```vim
 :PlugSnapshot! ~/.vim/plugins.lock.vim
 ```
 
-Commit the resulting change. Sourcing the snapshot runs vim-plug's pinned
-`PlugUpdate!`, so it may access the network and change plugin checkouts.
+Commit the resulting change. Restoring the snapshot accesses the network and
+checks out the pinned revisions.
 
 ## Features
 
 ### Vim and Neovim
 
 Both editors share one configuration: `~/.vimrc` and `~/.config/nvim/init.vim`
-(the latter symlinked by `init.sh` to [`nvim_init.vim`](nvim_init.vim)) both
+(the latter symlinked by `install` to [`nvim_init.vim`](nvim_init.vim)) both
 source `vimrc`. `nvim_init.vim` extends `runtimepath` to this repo first,
 since Neovim's default runtimepath doesn't include `~/.vim`. A handful of
 `has('nvim')` branches account for real differences between the two (Neovim
 dropped the `paste`/`pastetoggle` options, so paste toggling is an explicit
 `<F12>` mapping instead; some vim-airline extensions auto-enable under
 Neovim regardless of whether their backing library is present and are
-explicitly disabled in `config/plugins.vim`). Neovim is optional — `init.sh`
+explicitly disabled in `config/plugins.vim`). Neovim is optional — `install`
 links its config the same way regardless of whether `nvim` is installed.
 
 The configuration is split into `config/` by responsibility: options, file

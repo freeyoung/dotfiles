@@ -1,0 +1,21 @@
+# Shared command-line environment for macOS and Linuxbrew.
+# Keep machine-specific applications and credentials out of this file.
+
+brew "antidote"
+brew "bat"
+brew "coreutils"
+brew "fnm"
+brew "fzf"
+brew "git"
+brew "grep"
+brew "kubectl"
+brew "neovim"
+brew "node"
+brew "ouch"
+brew "pyenv"
+brew "pyenv-virtualenv"
+brew "ripgrep"
+brew "starship"
+brew "tmux"
+brew "vim"
+brew "zoxide"

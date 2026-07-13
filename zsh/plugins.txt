@@ -1,0 +1,5 @@
+# F-Sy-H remains last so it can register its ZLE hooks.
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-history-substring-search
+olets/zsh-abbr kind:defer
+zdharma-continuum/fast-syntax-highlighting

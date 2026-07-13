@@ -7,16 +7,16 @@ set incsearch
 set ignorecase
 set smartcase
 
-" Keep swap, backup, and undo files out of project directories.
-let s:config_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h')
-let s:state_dir = fnamemodify(s:config_dir, ':h') . '/state'
+" Keep swap, backup, and undo files out of project directories and the
+" dotfiles checkout.
+let s:state_dir = g:dotfiles_vim_state_dir
 for s:subdirectory in ['undo', 'swap', 'backup']
   call mkdir(s:state_dir . '/' . s:subdirectory, 'p')
 endfor
 execute 'set undodir=' . fnameescape(s:state_dir . '/undo//')
 execute 'set directory=' . fnameescape(s:state_dir . '/swap//')
 execute 'set backupdir=' . fnameescape(s:state_dir . '/backup//')
-unlet s:config_dir s:state_dir s:subdirectory
+unlet s:state_dir s:subdirectory
 set undofile
 set undolevels=1000
 set undoreload=10000
