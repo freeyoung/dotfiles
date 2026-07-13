@@ -193,10 +193,3 @@ generic `playbooks/` directory with arbitrary filenames. It sets
 `filetype=yaml.ansible` under Vim and plain `filetype=ansible` under Neovim
 (ansible-vim's own upstream difference); both are handled everywhere they
 matter (LSP allowlist, plugin lazy-loading).
-
-## References
-
-* [humiaozuzu/dot-vimrc](https://github.com/humiaozuzu/dot-vimrc)
-* [klen/python-mode](https://github.com/klen/python-mode)
-* [spf13/spf13-vim](https://github.com/spf13/spf13-vim)
-* [grml/grml-zsh-config](http://git.grml.org/f/grml-etc-core/etc/zsh/zshrc)
