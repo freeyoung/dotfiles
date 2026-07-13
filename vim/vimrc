@@ -16,5 +16,5 @@ execute 'source' fnameescape(s:vim_root . '/config/plugins.vim')
 execute 'source' fnameescape(s:vim_root . '/config/lsp.vim')
 execute 'source' fnameescape(s:vim_root . '/config/keymaps.vim')
 execute 'source' fnameescape(s:vim_root . '/config/autocmds.vim')
-execute 'source' fnameescape(s:vim_root . '/config/gui.vim')
+execute 'source' fnameescape(s:vim_root . '/config/terminal.vim')
 unlet s:vim_root
