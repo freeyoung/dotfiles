@@ -29,10 +29,12 @@ state is separate under `~/.local/state/vim` and `~/.local/state/nvim` (or
 their XDG equivalents).
 
 On macOS, the installer installs Homebrew when necessary and applies the
-shared [`Brewfile`](Brewfile). Linuxbrew uses the same path. On native Linux,
-APT, DNF, and Pacman get a best-effort baseline (`zsh`, Git, curl, Vim, tmux,
-fzf, ripgrep, and available `bat`/`zoxide`/`starship` packages); Linuxbrew is
-the full, pinned-tooling path. The installer never changes the login shell.
+shared [`Brewfile`](Brewfile). Linuxbrew uses the same path on Linux. The
+installer verifies the GNU userland used by this configuration (`gls`,
+`ggrep`, `gsed`, and `gawk`) and stops if it is incomplete. Install
+Linuxbrew on Linux before running the bootstrap; the required formulas are
+`coreutils`, `grep`, `gnu-sed`, and `gawk`. The installer never changes
+the login shell.
 
 Copy `zsh/local.zsh.example` to `~/.config/zsh/local.zsh` to add private
 machine settings. The installer does this once automatically and preserves it

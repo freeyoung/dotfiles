@@ -24,11 +24,13 @@ if [[ -n ${HOMEBREW_PREFIX:-} && -d "$HOMEBREW_PREFIX/share/zsh/site-functions" 
 fi
 
 typeset -a zsh_gnu_paths zsh_managed_paths
-# These must precede /usr/bin so `ls`, `grep`, etc. resolve to Homebrew GNU
+# These must precede /usr/bin so ls, grep, sed, and awk resolve to Homebrew GNU
 # tools even when the terminal starts with a plain macOS PATH.
 zsh_gnu_paths=(
   "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/grep/libexec/gnubin"
   "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/coreutils/libexec/gnubin"
+  "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/gnu-sed/libexec/gnubin"
+  "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/gawk/libexec/gnubin"
 )
 for zsh_gnu_path in "${zsh_gnu_paths[@]}"; do
   [[ -d "$zsh_gnu_path" ]] && path=("$zsh_gnu_path" $path)

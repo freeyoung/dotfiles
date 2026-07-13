@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 
-# Install shared command-line dependencies.  Homebrew is the complete,
-# reproducible path; native Linux package managers receive a useful baseline.
+# Install shared command-line dependencies. Homebrew/Linuxbrew is required for
+# the reproducible GNU userland used by this configuration.
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
-warn() {
-  printf 'Warning: %s\n' "$*" >&2
-}
-
+# Resolve both macOS Homebrew and Linuxbrew without assuming their prefix.
 brew_bin() {
   if command -v brew >/dev/null 2>&1; then
     command -v brew
@@ -23,53 +20,29 @@ brew_bin() {
 }
 
 install_homebrew_macos() {
+  # macOS gets the official installer; Linuxbrew is installed separately.
   printf 'Homebrew is required on macOS; installing it now.\n'
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 }
 
-install_native_linux() {
-  local manager
-  printf 'No Linuxbrew found; installing the native Linux baseline.\n'
+ensure_gnu_tools() {
+  local tool
+  local -a missing=()
 
-  if command -v apt-get >/dev/null 2>&1; then
-    manager=apt
-    sudo apt-get update
-    sudo apt-get install -y zsh git curl vim tmux fzf ripgrep
-    for package in bat zoxide starship; do
-      sudo apt-get install -y "$package" || warn "apt package unavailable: $package"
-    done
-  elif command -v dnf >/dev/null 2>&1; then
-    manager=dnf
-    sudo dnf install -y zsh git curl vim-enhanced tmux fzf ripgrep
-    for package in bat zoxide starship; do
-      sudo dnf install -y "$package" || warn "dnf package unavailable: $package"
-    done
-  elif command -v pacman >/dev/null 2>&1; then
-    manager=pacman
-    sudo pacman -Sy --needed --noconfirm zsh git curl vim tmux fzf ripgrep
-    for package in bat zoxide starship; do
-      sudo pacman -S --needed --noconfirm "$package" || warn "pacman package unavailable: $package"
-    done
-  else
-    warn 'No supported package manager found. Install Linuxbrew, or install zsh, git, curl, vim, tmux, fzf, ripgrep, bat, zoxide, and starship manually.'
-    return 0
+  # The prefixed names are always provided by the Homebrew formulas; the
+  # corresponding unprefixed names are exposed through zsh's gnubin paths.
+  for tool in gls ggrep gsed gawk; do
+    command -v "$tool" >/dev/null 2>&1 || missing+=("$tool")
+  done
+
+  if (( ${#missing[@]} )); then
+    printf 'Required GNU tools are missing: %s\n' "${missing[*]}" >&2
+    printf 'Run brew bundle again, or install the coreutils, grep, gnu-sed, and gawk formulas.\n' >&2
+    return 1
   fi
-
-  printf 'Native %s baseline installed. For fnm, pyenv, kubectl, ouch, and pinned Homebrew-equivalent versions, install Linuxbrew and rerun.\n' "$manager"
 }
 
-install_antidote_from_git() {
-  if [[ -r "$HOME/.antidote/antidote.zsh" ]]; then
-    return
-  fi
-  command -v git >/dev/null 2>&1 || {
-    warn 'Cannot install Antidote: git is unavailable.'
-    return
-  }
-  printf 'Installing Antidote into %s/.antidote\n' "$HOME"
-  git clone --depth=1 https://github.com/mattmc3/antidote.git "$HOME/.antidote"
-}
-
+# Resolve Homebrew before deciding whether the host can be bootstrapped.
 brew_path=$(brew_bin || true)
 if [[ -z "$brew_path" && $(uname -s) == Darwin ]]; then
   command -v curl >/dev/null 2>&1 || {
@@ -81,9 +54,16 @@ if [[ -z "$brew_path" && $(uname -s) == Darwin ]]; then
 fi
 
 if [[ -n "$brew_path" ]]; then
+  # Install the complete shared dependency set, then enforce GNU userland.
   eval "$("$brew_path" shellenv)"
   "$brew_path" bundle --file "$repo_dir/Brewfile"
+  ensure_gnu_tools
+elif [[ $(uname -s) == Linux ]]; then
+  # A partial native-Linux install would violate the command semantics above.
+  printf 'Linuxbrew is required for this dotfiles setup. Install Linuxbrew and rerun install.\n' >&2
+  exit 2
 else
-  install_native_linux
-  install_antidote_from_git
+  # Keep unsupported Unix hosts explicit instead of silently degrading.
+  printf 'Homebrew is required for this dotfiles setup. Install it and rerun install.\n' >&2
+  exit 2
 fi
