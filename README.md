@@ -134,6 +134,17 @@ shared-config setup), or, for base16, having `Identifier` equal `Normal`
 (no color distinction for YAML/Ansible keys). See git history on
 `vim/config/plugins.vim` and `vim/plugs.vim` for the full trail.
 
+### tmux
+
+[`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,
+mouse support, large scrollback, and system clipboard integration. Splits
+preserve the current directory; `h/j/k/l` navigate panes and `prefix + r`
+reloads the configuration.
+
+The status line follows Tomorrow Night Bright: session, host, date, and time
+use blue, cyan, yellow, and green segments. Time includes seconds and refreshes
+every second. Copy-mode uses yellow selection with black text.
+
 ### Performance
 
 * Files over 5MB (`g:vim_large_file_bytes` in `vim/config/autocmds.vim`) skip
