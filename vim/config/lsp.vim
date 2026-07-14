@@ -35,7 +35,7 @@ let g:lsp_settings = {
       \}
 
 " ansible-language-server isn't in vim-lsp-settings' catalog, so register it
-" directly. ansible-vim sets ft=yaml.ansible under Vim but plain ft=ansible
+" during vim-lsp setup. ansible-vim sets ft=yaml.ansible under Vim but plain ft=ansible
 " under Neovim; allowlist both. It stays on-demand rather than becoming a
 " bootstrap dependency: opening an Ansible buffer explains how to install it.
 if executable('ansible-language-server')
@@ -124,7 +124,20 @@ nnoremap <silent> <leader>f :<C-U>call <SID>format_buffer()<CR>
 
 " Completion menu controls in Insert mode; otherwise retain normal Tab/Enter.
 " Tab / Shift-Tab: next / previous item; Enter: accept; Ctrl-Space: request.
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+" Avoid querying the LSP after every typed character; Tab/Ctrl-Space request it.
+let g:asyncomplete_auto_popup = 0
+
+function! s:check_back_space() abort
+  " Keep Tab as indentation after whitespace or at the start of a line.
+  let l:col = col('.') - 1
+  return !l:col || getline('.')[l:col - 1] =~# '\s'
+endfunction
+
+" Request completion after a word, but preserve normal indentation behavior.
+inoremap <silent><expr> <Tab>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<Tab>" :
+      \ asyncomplete#force_refresh()
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <expr> <CR> pumvisible() ? asyncomplete#close_popup() : "\<CR>"
 inoremap <C-Space> <Plug>(asyncomplete_force_refresh)
