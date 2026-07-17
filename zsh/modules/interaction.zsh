@@ -28,6 +28,11 @@ zle -N forward-word-fish
 bindkey -M emacs '^[b' backward-word-fish
 bindkey -M emacs '^[f' forward-word-fish
 
+# Avoid leaking unbound Ctrl+Left/Right CSI sequences (…1;5D/C) into the
+# command line; give them the same word movement as Option+Left/Right.
+bindkey -M emacs '^[[1;5D' backward-word-fish
+bindkey -M emacs '^[[1;5C' forward-word-fish
+
 # Keep native Tab completion. Ctrl+F accepts the inline history suggestion,
 # matching Fish's dark suggestion + accept interaction.
 bindkey '^I' expand-or-complete
