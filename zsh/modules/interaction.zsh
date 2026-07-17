@@ -10,34 +10,51 @@ if (( $+widgets[history-substring-search-up] )); then
   bindkey '^[[B' history-substring-search-down
 fi
 
+# Keep F-Sy-H's normal tokenization; punctuation boundaries are scoped to
+# the widgets below instead of changing global WORDCHARS.
+typeset -g WORDCHARS='*?_-.[]~=/&;!#$%^(){}<>'
+
+# Fish-style Meta-word movement for dotted and hyphenated names.
+backward-word-fish() {
+  local WORDCHARS="${WORDCHARS//[.-]}"
+  zle backward-word
+}
+forward-word-fish() {
+  local WORDCHARS="${WORDCHARS//[.-]}"
+  zle forward-word
+}
+zle -N backward-word-fish
+zle -N forward-word-fish
+bindkey -M emacs '^[b' backward-word-fish
+bindkey -M emacs '^[f' forward-word-fish
+
 # Keep native Tab completion. Ctrl+F accepts the inline history suggestion,
 # matching Fish's dark suggestion + accept interaction.
 bindkey '^I' expand-or-complete
 (( $+widgets[autosuggest-accept] )) && bindkey '^F' autosuggest-accept
 
-# Make Ctrl-W remove one path component, like Fish:
-# "vim vim/config/filetypes.vim" becomes "vim vim/config".
+# Make Ctrl-W use the same dotted and hyphenated boundaries as Meta-word
+# movement while retaining slash-aware deletion for paths.
 backward-kill-path-component() {
   local left=$LBUFFER
 
-  # Ignore trailing whitespace while looking for the previous component.
-  if [[ ${left[-1]} == [[:space:]] ]]; then
-    while [[ ${left[-1]} == [[:space:]] ]]; do
-      left=${left[1,-2]}
-    done
-  fi
+  # Skip separators so repeated Ctrl-W keeps moving across dotted and
+  # hyphenated parts.
+  while [[ ${left[-1]} == [[:space:].-] ]]; do
+    left=${left[1,-2]}
+  done
 
   if [[ ${left[-1]} == / ]]; then
     # Keep a trailing slash when deleting a component below it.
     left=${left[1,-2]}
-    while [[ -n $left && ${left[-1]} != [[:space:]/] ]]; do
+    while [[ -n $left && ${left[-1]} != [[:space:]./-] ]]; do
       left=${left[1,-2]}
     done
     if [[ ${left[-1]} == / ]]; then
       left=${left[1,-2]}/
     fi
   else
-    while [[ -n $left && ${left[-1]} != [[:space:]/] ]]; do
+    while [[ -n $left && ${left[-1]} != [[:space:]./-] ]]; do
       left=${left[1,-2]}
     done
   fi
