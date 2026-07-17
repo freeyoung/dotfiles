@@ -1,5 +1,6 @@
 abbr "gc"="git commit --verbose"
 abbr "gca"="git commit --verbose --all"
+abbr "gcl"="git clone"
 abbr "gco"="git checkout"
 abbr "gcp"="git cherry-pick"
 abbr "gd"="git diff"
