@@ -100,6 +100,69 @@ zstyle ':completion:*:options' list-colors \
   '=(#b)(--|-)([[:alnum:]-]##)([[:space:]]##)(*)=0=39=39=0=220'
 _zsh_init_completions
 
+# Zsh's _ssh_hosts matcher handles dots but not hostname fragments after
+# hyphens, so provide a small known_hosts fallback for ssh and its aliases.
+typeset -g _ssh_fuzzy_menu_base
+typeset -ga _ssh_fuzzy_menu_matches
+_ssh_fuzzy_hosts() {
+  local -a hosts valid_hosts matches
+  local host needle=${PREFIX:l} base=${BUFFER%$PREFIX}
+
+  # Reuse same candidates while menu-select moves through them.
+  if [[ -n $_ssh_fuzzy_menu_base && $base == $_ssh_fuzzy_menu_base &&
+        ${_ssh_fuzzy_menu_matches[(Ie)$PREFIX]} -gt 0 ]]; then
+    compstate[insert]=menu-select
+    compadd -Q -U -- "${_ssh_fuzzy_menu_matches[@]}"
+    return
+  fi
+
+  [[ -r $HOME/.ssh/known_hosts ]] || return 1
+  hosts=(${(s/,/j/,/u)${(f)"$(<$HOME/.ssh/known_hosts)"}%%[ |#]*})
+  for host in "${hosts[@]}"; do
+    [[ $host == \[* ]] && continue
+    valid_hosts+=("$host")
+    [[ -z $needle || ${host:l} == *${needle}* ]] && matches+=("$host")
+  done
+  (( $#matches )) || return 1
+  typeset -gaU _cache_hosts
+  _cache_hosts+=("${valid_hosts[@]}")
+  _ssh_fuzzy_menu_base=$base
+  _ssh_fuzzy_menu_matches=("${matches[@]}")
+  if (( $#matches > 1 )); then
+    # First Tab completes up to the matches' common prefix and lists them;
+    # once the word already is that prefix, the next Tab starts menu
+    # selection on the first candidate. Extending only reads well when the
+    # common prefix still contains what was typed — for pure substring hits
+    # (say `ora` matching both de-oracle1 and prod-web-ora2) the common
+    # prefix would drop the typed word, so start menu selection right away.
+    # The explicit 'list force' overrides LIST_AMBIGUOUS, which would
+    # otherwise suppress the listing whenever the prefix insertion added
+    # characters. compstate[list] also carries the layout words derived
+    # from the list-packed/list-rows-first styles, so keep those to lay
+    # the listing out exactly like the later menu-selection listing.
+    local common=${matches[1]} other
+    for other in "${matches[@]:1}"; do
+      while [[ $other != ${(b)common}* ]]; do common=${common%?}; done
+    done
+    if [[ ${common:l} != "$needle" && -n $common && ${common:l} == *"$needle"* ]]; then
+      local -a list_layout=( ${=compstate[list]} )
+      compstate[insert]=unambiguous
+      compstate[list]="list force ${(M)list_layout[@]:#(packed|rows)}"
+    else
+      compstate[insert]=menu-select
+    fi
+  fi
+  compadd -Q -U -- "${matches[@]}"
+}
+_ssh_fuzzy() {
+  if [[ $PREFIX != -* ]]; then
+    _ssh_fuzzy_hosts
+  else
+    _ssh "$@"
+  fi
+}
+compdef _ssh_fuzzy ssh sv=ssh svr=ssh
+
 # Keep the familiar z command while letting zoxide learn directory frecency.
 # It follows compinit so zoxide's zsh completion is registered correctly.
 if (( $+commands[zoxide] )); then
