@@ -7,11 +7,15 @@
 
 typeset _zsh_rc_dir=${${(%):-%N}:A:h}
 source "$_zsh_rc_dir/modules/environment.zsh"
+# prompt.zsh must load before python.zsh: starship's init does a one-time,
+# unconditional PROMPT= assignment, which silently wipes out the
+# pyenv-virtualenv prompt prefix if that prefix was prepended first (i.e.
+# when a shell starts already inside a directory with a .python-version).
+source "$_zsh_rc_dir/modules/prompt.zsh"
 source "$_zsh_rc_dir/modules/python.zsh"
 source "$_zsh_rc_dir/modules/commands.zsh"
 source "$_zsh_rc_dir/modules/completion.zsh"
 source "$_zsh_rc_dir/modules/node-and-tools.zsh"
-source "$_zsh_rc_dir/modules/prompt.zsh"
 source "$_zsh_rc_dir/modules/plugins.zsh"
 source "$_zsh_rc_dir/modules/interaction.zsh"
 unset _zsh_rc_dir
