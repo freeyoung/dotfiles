@@ -18,3 +18,5 @@ unset _zsh_rc_dir
 
 # Load machine-specific overrides after all shared modules.
 [[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"
+
+export PATH="$HOME/.local/bin:$PATH"

@@ -36,7 +36,6 @@ for zsh_gnu_path in "${zsh_gnu_paths[@]}"; do
   [[ -d "$zsh_gnu_path" ]] && path=("$zsh_gnu_path" $path)
 done
 zsh_managed_paths=(
-  "$HOME/.local/bin"
   "$HOME/go/bin"
   "$HOME/.antigravity/antigravity/bin"
   "$HOME/.bun/bin"
