@@ -162,6 +162,9 @@ _ssh_fuzzy() {
   fi
 }
 compdef _ssh_fuzzy ssh sv=ssh svr=ssh
+# These helpers end in --limit, so complete their only user-supplied argument
+# from the same known_hosts candidates as ssh.
+compdef _ssh_fuzzy_hosts cas cap cai
 
 # Keep the familiar z command while letting zoxide learn directory frecency.
 # It follows compinit so zoxide's zsh completion is registered correctly.

@@ -3,9 +3,16 @@ alias ag='rg'
 alias ccat='bat --style=plain --paging=never'
 
 # Ansible.
-alias cas='ansible-playbook -i inventory/staging site.yml --diff --limit'
-alias cap='ansible-playbook -i inventory/production site.yml --diff --limit'
-alias cai='ansible-playbook -i inventory/internal site.yml --diff --limit'
+unalias cas cap cai 2>/dev/null
+cas() {
+  ansible-playbook -i inventory/staging site.yml --diff --limit "$@"
+}
+cap() {
+  ansible-playbook -i inventory/production site.yml --diff --limit "$@"
+}
+cai() {
+  ansible-playbook -i inventory/internal site.yml --diff --limit "$@"
+}
 
 # Kubernetes.
 alias k='kubectl'
