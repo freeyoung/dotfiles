@@ -1,11 +1,14 @@
 Eric's dotfiles
 ===============
 
-One repository for shared Vim/Neovim, Zsh, Starship, and tmux configuration.
+One repository for shared Vim/Neovim, Zsh, Starship, tmux, and SSH
+configuration.
 Machine- and organisation-specific shell settings stay in
 `~/.config/zsh/local.zsh`, outside Git.
 Git follows the same pattern: shared defaults live in `git/config`, while
 credentials and host-specific overrides stay in `~/.config/git/local.gitconfig`.
+SSH defaults live in `ssh/config`; private hosts and per-machine overrides stay
+in `~/.ssh/config.local`.
 
 ## Installation
 
@@ -48,6 +51,14 @@ and loader; keep machine-specific settings in `~/.config/zsh/local.zsh`.
 On first run, an existing `~/.gitconfig` is moved to
 `~/.config/git/local.gitconfig`, then replaced with a link to the shared Git
 defaults. This keeps credential helpers and private URL rewrites out of Git.
+
+The installer links [`ssh/config`](ssh/config) to `~/.ssh/config` and keeps
+machine-specific settings in `~/.ssh/config.local`. On first installation, an
+existing SSH config is copied there before the original is backed up; otherwise
+it is created from `ssh/config.local.example`. The local file is loaded before
+the shared `Host *` defaults and preserved on later runs. Installer-managed
+regular files are kept at mode `600`; an existing symlink remains under the
+user's control. Missing local include paths are ignored by OpenSSH.
 
 Run the non-interactive Vim smoke test after installation:
 

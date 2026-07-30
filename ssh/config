@@ -1,0 +1,14 @@
+# Shared SSH client defaults. Keep private hosts, users, addresses, and
+# per-machine overrides in ~/.ssh/config.local instead.
+
+# UseKeychain is an Apple extension; ignore it on other OpenSSH builds so this
+# shared configuration remains portable.
+IgnoreUnknown UseKeychain
+
+Include ~/.ssh/config.local
+
+Host *
+  ForwardAgent        yes
+  AddKeysToAgent      yes
+  UseKeychain         yes
+  ServerAliveInterval 30

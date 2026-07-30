@@ -71,6 +71,203 @@ backup_and_link "$repo_dir/zsh/plugins.txt" "$HOME/.zsh_plugins.txt"
 backup_and_link "$repo_dir/zsh/abbr" "$HOME/.config/zsh-abbr/user-abbreviations"
 backup_and_link "$repo_dir/starship/starship.toml" "$HOME/.config/starship.toml"
 
+ssh_dir="$HOME/.ssh"
+ssh_config="$ssh_dir/config"
+ssh_local="$ssh_dir/config.local"
+ssh_previous_umask="$(umask)"
+umask 077
+mkdir -p "$ssh_dir"
+chmod 700 "$ssh_dir"
+
+sanitize_ssh_config() {
+  awk \
+    -v home_dir="$HOME" \
+    -v include_dir="$ssh_dir" \
+    -v local_path="$ssh_local" \
+    '
+    function normalize_path(path, segments, normalized, count, depth, position) {
+      if (path ~ /^~\//) {
+        path = home_dir substr(path, 2)
+      } else if (path ~ /^%d\//) {
+        path = home_dir substr(path, 3)
+      } else if (path ~ /^\$\{HOME\}\//) {
+        path = home_dir substr(path, 8)
+      } else if (path ~ /^\$HOME\//) {
+        path = home_dir substr(path, 6)
+      } else if (path ~ /^~/) {
+        return path
+      } else if (path !~ /^\//) {
+        path = include_dir "/" path
+      }
+
+      count = split(path, segments, "/")
+      depth = 0
+      for (position = 1; position <= count; position++) {
+        if (segments[position] == "" || segments[position] == ".") {
+          continue
+        }
+        if (segments[position] == ".." && depth > 0) {
+          depth--
+          continue
+        }
+        normalized[++depth] = segments[position]
+      }
+
+      path = ""
+      for (position = 1; position <= depth; position++) {
+        path = path "/" normalized[position]
+      }
+      return path == "" ? "/" : path
+    }
+
+    function regex_literal(character) {
+      if (character ~ /[][\\.^$*+?(){}|]/) {
+        return "\\" character
+      }
+      return character
+    }
+
+    function glob_regex(pattern, result, position, character, closing,
+                        scan, class_text) {
+      result = ""
+      for (position = 1; position <= length(pattern); position++) {
+        character = substr(pattern, position, 1)
+        if (character == "*") {
+          result = result "[^/]*"
+        } else if (character == "?") {
+          result = result "[^/]"
+        } else if (character == "[") {
+          closing = 0
+          for (scan = position + 1; scan <= length(pattern); scan++) {
+            if (substr(pattern, scan, 1) == "]" && scan > position + 1) {
+              closing = scan
+              break
+            }
+          }
+          if (closing == 0) {
+            result = result "\\["
+            continue
+          }
+          class_text = substr(pattern, position + 1, closing - position - 1)
+          if (substr(class_text, 1, 1) == "!") {
+            class_text = "^" substr(class_text, 2)
+          }
+          gsub(/\\/, "\\\\", class_text)
+          result = result "[" class_text "]"
+          position = closing
+        } else if (character == "\\" && position < length(pattern)) {
+          position++
+          result = result regex_literal(substr(pattern, position, 1))
+        } else {
+          result = result regex_literal(character)
+        }
+      }
+      return "^" result "$"
+    }
+
+    function is_local_include(candidate, normalized, normalized_local) {
+      if (candidate ~ /^".*"$/) {
+        candidate = substr(candidate, 2, length(candidate) - 2)
+      }
+      normalized = normalize_path(candidate)
+      normalized_local = normalize_path(local_path)
+      return normalized_local ~ glob_regex(normalized)
+    }
+
+    tolower($1) == "include" || tolower($1) ~ /^include=/ {
+      output = $1
+      first_field = 2
+      kept_path = 0
+      comment = ""
+
+      if (tolower($1) ~ /^include=/) {
+        output = substr($1, 1, index($1, "=") - 1)
+        initial_candidate = substr($1, index($1, "=") + 1)
+        if (initial_candidate != "" && !is_local_include(initial_candidate)) {
+          output = output " " initial_candidate
+          kept_path = 1
+        }
+      } else if ($2 == "=") {
+        first_field = 3
+      } else if (substr($2, 1, 1) == "=") {
+        initial_candidate = substr($2, 2)
+        first_field = 3
+        if (initial_candidate != "" && !is_local_include(initial_candidate)) {
+          output = output " " initial_candidate
+          kept_path = 1
+        }
+      }
+
+      for (field = first_field; field <= NF; field++) {
+        token = $field
+        if (substr(token, 1, 1) == "#") {
+          comment = substr($0, index($0, token))
+          break
+        }
+        if (is_local_include(token)) {
+          continue
+        }
+        output = output " " token
+        kept_path = 1
+      }
+      if (kept_path) {
+        print output (comment == "" ? "" : " " comment)
+      } else if (comment != "") {
+        print comment
+      }
+      next
+    }
+    { print }
+  ' "$1"
+}
+
+if [[ -L "$ssh_local" && ! -e "$ssh_local" ]]; then
+  printf 'Broken SSH local configuration link: %s\n' "$ssh_local" >&2
+  exit 1
+fi
+
+if [[ -e "$ssh_config" ]] &&
+   [[ ! -L "$ssh_config" || "$(readlink "$ssh_config")" != "$repo_dir/ssh/config" ]]; then
+  if [[ -L "$ssh_local" ]]; then
+    printf 'Cannot merge %s into linked local configuration %s\n' \
+      "$ssh_config" "$ssh_local" >&2
+    exit 1
+  fi
+  if [[ -e "$ssh_local" && ! -f "$ssh_local" ]]; then
+    printf 'SSH local configuration is not a regular file: %s\n' \
+      "$ssh_local" >&2
+    exit 1
+  fi
+
+  if [[ -f "$ssh_local" ]]; then
+    chmod 600 "$ssh_local"
+    printf '\n# Migrated from the previous ~/.ssh/config.\nHost *\n' >> "$ssh_local"
+    sanitize_ssh_config "$ssh_config" >> "$ssh_local"
+    printf 'Merged existing SSH configuration into: %s\n' "$ssh_local"
+  else
+    sanitize_ssh_config "$ssh_config" > "$ssh_local"
+    printf 'Migrated existing SSH configuration: %s\n' "$ssh_local"
+  fi
+  chmod 600 "$ssh_local"
+fi
+backup_and_link "$repo_dir/ssh/config" "$ssh_config"
+if [[ ! -e "$ssh_local" && ! -L "$ssh_local" ]]; then
+  cp "$repo_dir/ssh/config.local.example" "$ssh_local"
+  chmod 600 "$ssh_local"
+  printf 'Created private SSH configuration template: %s\n' "$ssh_local"
+else
+  if [[ -f "$ssh_local" && ! -L "$ssh_local" ]]; then
+    chmod 600 "$ssh_local"
+  fi
+  printf 'Kept private SSH configuration: %s\n' "$ssh_local"
+fi
+
+if command -v ssh >/dev/null 2>&1; then
+  ssh -G -T -F "$ssh_dir/config" dotfiles-bootstrap.invalid >/dev/null
+  printf 'SSH configuration check passed.\n'
+fi
+umask "$ssh_previous_umask"
+
 git_local="$HOME/.config/git/local.gitconfig"
 if [[ ! -e "$git_local" && ! -L "$HOME/.gitconfig" && -e "$HOME/.gitconfig" ]]; then
   mkdir -p "$(dirname "$git_local")"

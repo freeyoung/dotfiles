@@ -4,7 +4,6 @@
 # organisation-specific configuration here.
 
 # Examples (uncomment and adapt only on the relevant machine):
-
 # if [[ -t 0 && -t 1 && -t 2 && -r "$HOME/.iterm2_shell_integration.zsh" ]]; then
 #   source "$HOME/.iterm2_shell_integration.zsh"
 # fi

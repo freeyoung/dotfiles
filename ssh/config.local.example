@@ -1,0 +1,14 @@
+# Template for the private SSH configuration.
+#
+# The installer copies this to ~/.ssh/config.local, which lives outside the
+# repository and is intentionally not versioned. It is preserved on later
+# runs. Put private hostnames, addresses, users, identity paths, and
+# per-machine overrides there.
+#
+# Because OpenSSH uses the first value it finds for each setting, entries in
+# this file are included before the shared `Host *` defaults and can override
+# them for selected hosts.
+#
+# Host private-example
+#   HostName 192.0.2.10
+#   User deploy
