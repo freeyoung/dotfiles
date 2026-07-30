@@ -155,11 +155,43 @@ _ssh_fuzzy_hosts() {
   compadd -Q -U -- "${matches[@]}"
 }
 _ssh_fuzzy() {
-  if [[ $PREFIX != -* ]]; then
-    _ssh_fuzzy_hosts
-  else
-    _ssh "$@"
+  # Let Zsh's SSH completion parser decide whether the cursor is completing a
+  # host, an option, or a remote command. Override only its host provider so
+  # fuzzy known_hosts matching cannot leak into later argument positions.
+  local -i had_ssh_hosts=$+functions[_ssh_hosts]
+  local ssh_hosts_definition=${functions[_ssh_hosts]-}
+  local -i capturing_autosuggestion=${comppostfuncs[(Ie)_zsh_autosuggest_capture_postcompletion]}
+  local -i had_normal=0
+  local normal_definition
+  functions[_ssh_hosts]='_ssh_fuzzy_hosts "$@"'
+
+  # `_ssh` delegates its remote-command position to `_normal`. Completion
+  # suggestions there are misleading immediately after completing a host: the
+  # first local command or path becomes a ghost remote command. Suppress that
+  # position only while zsh-autosuggestions captures a completion; ordinary
+  # Tab completion still offers remote commands.
+  if (( capturing_autosuggestion )); then
+    had_normal=$+functions[_normal]
+    normal_definition=${functions[_normal]-}
+    functions[_normal]='return 1'
   fi
+
+  {
+    _ssh "$@"
+  } always {
+    if (( had_ssh_hosts )); then
+      functions[_ssh_hosts]=$ssh_hosts_definition
+    else
+      unfunction _ssh_hosts 2>/dev/null
+    fi
+    if (( capturing_autosuggestion )); then
+      if (( had_normal )); then
+        functions[_normal]=$normal_definition
+      else
+        unfunction _normal 2>/dev/null
+      fi
+    fi
+  }
 }
 compdef _ssh_fuzzy ssh sv=ssh svr=ssh
 # These helpers end in --limit, so complete their only user-supplied argument
