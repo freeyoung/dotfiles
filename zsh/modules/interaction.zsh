@@ -42,6 +42,30 @@ bindkey '^I' expand-or-complete
 # movement while retaining slash-aware deletion for paths.
 backward-kill-path-component() {
   local left=$LBUFFER
+  local address_left=$left ipv4 octet
+  local -a octets
+  local -i valid_ipv4=1
+
+  # Treat a complete IPv4 address immediately before the cursor as one unit.
+  # The boundary check avoids taking an address-looking suffix out of a
+  # hostname or a longer dotted number.
+  while [[ ${address_left[-1]} == [[:space:]] ]]; do
+    address_left=${address_left[1,-2]}
+  done
+  if [[ $address_left =~ '(^|[^[:alnum:]_.])([0-9]{1,3}(\.[0-9]{1,3}){3})$' ]]; then
+    ipv4=$match[2]
+    octets=( ${(s:.:)ipv4} )
+    for octet in $octets; do
+      if (( 10#$octet > 255 )); then
+        valid_ipv4=0
+        break
+      fi
+    done
+    if (( valid_ipv4 )); then
+      LBUFFER=${address_left%$ipv4}
+      return
+    fi
+  fi
 
   # Skip separators so repeated Ctrl-W keeps moving across dotted and
   # hyphenated parts.
