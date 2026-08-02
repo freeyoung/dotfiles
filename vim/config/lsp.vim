@@ -13,6 +13,10 @@ let g:lsp_diagnostics_highlights_insert_mode_enabled = 0
 let g:lsp_diagnostics_virtual_text_enabled = 0
 " Do not highlight every occurrence of the symbol under the cursor.
 let g:lsp_document_highlight_enabled = 0
+" Do not put an A> sign in the gutter whenever the cursor rests on a line with
+" code actions: it follows the cursor around and says nothing about the code.
+" The actions stay one <leader>ca away.
+let g:lsp_document_code_action_signs_enabled = 0
 " Use Pyright and Ruff for Python language features.
 let g:lsp_settings_filetype_python = ['pyright-langserver', 'ruff']
 " Use gopls for Go language features.
