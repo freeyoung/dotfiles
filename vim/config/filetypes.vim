@@ -16,6 +16,13 @@ let g:html_indent_style1 = 'inc'
 
 augroup vim_filetype_settings
   autocmd!
+  " Trailing commas are tolerated in JSONC (VS Code only warns about them), yet
+  " jsonTrailingCommaError is linked to Error, painting them red in tsconfig.json
+  " and friends. Clear those matches; the JSON language server still reports a
+  " warning, because it hardcodes trailingCommas for the jsonc language ID.
+  " This has to run after syntax/jsonc.vim, which the `syntax enable` above
+  " arranges: its `au Syntax *` is registered first and therefore fires first.
+  autocmd Syntax jsonc syn clear jsonTrailingCommaError
   " Use two-space indentation with four-column tab stops for web languages.
   autocmd FileType html,htmldjango,xhtml,haml,sass,scss,ruby,javascript,php,css setlocal tabstop=4 shiftwidth=2 softtabstop=2
   " Use two-space indentation for data and template files.

@@ -24,6 +24,17 @@ let g:lsp_settings_filetype_typescriptreact = ['typescript-language-server']
 let g:lsp_settings_filetype_javascriptreact = ['typescript-language-server']
 " Use the YAML server for YAML files.
 let g:lsp_settings_filetype_yaml = ['yaml-language-server']
+" JSON/JSONC use the legacy vscode-json-languageserver-bin server. The modern
+" vscode-json-language-server (vscode-langservers-extracted 4.x) turns
+" validation off unless json.validate.enable arrives in the configuration, and
+" vim-lsp-settings omits it while vim-lsp always sends the notification at
+" server startup, so diagnostics go silent. Switching to it later only takes
+" adding that key to its workspace_config below.
+" Pinning json keeps that server from winning the candidate list, where it
+" ranks first and would take over as soon as it lands on $PATH. Pinning jsonc
+" is for symmetry: the only other candidate there is biome.
+let g:lsp_settings_filetype_json = ['json-languageserver']
+let g:lsp_settings_filetype_jsonc = ['json-languageserver']
 
 " The upstream default skips JS/TS unless a node_modules directory is found.
 " Enable the server for standalone JS/TS files as well. Deno projects should use
