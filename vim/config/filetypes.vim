@@ -18,8 +18,9 @@ augroup vim_filetype_settings
   autocmd!
   " Trailing commas are tolerated in JSONC (VS Code only warns about them), yet
   " jsonTrailingCommaError is linked to Error, painting them red in tsconfig.json
-  " and friends. Clear those matches; the JSON language server still reports a
-  " warning, because it hardcodes trailingCommas for the jsonc language ID.
+  " and friends. Clear those matches; the JSON language server still warns about
+  " them in plain JSONC buffers, but stays quiet where the matching schema
+  " allows trailing commas, tsconfig.json included.
   " This has to run after syntax/jsonc.vim, which the `syntax enable` above
   " arranges: its `au Syntax *` is registered first and therefore fires first.
   autocmd Syntax jsonc syn clear jsonTrailingCommaError

@@ -202,7 +202,8 @@ NERDTree remains available through `F5` as a directory-oriented view.
 
 `vim-lsp` supplies diagnostics, navigation, completion, code actions, and
 formatting. The configured servers are Pyright and Ruff (Python), gopls (Go),
-TypeScript Language Server (JavaScript/TypeScript), YAML Language Server, and
+TypeScript Language Server (JavaScript/TypeScript), YAML Language Server,
+vscode-json-language-server (JSON/JSONC), and
 ansible-language-server. Language servers are deliberately not bootstrap
 dependencies: when a catalogued server is missing, opening its file type
 suggests `:LspInstallServer`; run that command to download it. Ruff is used for

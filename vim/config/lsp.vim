@@ -24,26 +24,61 @@ let g:lsp_settings_filetype_typescriptreact = ['typescript-language-server']
 let g:lsp_settings_filetype_javascriptreact = ['typescript-language-server']
 " Use the YAML server for YAML files.
 let g:lsp_settings_filetype_yaml = ['yaml-language-server']
-" JSON/JSONC use the legacy vscode-json-languageserver-bin server. The modern
-" vscode-json-language-server (vscode-langservers-extracted 4.x) turns
-" validation off unless json.validate.enable arrives in the configuration, and
-" vim-lsp-settings omits it while vim-lsp always sends the notification at
-" server startup, so diagnostics go silent. Switching to it later only takes
-" adding that key to its workspace_config below.
-" Pinning json keeps that server from winning the candidate list, where it
-" ranks first and would take over as soon as it lands on $PATH. Pinning jsonc
-" is for symmetry: the only other candidate there is biome.
-let g:lsp_settings_filetype_json = ['json-languageserver']
-let g:lsp_settings_filetype_jsonc = ['json-languageserver']
+" Use vscode-json-language-server for JSON and JSONC, in place of the
+" vscode-json-languageserver-bin build that vim-lsp-settings otherwise picks
+" and that has been unmaintained since 2021. Two quirks stand in the way, both
+" handled below: the server needs json.validate.enable, and vim-lsp-settings
+" lists it for json but not for jsonc.
+let g:lsp_settings_filetype_json = ['vscode-json-language-server']
+let g:lsp_settings_filetype_jsonc = ['vscode-json-language-server']
 
 " The upstream default skips JS/TS unless a node_modules directory is found.
 " Enable the server for standalone JS/TS files as well. Deno projects should use
 " their dedicated LSP configuration instead of this TypeScript server.
+"
+" vscode-json-language-server reads a configuration without json.validate.enable
+" as "validation off", and vim-lsp-settings leaves the key out while vim-lsp
+" always sends workspace/didChangeConfiguration once the server starts, which
+" would silence diagnostics for good. Restore the key, keeping the rest of the
+" upstream configuration so schema associations still work.
 let g:lsp_settings = {
       \ 'typescript-language-server': {
       \   'blocklist': [],
       \ },
+      \ 'vscode-json-language-server': {
+      \   'workspace_config': {name, key -> {'json': {
+      \     'validate': {'enable': v:true},
+      \     'format': {'enable': v:true},
+      \     'schemas': lsp_settings#utils#load_schemas('vscode-json-language-server')
+      \       + [{'fileMatch': ['/vim-lsp-settings/settings.json', '/.vim-lsp-settings/settings.json'],
+      \          'url': 'https://mattn.github.io/vim-lsp-settings/local-schema.json'}],
+      \   }}},
+      \ },
       \}
+
+" vim-lsp-settings lists vscode-json-language-server for json only, so a session
+" that opens a JSONC buffer first (tsconfig.json and friends) would register no
+" server at all. Register it during vim-lsp setup instead, reusing the settings
+" the plugin would have used, so both filetypes work whatever is opened first.
+function! s:register_json_language_server() abort
+  " lsp_settings#server_info() returns what settings/<server>.vim would have
+  " registered, g:lsp_settings overrides included. Skip quietly if a future
+  " version of the plugin drops it: json buffers still register the server.
+  if !exists('*lsp_settings#server_info')
+    return
+  endif
+  let l:server_info = lsp_settings#server_info('vscode-json-language-server')
+  if !empty(l:server_info)
+    call lsp#register_server(l:server_info)
+  endif
+endfunction
+
+if lsp_settings#executable('vscode-json-language-server')
+  augroup dotfiles_json_language_server
+    autocmd!
+    autocmd User lsp_setup call s:register_json_language_server()
+  augroup END
+endif
 
 " ansible-language-server isn't in vim-lsp-settings' catalog, so register it
 " during vim-lsp setup. ansible-vim sets ft=yaml.ansible under Vim but plain ft=ansible
