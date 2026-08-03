@@ -53,5 +53,11 @@ export BUN_INSTALL="$HOME/.bun"
 export LANG="${LANG:-en_US.UTF-8}"
 export LC_ALL="${LC_ALL:-$LANG}"
 
+# Ansible's multiprocessing workers can be terminated by macOS fork safety.
+# Linux ignores this Objective-C runtime setting, so keep it Darwin-only.
+if [[ "$(uname -s)" == Darwin ]]; then
+  export OBJC_DISABLE_INITIALIZE_FORK_SAFETY="${OBJC_DISABLE_INITIALIZE_FORK_SAFETY:-YES}"
+fi
+
 # Runtime modules and prompt hooks share this helper.
 autoload -Uz add-zsh-hook
