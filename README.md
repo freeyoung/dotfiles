@@ -223,6 +223,25 @@ already the abbreviation for `git diff`.
 `man` renders through `bat` when it is installed, which colours the synopsis
 and options.
 
+`ff` picks a file with fzf and previews it with bat on the way — inline images
+too, under Kitty. `eff` opens what it picked in `$EDITOR`, and `sff dest:/path`
+copies it to a remote host, newest files first.
+
+`e`, `ea`, `et`, and `eta` are `eza` listings, long and tree form, each with
+and without dotfiles. Omarchy points `ls` itself at eza; here `ls` stays GNU
+`ls`, since aliasing it turns a bare `ls` into a long listing and drops the
+flags scripts and habits expect.
+
+`tdl <command> [second]` builds a tmux dev layout — editor left, the command
+on the right, a shell along the bottom — and `tsl <n> <command>` tiles the same
+command across n panes. Both take the command as an argument rather than
+hard-coding a particular editor or agent.
+
+Every command in this group carries the guard that makes it safe on both
+platforms. `open` and `iso2sd` are defined only on Linux: macOS has its own
+`open(1)`, a full utility this one-line `xdg-open` wrapper would shadow, and
+writing an image to a block device has no macOS counterpart.
+
 ### tmux
 
 [`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,

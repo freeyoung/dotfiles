@@ -365,3 +365,168 @@ open-pr() {
     xdg-open "$url"
   fi
 }
+
+# --- Adapted from Omarchy -------------------------------------------------
+# Omarchy's Bash configuration is Linux- and Hyprland-specific in places, so
+# each of these carries the guard that makes it safe to define on macOS too.
+
+# Linux only: macOS has its own open(1), a full utility with -a, -R, -n and
+# more, which this one-line xdg-open wrapper would shadow. The body is a
+# subshell so the background job never reaches the interactive job table.
+if [[ $OSTYPE == linux* ]] && (( $+commands[xdg-open] )); then
+  open() ( xdg-open "$@" >/dev/null 2>&1 & )
+fi
+
+# eza, without taking over ls. Omarchy aliases ls itself, which turns a bare
+# ls into a long listing and drops the GNU flags; keep ls() as it is and reach
+# for eza deliberately.
+if (( $+commands[eza] )); then
+  alias e='eza -lh --group-directories-first --icons=auto --git'
+  alias ea='e -a'
+  alias et='eza --tree --level=2 --long --icons --git'
+  alias eta='et -a'
+fi
+
+# Pick a file with fzf, previewing it on the way. Kitty can draw images
+# inline; every other terminal falls back to bat for everything.
+if (( $+commands[fzf] && $+commands[bat] )); then
+  ff() {
+    local preview='bat --style=numbers --color=always {}'
+    if [[ $TERM == xterm-kitty ]] && (( $+commands[kitty] )); then
+      preview='case $(file --mime-type -b {}) in
+        image/*) kitty icat --clear --transfer-mode=memory --stdin=no --place=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}@0x0 {} ;;
+        *) bat --style=numbers --color=always {} ;;
+      esac'
+    fi
+    fzf --preview "$preview" "$@"
+  }
+
+  # Open the picked file in the editor.
+  eff() {
+    local file
+    file=$(ff) || return
+    [[ -n $file ]] && "${EDITOR:-vim}" "$file"
+  }
+
+  # Copy a file to a remote destination, newest first in the picker. The
+  # ordering comes from a zsh glob qualifier rather than find -printf, which
+  # is a GNU extension the BSD find on macOS does not have.
+  sff() {
+    if (( $# == 0 )); then
+      print -u2 'Usage: sff <destination>   (e.g. sff host:/tmp/)'
+      return 1
+    fi
+    local file
+    file=$(print -rl -- **/*(.om) 2>/dev/null | ff) || return
+    [[ -n $file ]] && scp "$file" "$1"
+  }
+fi
+
+# ouch handles far more formats, but these keep working where it is absent.
+compress() { tar -czf "${1%/}.tar.gz" "${1%/}"; }
+alias decompress='tar -xzf'
+
+# A bare n edits the current directory.
+if (( $+commands[nvim] )); then
+  n() { (( $# )) && command nvim "$@" || command nvim .; }
+fi
+
+if (( $+commands[mise] )); then
+  # mise holds new releases back for a cooling-off period by default; this
+  # asks for them anyway.
+  alias mup='MISE_MINIMUM_RELEASE_AGE=0 mise up'
+fi
+
+(( $+commands[docker] )) && alias d='docker'
+
+# tmux. Omarchy pairs each of these with a herdr twin and hard-codes the
+# programs each pane runs; here the command is always an argument, so the
+# layout is the reusable part.
+if (( $+commands[tmux] )); then
+  alias t='tmux attach || tmux new -s Work'
+
+  # Dev layout: editor filling the left, a command on the right, a shell along
+  # the bottom. A second command splits the right-hand pane.
+  #   tdl 'claude --permission-mode auto' [second-command]
+  tdl() {
+    if (( $# == 0 )); then
+      print -u2 'Usage: tdl <command> [second-command]'
+      return 1
+    fi
+    [[ -n $TMUX ]] || { print -u2 'tdl: start tmux first'; return 1; }
+
+    local dir=$PWD editor_pane=$TMUX_PANE side_pane second_pane
+
+    tmux rename-window -t "$editor_pane" "${dir:t}"
+    tmux split-window -v -p 15 -t "$editor_pane" -c "$dir"
+    side_pane=$(tmux split-window -h -p 30 -t "$editor_pane" -c "$dir" -P -F '#{pane_id}')
+
+    if [[ -n $2 ]]; then
+      second_pane=$(tmux split-window -v -t "$side_pane" -c "$dir" -P -F '#{pane_id}')
+      tmux send-keys -t "$second_pane" "$2" C-m
+    fi
+
+    tmux send-keys -t "$side_pane" "$1" C-m
+    tmux send-keys -t "$editor_pane" "${EDITOR:-vim} ." C-m
+    # Omarchy selects $opencode_pane here, which that function never assigns --
+    # a leftover from the square layout, so focus lands nowhere in particular.
+    tmux select-pane -t "$editor_pane"
+  }
+
+  # Swarm: the same command in a tiled grid of panes.
+  #   tsl 4 'claude --permission-mode auto'
+  tsl() {
+    if (( $# < 2 )); then
+      print -u2 'Usage: tsl <pane-count> <command>'
+      return 1
+    fi
+    [[ -n $TMUX ]] || { print -u2 'tsl: start tmux first'; return 1; }
+
+    local -i count=$1
+    local cmd=$2 dir=$PWD pane
+    local -a panes=("$TMUX_PANE")
+
+    tmux rename-window -t "$TMUX_PANE" "${dir:t}"
+    while (( ${#panes} < count )); do
+      panes+=("$(tmux split-window -h -t "${panes[-1]}" -c "$dir" -P -F '#{pane_id}')")
+      tmux select-layout -t "${panes[1]}" tiled
+    done
+
+    for pane in "${panes[@]}"; do
+      tmux send-keys -t "$pane" "$cmd" C-m
+    done
+    tmux select-pane -t "${panes[1]}"
+  }
+fi
+
+# Linux only: writing an image to a block device has no macOS equivalent, and
+# the tools below are GNU/util-linux. Omarchy picks the drive with its own
+# omarchy-drive-select; fall back to fzf so this needs nothing from it.
+if [[ $OSTYPE == linux* ]]; then
+  iso2sd() {
+    if (( $# < 1 )); then
+      print -u2 'Usage: iso2sd <image> [device]'
+      return 1
+    fi
+    local image=$1 drive=$2
+
+    if [[ -z $drive ]]; then
+      (( $+commands[fzf] )) || {
+        print -u2 'iso2sd: name the device, or install fzf to pick one'
+        return 1
+      }
+      drive=$(lsblk -dpno NAME,SIZE,MODEL |
+        command grep -E '^/dev/(sd|mmcblk)' |
+        fzf --prompt='target device> ' --height=40%) || return
+      drive=${drive%% *}
+    fi
+
+    [[ -b $drive ]] || { print -u2 "iso2sd: not a block device: $drive"; return 1; }
+    print "About to overwrite $drive with $image."
+    print -n 'This destroys everything on it. Continue? [y/N] '
+    read -q || { print; return 1; }
+    print
+
+    sudo dd bs=4M status=progress oflag=sync if="$image" of="$drive" && sudo eject "$drive"
+  }
+fi
