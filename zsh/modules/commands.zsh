@@ -18,11 +18,69 @@ cai() {
 alias k='kubectl'
 
 # Filesystem and clipboard helpers.
-ls() {
-  local -a ls_options=(--color=auto)
-  [[ -t 1 ]] && ls_options+=(-F)
-  command ls "${ls_options[@]}" "$@"
-}
+# eza renders the listing, but the flags stay GNU ls's, because the same hands
+# type ls on servers that will never have eza and a half-learned habit is worse
+# than none. Where the two disagree the GNU meaning wins:
+#
+#   -t  ls sorts by time, eza picks which timestamp to display
+#   -S  ls sorts by size, eza accepts it but sorts the other way round
+#   -F  ls appends type indicators, eza wants a WHEN value after it
+#   -a  ls lists . and .. too; eza's -a is ls's -A, and its -aa is ls's -a
+#
+# One difference is left standing: eza collates byte-wise, so a dotfile sorts
+# ahead of everything, where GNU ls under a UTF-8 locale ignores the leading
+# dot and files it under its letter. eza exposes no collation setting, and no
+# habit rides on where .gitignore lands in the alphabet.
+#
+# The directions matter more than the names. eza sorts ascending; ls puts the
+# newest and the largest first, and its -r reverses whatever sort is in
+# effect. So the reverse flag is the XOR of "this sort is descending in ls" and
+# "the user asked for -r", not a straight translation of -r.
+if (( $+commands[eza] )); then
+  ls() {
+    local -a eza_args paths
+    local sort_field='' classify=auto arg letters
+    local -i gnu_reverse=0 sort_desc=0 opts_done=0 i
+
+    for arg in "$@"; do
+      if (( opts_done )); then
+        paths+=("$arg")
+        continue
+      fi
+      case $arg in
+        --) opts_done=1 ;;
+        --*) eza_args+=("$arg") ;;
+        -?*)
+          letters=${arg#-}
+          for (( i = 1; i <= ${#letters}; i++ )); do
+            case ${letters[i]} in
+              t) sort_field=modified; sort_desc=1 ;;
+              S) sort_field=size; sort_desc=1 ;;
+              X) sort_field=extension ;;
+              U) sort_field=none ;;
+              r) gnu_reverse=1 ;;
+              F) classify=always ;;
+              a) eza_args+=(-a -a) ;;
+              A) eza_args+=(-a) ;;
+              *) eza_args+=("-${letters[i]}") ;;
+            esac
+          done
+          ;;
+        *) paths+=("$arg") ;;
+      esac
+    done
+
+    [[ -n $sort_field ]] && eza_args+=("--sort=$sort_field")
+    (( sort_desc ^ gnu_reverse )) && eza_args+=(--reverse)
+    command eza --color=auto "--classify=$classify" "${eza_args[@]}" "${paths[@]}"
+  }
+else
+  ls() {
+    local -a ls_options=(--color=auto)
+    [[ -t 1 ]] && ls_options+=(-F)
+    command ls "${ls_options[@]}" "$@"
+  }
+fi
 alias l='ls -lah'
 alias ..='cd ..'
 alias ...='cd ../..'
