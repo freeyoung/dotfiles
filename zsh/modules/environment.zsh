@@ -48,6 +48,17 @@ unset zsh_gnu_path zsh_gnu_paths zsh_managed_path zsh_managed_paths
 
 export EDITOR="${EDITOR:-vim}"
 export BUN_INSTALL="$HOME/.bun"
+
+# Render man pages through bat: syntax highlighting for the synopsis and
+# options, and a pager that already matches the rest of this configuration.
+# MANROFFOPT=-c stops groff from emitting the overstrike sequences that would
+# otherwise reach bat as literal backspaces. Both are set only when bat is
+# present so a host without it keeps the standard pager.
+if (( $+commands[bat] )); then
+  export BAT_THEME="${BAT_THEME:-ansi}"
+  export MANROFFOPT="${MANROFFOPT:--c}"
+  export MANPAGER="${MANPAGER:-sh -c 'col -bx | bat -l man -p'}"
+fi
 # Preserve an existing host locale; use the familiar UTF-8 locale only when a
 # minimal environment has not set one. LC_ALL remains overridable by the host.
 export LANG="${LANG:-en_US.UTF-8}"

@@ -193,6 +193,36 @@ shared-config setup), or, for base16, having `Identifier` equal `Normal`
 (no color distinction for YAML/Ansible keys). See git history on
 `vim/config/plugins.vim` and `vim/plugs.vim` for the full trail.
 
+### Shell commands
+
+Beyond the aliases in [`zsh/modules/commands.zsh`](zsh/modules/commands.zsh),
+a few helpers are worth calling out. Several were adapted from
+[Omarchy](https://omarchy.org/), whose Bash configuration is where the ideas
+came from; they are reimplemented here in Zsh and without its machine-specific
+dependencies.
+
+`ssh` is wrapped. A remote tmux, pager, or editor arms terminal modes over the
+connection — mouse tracking, focus reporting, the alternate screen — that only
+it can disarm. When the connection dies instead of exiting cleanly those modes
+stay armed locally, and every mouse move then floods the prompt with escape
+junk. The wrapper always disarms them, and reconnects when an *interactive*
+session drops: exit status 255, a session that lasted at least 30 seconds, a
+terminal on stdin, and no remote command. That last condition is checked
+against `ssh -G`, so a `RemoteCommand` from `ssh_config` cannot have its side
+effects replayed either. Ctrl-C stops the retry loop.
+
+`fip host port...` forwards ports over SSH in the background, `dip port...`
+stops them, and `lip` lists what is currently forwarded.
+
+`gwa branch` creates a Git worktree as a sibling directory named
+`<repo>--<branch>` and moves into it; `gwr` removes the worktree and its branch
+from inside one, recovering the branch name from that directory name and
+refusing to run anywhere else. They are not called `ga` and `gd` — `gd` is
+already the abbreviation for `git diff`.
+
+`man` renders through `bat` when it is installed, which colours the synopsis
+and options.
+
 ### tmux
 
 [`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,
