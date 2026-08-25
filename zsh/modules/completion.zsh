@@ -33,13 +33,17 @@ _zsh_refresh_completions() {
   print 'Completion cache refreshed.'
 }
 
-# Fully update Homebrew and immediately rebuild Zsh completion metadata.
-brewup() {
-  command brew update && \
-    command brew upgrade -y && \
-    command brew cleanup --prune=all -s || return
-  _zsh_refresh_completions
-}
+# Fully update Homebrew and immediately rebuild Zsh completion metadata. Hosts
+# without Homebrew never define it, so the name does not shadow anything and
+# tab completion does not offer a command that cannot run.
+if (( $+commands[brew] )); then
+  brewup() {
+    command brew update && \
+      command brew upgrade -y && \
+      command brew cleanup --prune=all -s || return
+    _zsh_refresh_completions
+  }
+fi
 
 # After ordinary completion has no result, offer Fish-like fuzzy completion
 # for a filename in the current directory or the final segment of an existing

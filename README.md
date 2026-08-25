@@ -32,21 +32,69 @@ state is separate under `~/.local/state/vim` and `~/.local/state/nvim` (or
 their XDG equivalents).
 
 On macOS, the installer installs Homebrew when necessary and applies the
-shared [`Brewfile`](Brewfile). Linuxbrew uses the same path on Linux. The
-installer verifies the GNU userland used by this configuration (`gls`,
-`ggrep`, `gsed`, and `gawk`) and stops if it is incomplete. Install
-Linuxbrew on Linux before running the bootstrap; the required formulas are
-`coreutils`, `grep`, `gnu-sed`, and `gawk`. The installer never changes
-the login shell.
+shared [`Brewfile`](Brewfile). A Linux host that already has Linuxbrew takes
+the same path.
+
+Without Homebrew, a Linux host is bootstrapped from its own package manager;
+Arch (`pacman`) is mapped today, and other distributions still ask for
+Linuxbrew. The native path also installs `zsh`, which macOS provides as the
+login shell but Arch does not install by default, and clones
+[antidote](https://github.com/mattmc3/antidote) into `~/.antidote` so no AUR
+helper becomes a bootstrap dependency. Node is deliberately not installed:
+mise provides the versions projects pin. Where mise itself is packaged under
+another name — Omarchy and the AUR ship `mise-bin`, which conflicts with the
+official `mise` — the installer detects it through `pacman -T` and leaves the
+existing package alone.
+
+Either way the installer verifies the GNU userland this configuration relies
+on and stops if it is incomplete. macOS needs Homebrew's `gls`, `ggrep`,
+`gsed`, and `gawk` because its own userland is BSD; on Linux the unprefixed
+tools are accepted once their `--version` output confirms they are GNU builds
+rather than BSD or busybox ones. The installer never changes the login shell.
 
 Copy `zsh/local.zsh.example` to `~/.config/zsh/local.zsh` to add private
 machine settings. The installer does this once automatically and preserves it
 on later runs.
 
 Shared Zsh settings are loaded in a deliberate order from `zsh/modules/`:
-environment, runtimes, commands, completion, Node/tool integrations, prompt,
+environment, runtimes, prompt, commands, completion, Node/tool integrations,
 plugins, then interactive bindings. `zsh/zshrc` is only the interactive guard
 and loader; keep machine-specific settings in `~/.config/zsh/local.zsh`.
+
+### Language runtimes
+
+[mise](https://mise.jdx.dev/) resolves every pinned runtime version, replacing
+the per-language managers this configuration used before (pyenv,
+pyenv-virtualenv, and fnm). One `mise activate` in
+[`zsh/modules/runtimes.zsh`](zsh/modules/runtimes.zsh) covers all of them
+through a single precmd hook, so the deferred-initialisation machinery those
+tools needed — pyenv's own hook cost roughly 80 ms per shell — is gone.
+
+mise reads its own `mise.toml` by default and ignores `.python-version`,
+`.nvmrc`, and similar files unless the owning tools are named in
+`MISE_IDIOMATIC_VERSION_FILE_ENABLE_TOOLS`; `runtimes.zsh` sets it to
+`python,node`.
+
+A project virtualenv replaces `pyenv-virtualenv` and is declared in the
+project's `mise.toml`:
+
+```toml
+[tools]
+python = "3.13"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+```
+
+mise creates the virtualenv on first entry and exports `VIRTUAL_ENV` and
+`PATH`, leaving `PROMPT` untouched. With `uv` installed, setting
+`python.uv_venv_auto` routes creation through it; without uv, mise falls back
+to the standard library's `venv` silently.
+
+Note that a `.python-version` naming a pyenv *virtualenv* rather than a
+version — pyenv-virtualenv accepts both — has no mise equivalent. Replace those
+files with a `mise.toml`; mise otherwise treats the name as a version string
+and reports it as uninstalled.
 
 On first run, an existing `~/.gitconfig` is moved to
 `~/.config/git/local.gitconfig`, then replaced with a link to the shared Git

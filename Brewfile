@@ -13,12 +13,12 @@ brew "gawk"
 brew "grep"
 brew "gnu-sed"
 
-# Language runtimes and version managers.
-brew "fnm"
+# Language runtimes. mise resolves every pinned version, so no per-language
+# manager (fnm, pyenv, pyenv-virtualenv) and no separately installed Node are
+# needed; see zsh/modules/runtimes.zsh. uv backs mise's virtualenv creation and
+# is the Python package installer this configuration expects.
+brew "mise"
 brew "go"
-brew "node"
-brew "pyenv"
-brew "pyenv-virtualenv"
 brew "uv"
 
 # Editors.
