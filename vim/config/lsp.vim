@@ -77,7 +77,12 @@ function! s:register_json_language_server() abort
   endif
 endfunction
 
-if lsp_settings#executable('vscode-json-language-server')
+" Guarded the same way as server_info() above: before the plugins are
+" installed -- which is exactly the state a fresh host bootstraps from --
+" this autoload function does not exist, and calling it aborts the whole
+" configuration with E117.
+if exists('*lsp_settings#executable') &&
+      \ lsp_settings#executable('vscode-json-language-server')
   augroup dotfiles_json_language_server
     autocmd!
     autocmd User lsp_setup call s:register_json_language_server()

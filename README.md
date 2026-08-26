@@ -468,3 +468,43 @@ bash ~/dotfiles/scripts/omarchy-review.sh
 Run it after `omarchy update`. The output is only ever what is new, with the
 line that defines it; add a row for each and the next run is quiet. The script
 exits cleanly on a host without Omarchy.
+
+It checks the other direction too. Omarchy ships user configuration files, and
+four of them this repository either owns or has to keep out of the way:
+`hypr/input.lua`, `hypr/looknfeel.lua`, `starship.toml`, and `tmux/tmux.conf`,
+which must not exist at all since tmux reads it after `~/.tmux.conf`.
+`omarchy-refresh-config` copies Omarchy's version over `~/.config/<path>` with
+`cp -f`, and the Omarchy menu reaches it through `omarchy-refresh-hyprland` and
+`omarchy-refresh-tmux`, which name exactly those files -- so this is one click
+away rather than hypothetical.
+
+`cp -f` writes through a symlink rather than replacing it, so a refresh
+overwrites the contents of a file in this repository, where `git status` will
+show it, instead of quietly detaching the link. The review reports any of the
+four that reappeared, stopped being a link, or came back byte-identical to
+Omarchy's default, and names the `.bak.<epoch>` file Omarchy left behind. That
+is a regression rather than news, so it exits 1; new shell definitions on their
+own exit 0.
+
+### Continuous integration
+
+[`.github/workflows/checks.yml`](.github/workflows/checks.yml) runs
+[`scripts/check-bootstrap.sh`](scripts/check-bootstrap.sh) on every push and
+pull request, on both Ubuntu and macOS, since much of what the installer does
+turns on which of the two it is running on. Every check inside the bootstrap is
+guarded on its tool existing, so the workflow installs zsh, vim, tmux, and Lua
+first -- an absent tool is not a passing check, it is a check that never ran.
+
+The workflow reaching for `apt` there is not a claim of Debian support. It runs
+`install --links-only`, which skips
+[`scripts/install-dependencies.sh`](scripts/install-dependencies.sh)
+entirely, so the package-manager mapping above is never exercised; Ubuntu is
+still supported the way any non-Arch distribution is, through Linuxbrew. What
+the Ubuntu job proves is the linking half on a Linux that is not this one --
+the platform guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim
+configuration parsing under older tools and no installed plugins. Both of those
+last two caught a real bug the first time it ran.
+
+Two guards are invisible to it either way: `Hyprland` and `fcitx5` exist on
+neither runner, so nothing links or checks those files except the host that
+has them.
