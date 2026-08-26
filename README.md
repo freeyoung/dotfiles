@@ -305,11 +305,25 @@ they stay what they are for: a last resort for a codepoint nothing else has.
 [`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,
 mouse support, large scrollback, and system clipboard integration. Splits
 preserve the current directory; `h/j/k/l` navigate panes and `prefix + r`
-reloads the configuration.
+reloads the configuration. Ctrl-B stays the prefix, because that is what an
+unconfigured tmux on a server answers to; Ctrl-Space is a secondary prefix.
 
-The status line follows Tomorrow Night Bright: session, host, date, and time
-use blue, cyan, yellow, and green segments. Time includes seconds and refreshes
-every second. Copy-mode uses yellow selection with black text.
+tmux applies every configuration file it finds rather than stopping at the
+first, in the order `/etc/tmux.conf`, `~/.tmux.conf`,
+`$XDG_CONFIG_HOME/tmux/tmux.conf`. A file at the XDG path therefore does not
+supplement this one -- it overrides every setting the two have in common.
+Omarchy installs one, so the installer moves it into the backup directory.
+What was worth keeping from it is here instead: the no-prefix Alt layer
+(`Alt+Enter` to split, `Alt+1`..`Alt+9` for windows, `Ctrl+Alt+arrows` for
+panes), the uppercase session controls, `prefix + ?` for the searchable
+keybinding popup, and a note on every binding so `list-keys -N` reads as
+documentation.
+
+The status line names colors instead of giving hex values, so it follows
+whatever palette the terminal is themed with -- Omarchy's theme switcher
+repaints it for free, and a 16-color terminal on a server still renders it. It
+shows the session on the left, and copy/prefix/zoom flags, host, date, and time
+on the right, refreshed every second.
 
 ### Performance
 

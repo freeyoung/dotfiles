@@ -60,11 +60,29 @@ backup_and_link() {
   printf 'Linked: %s -> %s\n' "$target" "$source"
 }
 
+# tmux applies every configuration file it finds rather than stopping at the
+# first, so a second file does not supplement ~/.tmux.conf -- it overrides
+# every setting the two have in common. Omarchy installs one at the XDG path,
+# which tmux reads last and which therefore wins. Move such a file aside; what
+# was worth keeping from Omarchy's is already in tmux.conf here.
+backup_conflicting() {
+  local target="$1" reason="$2" backup
+
+  [[ -e "$target" || -L "$target" ]] || return 0
+
+  backup="$backup_root/${target#"$HOME"/}"
+  mkdir -p "$(dirname "$backup")"
+  mv "$target" "$backup"
+  printf 'Moved aside, %s: %s -> %s\n' "$reason" "$target" "$backup"
+}
+
 vim_dir="$repo_dir/vim"
 backup_and_link "$vim_dir" "$HOME/.vim"
 backup_and_link "$vim_dir/vimrc" "$HOME/.vimrc"
 backup_and_link "$vim_dir/nvim_init.vim" "$HOME/.config/nvim/init.vim"
 backup_and_link "$repo_dir/tmux.conf" "$HOME/.tmux.conf"
+backup_conflicting "$HOME/.config/tmux/tmux.conf" \
+  "tmux reads it after ~/.tmux.conf and would override it"
 backup_and_link "$repo_dir/zsh/zshrc" "$HOME/.zshrc"
 backup_and_link "$repo_dir/zsh/zprofile" "$HOME/.zprofile"
 backup_and_link "$repo_dir/zsh/plugins.txt" "$HOME/.zsh_plugins.txt"
