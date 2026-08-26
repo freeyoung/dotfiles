@@ -346,3 +346,20 @@ header each executable carries.
 Completion lists take their filename colours from `LS_COLORS`, which
 `completion.zsh` fills in through `dircolors` — nothing on Arch sets it
 otherwise, and eza reads the same variable.
+
+### Tracking Omarchy
+
+Several of the commands above came from
+[Omarchy](https://omarchy.org/)'s own Bash configuration, which keeps growing.
+[`omarchy/ledger.tsv`](omarchy/ledger.tsv) records the verdict on every alias,
+function and export it defines — ported, renamed, or skipped with the reason —
+and [`scripts/omarchy-review.sh`](scripts/omarchy-review.sh) subtracts that
+ledger from what Omarchy currently ships:
+
+```bash
+bash ~/dotfiles/scripts/omarchy-review.sh
+```
+
+Run it after `omarchy update`. The output is only ever what is new, with the
+line that defines it; add a row for each and the next run is quiet. The script
+exits cleanly on a host without Omarchy.

@@ -531,6 +531,36 @@ if (( $+commands[tmux] )); then
     tmux select-pane -t "$editor_pane"
   }
 
+  # One tdl window per subdirectory of the current one, for working across a
+  # set of checkouts at once.
+  #   tdlm 'claude --permission-mode auto' [second-command]
+  tdlm() {
+    if (( $# == 0 )); then
+      print -u2 'Usage: tdlm <command> [second-command]'
+      return 1
+    fi
+    [[ -n $TMUX ]] || { print -u2 'tdlm: start tmux first'; return 1; }
+
+    local base=$PWD dir pane_id session
+    local -i first=1
+
+    # tmux rejects dots and colons in a session name.
+    session=${${base:t}//[.:]/-}
+    tmux rename-session "$session" 2>/dev/null
+
+    for dir in $base/*(N/); do
+      # Quote each argument: Omarchy passes them bare, which works for its own
+      # single-word aliases and comes apart for a command with arguments.
+      if (( first )); then
+        tmux send-keys -t "$TMUX_PANE" "cd ${(q)dir} && tdl ${(q)1} ${2:+${(q)2}}" C-m
+        first=0
+      else
+        pane_id=$(tmux new-window -c "$dir" -P -F '#{pane_id}')
+        tmux send-keys -t "$pane_id" "tdl ${(q)1} ${2:+${(q)2}}" C-m
+      fi
+    done
+  }
+
   # Swarm: the same command in a tiled grid of panes.
   #   tsl 4 'claude --permission-mode auto'
   tsl() {
