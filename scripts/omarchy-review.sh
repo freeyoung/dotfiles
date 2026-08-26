@@ -43,6 +43,8 @@ managed_files=(
   'tmux/tmux.conf|-'
   'hypr/input.lua|hypr/input.lua'
   'hypr/looknfeel.lua|hypr/looknfeel.lua'
+  'hypr/bindings.lua|hypr/bindings.lua'
+  'kitty/kitty.conf|kitty/kitty.conf'
   'starship.toml|starship/starship.toml'
 )
 
