@@ -494,3 +494,17 @@ pull request, on both Ubuntu and macOS, since much of what the installer does
 turns on which of the two it is running on. Every check inside the bootstrap is
 guarded on its tool existing, so the workflow installs zsh, vim, tmux, and Lua
 first -- an absent tool is not a passing check, it is a check that never ran.
+
+The workflow reaching for `apt` there is not a claim of Debian support. It runs
+`install --links-only`, which skips
+[`scripts/install-dependencies.sh`](scripts/install-dependencies.sh)
+entirely, so the package-manager mapping above is never exercised; Ubuntu is
+still supported the way any non-Arch distribution is, through Linuxbrew. What
+the Ubuntu job proves is the linking half on a Linux that is not this one --
+the platform guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim
+configuration parsing under older tools and no installed plugins. Both of those
+last two caught a real bug the first time it ran.
+
+Two guards are invisible to it either way: `Hyprland` and `fcitx5` exist on
+neither runner, so nothing links or checks those files except the host that
+has them.
