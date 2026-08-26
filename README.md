@@ -329,3 +329,20 @@ generic `playbooks/` directory with arbitrary filenames. It sets
 `filetype=yaml.ansible` under Vim and plain `filetype=ansible` under Neovim
 (ansible-vim's own upstream difference); both are handled everywhere they
 matter (LSP allowlist, plugin lazy-loading).
+
+### Completion
+
+Completion functions live in [`zsh/completions/`](zsh/completions), which
+`completion.zsh` puts on `fpath`. zsh autoloads each only when something asks
+to complete the command it names, so an entry costs nothing at startup and
+needs no guard for a command the host may not have.
+
+`_omarchy` completes [Omarchy](https://omarchy.org/)'s dispatcher, which
+Omarchy itself ships only for Bash. `omarchy a b` runs the `omarchy-a-b`
+executable, so the command tree is read out of the names in its bin directory,
+and the values after the last subcommand come from the `# omarchy:args=`
+header each executable carries.
+
+Completion lists take their filename colours from `LS_COLORS`, which
+`completion.zsh` fills in through `dircolors` — nothing on Arch sets it
+otherwise, and eza reads the same variable.

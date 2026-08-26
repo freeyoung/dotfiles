@@ -1,0 +1,110 @@
+#compdef omarchy
+
+# Omarchy dispatches `omarchy a b` to the omarchy-a-b executable, so the
+# command tree is discoverable from the names in its bin directory. Each
+# executable also carries a `# omarchy:args=` header describing its arguments,
+# which is where the values after the last subcommand come from.
+#
+# Omarchy ships a Bash completion for this and no Zsh one. Nothing here needs
+# Omarchy to be installed: zsh autoloads this file the first time `omarchy` is
+# completed, and it gives up quietly when the command is absent.
+
+_omarchy_bin_dir() {
+  local resolved
+  (( $+commands[omarchy] )) || return 1
+  resolved=$(readlink -f -- "$commands[omarchy]" 2>/dev/null) || resolved=$commands[omarchy]
+  print -r -- "${resolved:h}"
+}
+
+# Literal words and <a|b> / [a|b] alternatives at one position of an args
+# header, whose forms are separated by " | ".
+_omarchy_args_at() {
+  local file=$1 index=$2 line alt token value
+  local -a spec out
+
+  line=$(command grep -m 1 '^# omarchy:args=' -- "$file" 2>/dev/null) || return 1
+  line=${line#*omarchy:args=}
+
+  for alt in ${(s: | :)line}; do
+    # Split on whitespace only. (z) would parse the words as shell syntax,
+    # which turns the < of a <placeholder> into a redirection operator.
+    spec=(${=alt})
+    token=${spec[index+1]}
+    [[ -n $token ]] || continue
+    if [[ $token == (\<*\>|\[*\]) ]]; then
+      value=${${token#[<\[]}%[>\]]}
+      [[ $value == *\|* ]] && out+=(${(s:|:)value})
+    else
+      out+=($token)
+    fi
+  done
+
+  (( ${#out} )) && print -r -- ${(u)out}
+}
+
+_omarchy() {
+  local bin_dir prefix part next base rest file
+  local -a candidates
+  local -A seen
+  local -i i
+
+  bin_dir=$(_omarchy_bin_dir) || return 1
+  [[ -d $bin_dir ]] || return 1
+
+  # Everything typed so far, minus flags, spells the executable's name.
+  prefix=omarchy
+  for (( i = 2; i < CURRENT; i++ )); do
+    part=$words[i]
+    [[ -z $part || $part == -* ]] && continue
+    prefix+=-$part
+  done
+
+  for file in $bin_dir/${prefix}-*(N.x); do
+    base=${file:t}
+    rest=${base#${prefix}-}
+    next=${rest%%-*}
+    if [[ -n $next && -z ${seen[$next]} ]]; then
+      seen[$next]=1
+      candidates+=($next)
+    fi
+  done
+
+  # `omarchy commands` lists everything but has no executable of its own.
+  (( CURRENT == 2 )) && candidates+=(commands)
+
+  if (( ${#candidates} )); then
+    _describe -t commands 'omarchy command' candidates
+    return
+  fi
+
+  # Past the last subcommand: fall back to the args header, then to files.
+  local command_path
+  local -i first_arg
+  for (( i = CURRENT - 1; i >= 1; i-- )); do
+    prefix=omarchy
+    local -i j
+    for (( j = 2; j <= i; j++ )); do
+      part=$words[j]
+      [[ -z $part || $part == -* ]] && continue
+      prefix+=-$part
+    done
+    if [[ -x $bin_dir/$prefix ]]; then
+      command_path=$bin_dir/$prefix
+      first_arg=$((i + 1))
+      break
+    fi
+  done
+
+  if [[ -n $command_path ]]; then
+    local -a values
+    values=(${(f)"$(_omarchy_args_at "$command_path" $((CURRENT - first_arg)))"})
+    if (( ${#values} )); then
+      _describe -t arguments 'argument' values
+      return
+    fi
+  fi
+
+  _default
+}
+
+_omarchy "$@"

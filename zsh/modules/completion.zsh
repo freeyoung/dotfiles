@@ -10,6 +10,17 @@ setopt hist_reduce_blanks hist_save_no_dups
 # the arrow widgets after it is loaded below.
 bindkey -e
 
+# Completion functions kept with this configuration. zsh autoloads each only
+# when something asks to complete the command it names, so an entry here costs
+# nothing at startup and needs no guard for a command the host may not have.
+fpath=("${${(%):-%N}:A:h:h}/completions" $fpath)
+
+# Colour the completion list the way ls colours a listing. LS_COLORS is what
+# both that and eza read, and nothing on Arch sets it by default.
+if (( $+commands[dircolors] )) && [[ -z ${LS_COLORS:-} ]]; then
+  eval "$(dircolors -b)"
+fi
+
 autoload -Uz compinit
 typeset -g ZSH_COMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump"
 
@@ -98,6 +109,11 @@ zstyle ':completion:*:descriptions' format '%F{220}-- %d --%f'
 zstyle ':completion:*:messages' format '%F{220}-- %d --%f'
 zstyle ':completion:*:warnings' format '%F{red}-- no matches found --%f'
 zstyle ':completion:*:corrections' format '%F{220}-- correct %d --%f'
+# Filenames take their colours from LS_COLORS, matching the listing they came
+# from. The :options rule below is the more specific context, so the
+# option-list palette still wins there.
+[[ -n ${LS_COLORS:-} ]] && zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+
 # Keep options cool-toned and their explanatory text warm, like the familiar
 # fish list while retaining native Zsh completion semantics.
 zstyle ':completion:*:options' list-colors \

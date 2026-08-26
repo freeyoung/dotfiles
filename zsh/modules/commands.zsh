@@ -588,3 +588,60 @@ if [[ $OSTYPE == linux* ]]; then
     sudo dd bs=4M status=progress oflag=sync if="$image" of="$drive" && sudo eject "$drive"
   }
 fi
+
+# Linux only: the watcher is built on inotifywait and setsid, neither of which
+# BSD provides. A macOS port would want fswatch and a different way to detach.
+if [[ $OSTYPE == linux* ]] && (( $+commands[inotifywait] && $+commands[rsync] )); then
+  # Mirror a directory to a destination, then again on every change.
+  #   rsw ./src host:/srv/app
+  rsw() {
+    if (( $# != 2 )); then
+      print -u2 'Usage: rsw <source> <destination>'
+      return 1
+    fi
+    local src=${1%/} dest=$2 sockets rsh
+    if [[ ! -d $src ]]; then
+      print -u2 "rsw: not a directory: $src"
+      return 1
+    fi
+
+    # One shared SSH connection per login, so a key agent or password prompt
+    # is answered once rather than on every sync.
+    sockets=${XDG_RUNTIME_DIR:-$HOME/.ssh/sockets}
+    mkdir -p "$sockets"
+    rsh="ssh -o ControlMaster=auto -o ControlPath=$sockets/rsw-%r@%h:%p -o ControlPersist=yes"
+
+    # The marker argument is what lsw and dsw find the watcher by.
+    setsid --fork env RSYNC_RSH="$rsh" bash -c '
+      rsync -a "$1/" "$2"
+      while inotifywait -r -q -e modify,create,delete,move "$1"; do
+        rsync -a "$1/" "$2"
+      done' rsw-watch "$src" "$dest" >/dev/null 2>&1
+
+    print "Watching $src -> $dest"
+  }
+
+  lsw() {
+    local line rest found=0
+    while read -r line; do
+      rest=${line#*rsw-watch }
+      print "${line%% *}: ${rest% *} -> ${rest##* }"
+      found=1
+    done < <(pgrep -af 'rsw-watch ')
+    (( found )) || print 'No active watches'
+  }
+
+  dsw() {
+    local pid found=0
+    for pid in ${(f)"$(pgrep -f 'rsw-watch ')"}; do
+      [[ -n $pid ]] || continue
+      # Negated pid: setsid put the watcher in its own process group, and the
+      # rsync or inotifywait it is currently blocked on has to go with it.
+      if kill -- -"$pid" 2>/dev/null; then
+        print "Stopped watch (pid $pid)"
+        found=1
+      fi
+    done
+    (( found )) || print 'No active watches'
+  }
+fi
