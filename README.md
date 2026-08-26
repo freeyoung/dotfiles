@@ -264,6 +264,31 @@ platforms. `open` and `iso2sd` are defined only on Linux: macOS has its own
 `open(1)`, a full utility this one-line `xdg-open` wrapper would shadow, and
 writing an image to a block device has no macOS counterpart.
 
+### Fonts
+
+[`fontconfig/fonts.conf`](fontconfig/fonts.conf) is linked to
+`~/.config/fontconfig/fonts.conf`. Noto Sans CJK ships SC, TC, JP, KR and HK
+under one family name, and left to itself fontconfig picks between them by
+whatever the ordering leaves first — which is how Chinese ends up rendered in
+Japanese glyph forms. These rules put the Simplified Chinese faces first for
+Chinese, and each region's own face first for Japanese, Korean and Traditional
+Chinese.
+
+Chromium and Electron resolve a missing glyph one character at a time, on a
+pattern carrying neither a family nor a language, so language rules never fire
+for them. A weakly bound last-resort family covers that path; all three SC
+faces are named, because a monospace pattern carries a spacing requirement the
+proportional face cannot satisfy.
+
+Everything here adds to the generic families rather than replacing them, so a
+distribution that assigns its own faces to `sans-serif` and the rest keeps
+them.
+
+Fonts that exist only to cover the CJK extension blocks — BabelStone Han,
+HanaMin — claim enough of Unicode besides that fontconfig will otherwise hand
+them ordinary text and even emoji. The language they declare is reassigned so
+they stay what they are for: a last resort for a codepoint nothing else has.
+
 ### tmux
 
 [`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,

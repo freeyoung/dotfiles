@@ -64,6 +64,7 @@ fi
 for target in \
   .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt \
   .gitconfig .ssh/config .config/nvim/init.vim .config/starship.toml \
+  .config/fontconfig/fonts.conf \
   .config/zsh-abbr/user-abbreviations; do
   [[ -L "$tmp_dir/home/$target" ]] || {
     echo "Installer did not link $target" >&2
