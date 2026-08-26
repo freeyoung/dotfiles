@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+# Overriding HOME does not isolate this on its own: XDG_DATA_HOME and its
+# siblings are absolute paths into the real home, so Vim went on finding the
+# real plugin directory and this check passed on a machine where a fresh host
+# would have failed. Clear them, which is what a fresh host looks like.
+unset XDG_DATA_HOME XDG_CONFIG_HOME XDG_STATE_HOME XDG_CACHE_HOME
+
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/vim-bootstrap.XXXXXX")"
 trap 'rm -rf "$tmp_dir"' EXIT
