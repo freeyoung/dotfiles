@@ -88,6 +88,9 @@ backup_and_link "$repo_dir/zsh/zprofile" "$HOME/.zprofile"
 backup_and_link "$repo_dir/zsh/plugins.txt" "$HOME/.zsh_plugins.txt"
 backup_and_link "$repo_dir/zsh/abbr" "$HOME/.config/zsh-abbr/user-abbreviations"
 backup_and_link "$repo_dir/starship/starship.toml" "$HOME/.config/starship.toml"
+# Tools mise installs on every host, whatever the platform. Per-project
+# versions come from each repository's own mise.toml and win over these.
+backup_and_link "$repo_dir/mise/config.toml" "$HOME/.config/mise/config.toml"
 # Linux only. macOS renders through Core Text, so even where a Homebrew
 # package pulls fontconfig in, these rules would name faces that host does not
 # have and resolve to nothing. Linking anyway would create the directory and
@@ -95,6 +98,26 @@ backup_and_link "$repo_dir/starship/starship.toml" "$HOME/.config/starship.toml"
 # for no effect.
 if [[ $OSTYPE == linux* ]]; then
   backup_and_link "$repo_dir/fontconfig/fonts.conf" "$HOME/.config/fontconfig/fonts.conf"
+  # Compose sequences. Harmless where no compose key is bound, since nothing
+  # reads the table until a compose key produces a sequence.
+  backup_and_link "$repo_dir/xcompose" "$HOME/.XCompose"
+fi
+
+# Hyprland reads these after its own defaults and after the theme, so they are
+# overrides rather than a replacement configuration -- Omarchy can keep
+# improving what it ships without this repository having to track it. Guarded
+# on the compositor rather than on Linux, because on a host without it these
+# would only create a directory nothing reads.
+if command -v Hyprland >/dev/null 2>&1; then
+  backup_and_link "$repo_dir/hypr/input.lua" "$HOME/.config/hypr/input.lua"
+  backup_and_link "$repo_dir/hypr/looknfeel.lua" "$HOME/.config/hypr/looknfeel.lua"
+fi
+
+# fcitx5 reads table behaviour from table/, not from inputmethod/, which is
+# where the input method is registered rather than configured.
+if command -v fcitx5 >/dev/null 2>&1; then
+  backup_and_link "$repo_dir/fcitx5/wubi-large.conf" \
+    "$HOME/.config/fcitx5/table/wubi-large.conf"
 fi
 
 ssh_dir="$HOME/.ssh"
@@ -342,6 +365,15 @@ if command -v zsh >/dev/null 2>&1; then
     zsh -n "$zsh_config"
   done
   printf 'Zsh syntax check passed.\n'
+fi
+
+# Hyprland reports a Lua error by carrying on with the previous configuration,
+# so a typo here is quiet. luac -p only parses; it writes nothing.
+if command -v luac >/dev/null 2>&1; then
+  for lua_config in "$repo_dir"/hypr/*.lua; do
+    luac -p -- "$lua_config"
+  done
+  printf 'Lua syntax check passed.\n'
 fi
 
 if command -v vim >/dev/null 2>&1; then

@@ -1,0 +1,12 @@
+# Tools mise installs globally, on every host. Per-project versions come from
+# each repository's own mise.toml and take precedence over these.
+#
+# Language runtimes are pinned; the CLIs track latest, since they are moving
+# fast enough that a pin here would only ever be stale.
+[tools]
+claude = "latest"
+codex = "latest"
+gh = "latest"
+node = "26.7.0"
+opencode = "latest"
+pi = "latest"

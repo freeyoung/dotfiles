@@ -64,10 +64,14 @@ fi
 linked_targets=(
   .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt
   .gitconfig .config/git/ignore .ssh/config .config/nvim/init.vim .config/starship.toml
-  .config/zsh-abbr/user-abbreviations
+  .config/zsh-abbr/user-abbreviations .config/mise/config.toml
 )
-# The installer links this one on Linux only; see the comment there.
-[[ $OSTYPE == linux* ]] && linked_targets+=(.config/fontconfig/fonts.conf)
+# The installer guards these; mirror each guard rather than assume the host.
+[[ $OSTYPE == linux* ]] && linked_targets+=(.config/fontconfig/fonts.conf .XCompose)
+command -v Hyprland >/dev/null 2>&1 &&
+  linked_targets+=(.config/hypr/input.lua .config/hypr/looknfeel.lua)
+command -v fcitx5 >/dev/null 2>&1 &&
+  linked_targets+=(.config/fcitx5/table/wubi-large.conf)
 
 for target in "${linked_targets[@]}"; do
   [[ -L "$tmp_dir/home/$target" ]] || {
