@@ -9,12 +9,23 @@ HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=240,fg=white,bold'
 # Antidote compiles the manifest into a static source file on manifest changes,
 # avoiding plugin-manager work in ordinary shell startups.
 zsh_plugins=${ZDOTDIR:-$HOME}/.zsh_plugins
+# Homebrew keeps antidote under opt/, a git clone lives in ~/.antidote, and
+# distribution packages install it below /usr/share. Take the first that exists.
 zsh_antidote=''
-if [[ -n ${HOMEBREW_PREFIX:-} && -r "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" ]]; then
-  zsh_antidote="$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
-elif [[ -r "$HOME/.antidote/antidote.zsh" ]]; then
-  zsh_antidote="$HOME/.antidote/antidote.zsh"
-fi
+typeset -a zsh_antidote_candidates
+zsh_antidote_candidates=(
+  ${HOMEBREW_PREFIX:+"$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"}
+  "$HOME/.antidote/antidote.zsh"
+  /usr/share/zsh-antidote/antidote.zsh
+  /usr/share/zsh/plugins/antidote/antidote.zsh
+)
+for zsh_antidote_candidate in "${zsh_antidote_candidates[@]}"; do
+  if [[ -r "$zsh_antidote_candidate" ]]; then
+    zsh_antidote="$zsh_antidote_candidate"
+    break
+  fi
+done
+unset zsh_antidote_candidate zsh_antidote_candidates
 if [[ ! -r ${zsh_plugins}.zsh || ${zsh_plugins}.txt -nt ${zsh_plugins}.zsh ]]; then
   if [[ -r "$zsh_antidote" && -r ${zsh_plugins}.txt ]]; then
     source "$zsh_antidote"

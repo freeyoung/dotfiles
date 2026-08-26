@@ -32,21 +32,69 @@ state is separate under `~/.local/state/vim` and `~/.local/state/nvim` (or
 their XDG equivalents).
 
 On macOS, the installer installs Homebrew when necessary and applies the
-shared [`Brewfile`](Brewfile). Linuxbrew uses the same path on Linux. The
-installer verifies the GNU userland used by this configuration (`gls`,
-`ggrep`, `gsed`, and `gawk`) and stops if it is incomplete. Install
-Linuxbrew on Linux before running the bootstrap; the required formulas are
-`coreutils`, `grep`, `gnu-sed`, and `gawk`. The installer never changes
-the login shell.
+shared [`Brewfile`](Brewfile). A Linux host that already has Linuxbrew takes
+the same path.
+
+Without Homebrew, a Linux host is bootstrapped from its own package manager;
+Arch (`pacman`) is mapped today, and other distributions still ask for
+Linuxbrew. The native path also installs `zsh`, which macOS provides as the
+login shell but Arch does not install by default, and clones
+[antidote](https://github.com/mattmc3/antidote) into `~/.antidote` so no AUR
+helper becomes a bootstrap dependency. Node is deliberately not installed:
+mise provides the versions projects pin. Where mise itself is packaged under
+another name — Omarchy and the AUR ship `mise-bin`, which conflicts with the
+official `mise` — the installer detects it through `pacman -T` and leaves the
+existing package alone.
+
+Either way the installer verifies the GNU userland this configuration relies
+on and stops if it is incomplete. macOS needs Homebrew's `gls`, `ggrep`,
+`gsed`, and `gawk` because its own userland is BSD; on Linux the unprefixed
+tools are accepted once their `--version` output confirms they are GNU builds
+rather than BSD or busybox ones. The installer never changes the login shell.
 
 Copy `zsh/local.zsh.example` to `~/.config/zsh/local.zsh` to add private
 machine settings. The installer does this once automatically and preserves it
 on later runs.
 
 Shared Zsh settings are loaded in a deliberate order from `zsh/modules/`:
-environment, runtimes, commands, completion, Node/tool integrations, prompt,
+environment, runtimes, prompt, commands, completion, Node/tool integrations,
 plugins, then interactive bindings. `zsh/zshrc` is only the interactive guard
 and loader; keep machine-specific settings in `~/.config/zsh/local.zsh`.
+
+### Language runtimes
+
+[mise](https://mise.jdx.dev/) resolves every pinned runtime version, replacing
+the per-language managers this configuration used before (pyenv,
+pyenv-virtualenv, and fnm). One `mise activate` in
+[`zsh/modules/runtimes.zsh`](zsh/modules/runtimes.zsh) covers all of them
+through a single precmd hook, so the deferred-initialisation machinery those
+tools needed — pyenv's own hook cost roughly 80 ms per shell — is gone.
+
+mise reads its own `mise.toml` by default and ignores `.python-version`,
+`.nvmrc`, and similar files unless the owning tools are named in
+`MISE_IDIOMATIC_VERSION_FILE_ENABLE_TOOLS`; `runtimes.zsh` sets it to
+`python,node`.
+
+A project virtualenv replaces `pyenv-virtualenv` and is declared in the
+project's `mise.toml`:
+
+```toml
+[tools]
+python = "3.13"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+```
+
+mise creates the virtualenv on first entry and exports `VIRTUAL_ENV` and
+`PATH`, leaving `PROMPT` untouched. With `uv` installed, setting
+`python.uv_venv_auto` routes creation through it; without uv, mise falls back
+to the standard library's `venv` silently.
+
+Note that a `.python-version` naming a pyenv *virtualenv* rather than a
+version — pyenv-virtualenv accepts both — has no mise equivalent. Replace those
+files with a `mise.toml`; mise otherwise treats the name as a version string
+and reports it as uninstalled.
 
 On first run, an existing `~/.gitconfig` is moved to
 `~/.config/git/local.gitconfig`, then replaced with a link to the shared Git
@@ -145,6 +193,67 @@ shared-config setup), or, for base16, having `Identifier` equal `Normal`
 (no color distinction for YAML/Ansible keys). See git history on
 `vim/config/plugins.vim` and `vim/plugs.vim` for the full trail.
 
+### Shell commands
+
+Beyond the aliases in [`zsh/modules/commands.zsh`](zsh/modules/commands.zsh),
+a few helpers are worth calling out. Several were adapted from
+[Omarchy](https://omarchy.org/), whose Bash configuration is where the ideas
+came from; they are reimplemented here in Zsh and without its machine-specific
+dependencies.
+
+`ssh` is wrapped. A remote tmux, pager, or editor arms terminal modes over the
+connection — mouse tracking, focus reporting, the alternate screen — that only
+it can disarm. When the connection dies instead of exiting cleanly those modes
+stay armed locally, and every mouse move then floods the prompt with escape
+junk. The wrapper always disarms them, and reconnects when an *interactive*
+session drops: exit status 255, a session that lasted at least 30 seconds, a
+terminal on stdin, and no remote command. That last condition is checked
+against `ssh -G`, so a `RemoteCommand` from `ssh_config` cannot have its side
+effects replayed either. Ctrl-C stops the retry loop.
+
+`fip host port...` forwards ports over SSH in the background, `dip port...`
+stops them, and `lip` lists what is currently forwarded.
+
+`gwa branch` creates a Git worktree as a sibling directory named
+`<repo>--<branch>` and moves into it; `gwr` removes the worktree and its branch
+from inside one, recovering the branch name from that directory name and
+refusing to run anywhere else. They are not called `ga` and `gd` — `gd` is
+already the abbreviation for `git diff`.
+
+`man` renders through `bat` when it is installed, which colours the synopsis
+and options.
+
+`ff` picks a file with fzf and previews it with bat on the way — inline images
+too, under Kitty. `eff` opens what it picked in `$EDITOR`, and `sff dest:/path`
+copies it to a remote host, newest files first.
+
+`ls` is rendered by `eza` where it is installed — colour-coded permission
+bits, Git status, human sizes — but keeps GNU `ls`'s flags, because the same
+hands type `ls` on servers that will never have eza, and a half-learned habit
+is worse than none. Where the two disagree the GNU meaning wins: `-t` and `-S`
+sort (eza reads `-t` as which timestamp to *show*, and sorts ascending where
+`ls` puts newest and largest first), `-F` appends type indicators, and `-a`
+lists `.` and `..` as eza's `-aa` does. `-r` reverses whatever sort is in
+effect, so it composes with the rest — `-lt`, `-ltr`, and `-lrt` all order
+exactly as GNU `ls` does. Without eza, `ls` is GNU `ls`.
+
+One difference remains: eza collates byte-wise, so dotfiles sort ahead of
+everything instead of under their letter. eza has no collation setting, and no
+habit depends on it.
+
+`e`, `ea`, `et`, and `eta` reach for eza's own flags directly, in long and
+tree form, each with and without dotfiles.
+
+`tdl <command> [second]` builds a tmux dev layout — editor left, the command
+on the right, a shell along the bottom — and `tsl <n> <command>` tiles the same
+command across n panes. Both take the command as an argument rather than
+hard-coding a particular editor or agent.
+
+Every command in this group carries the guard that makes it safe on both
+platforms. `open` and `iso2sd` are defined only on Linux: macOS has its own
+`open(1)`, a full utility this one-line `xdg-open` wrapper would shadow, and
+writing an image to a block device has no macOS counterpart.
+
 ### tmux
 
 [`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,
@@ -220,3 +329,20 @@ generic `playbooks/` directory with arbitrary filenames. It sets
 `filetype=yaml.ansible` under Vim and plain `filetype=ansible` under Neovim
 (ansible-vim's own upstream difference); both are handled everywhere they
 matter (LSP allowlist, plugin lazy-loading).
+
+### Completion
+
+Completion functions live in [`zsh/completions/`](zsh/completions), which
+`completion.zsh` puts on `fpath`. zsh autoloads each only when something asks
+to complete the command it names, so an entry costs nothing at startup and
+needs no guard for a command the host may not have.
+
+`_omarchy` completes [Omarchy](https://omarchy.org/)'s dispatcher, which
+Omarchy itself ships only for Bash. `omarchy a b` runs the `omarchy-a-b`
+executable, so the command tree is read out of the names in its bin directory,
+and the values after the last subcommand come from the `# omarchy:args=`
+header each executable carries.
+
+Completion lists take their filename colours from `LS_COLORS`, which
+`completion.zsh` fills in through `dircolors` — nothing on Arch sets it
+otherwise, and eza reads the same variable.

@@ -7,12 +7,13 @@
 
 typeset _zsh_rc_dir=${${(%):-%N}:A:h}
 source "$_zsh_rc_dir/modules/environment.zsh"
-# prompt.zsh must load before python.zsh: starship's init does a one-time,
-# unconditional PROMPT= assignment, which silently wipes out the
-# pyenv-virtualenv prompt prefix if that prefix was prepended first (i.e.
-# when a shell starts already inside a directory with a .python-version).
+# runtimes.zsh installs mise's precmd hook, so it loads before the modules that
+# expect a resolved runtime on PATH. It no longer has to follow prompt.zsh:
+# that constraint existed because starship's init unconditionally assigns
+# PROMPT, wiping the prefix pyenv-virtualenv prepended. mise exports VIRTUAL_ENV
+# and PATH without touching PROMPT, so the two are independent again.
+source "$_zsh_rc_dir/modules/runtimes.zsh"
 source "$_zsh_rc_dir/modules/prompt.zsh"
-source "$_zsh_rc_dir/modules/python.zsh"
 source "$_zsh_rc_dir/modules/commands.zsh"
 source "$_zsh_rc_dir/modules/completion.zsh"
 source "$_zsh_rc_dir/modules/node-and-tools.zsh"
