@@ -283,6 +283,8 @@ if [[ ! -e "$git_local" && ! -L "$HOME/.gitconfig" && -e "$HOME/.gitconfig" ]]; 
   printf 'Migrated machine-specific Git configuration: %s\n' "$git_local"
 fi
 backup_and_link "$repo_dir/git/config" "$HOME/.gitconfig"
+# Git reads this path with no core.excludesFile to point at it.
+backup_and_link "$repo_dir/git/ignore" "$HOME/.config/git/ignore"
 if [[ ! -e "$git_local" ]]; then
   mkdir -p "$(dirname "$git_local")"
   cp "$repo_dir/git/local.gitconfig.example" "$git_local"

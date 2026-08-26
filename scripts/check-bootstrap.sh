@@ -63,7 +63,7 @@ fi
 
 linked_targets=(
   .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt
-  .gitconfig .ssh/config .config/nvim/init.vim .config/starship.toml
+  .gitconfig .config/git/ignore .ssh/config .config/nvim/init.vim .config/starship.toml
   .config/zsh-abbr/user-abbreviations
 )
 # The installer links this one on Linux only; see the comment there.
