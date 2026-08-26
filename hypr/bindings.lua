@@ -39,3 +39,25 @@ for index = 6, 9 do
     hl.dsp.group.active({ index = index })
   )
 end
+
+-- Explicit splits, the way iTerm2's Cmd+D works. The dwindle layout picks the
+-- split direction from the focused window's aspect ratio, so the same key
+-- splits sideways next to a wide window and downwards next to a tall one.
+-- preselect overrides that for the next window only, which puts the direction
+-- back in the hands of the key being pressed.
+local function split_into_terminal(direction)
+  return function()
+    hl.dispatch(hl.dsp.layout("preselect " .. direction))
+    -- The same launcher SUPER+RETURN uses, so this follows the configured
+    -- terminal and opens in the active terminal's directory.
+    hl.dispatch(hl.dsp.exec_cmd("omarchy-launch-terminal"))
+  end
+end
+
+-- SUPER+SHIFT+D was Omarchy's Docker TUI. It moves to SUPER+ALT+D below, and
+-- is reachable from the Omarchy menu either way.
+hl.unbind("SUPER + SHIFT + D")
+
+o.bind("SUPER + D", "Split right into a terminal", split_into_terminal("r"))
+o.bind("SUPER + SHIFT + D", "Split down into a terminal", split_into_terminal("d"))
+o.bind("SUPER + ALT + D", "Docker", { tui = "omarchy-launch-docker-tui" })
