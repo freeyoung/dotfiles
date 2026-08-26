@@ -1,0 +1,57 @@
+# What this configuration has taken from Omarchy's shell configuration, and
+# what it has declined. scripts/omarchy-review.sh subtracts both columns from
+# what Omarchy currently defines; whatever is left is new and undecided.
+#
+# Rerun that script after `omarchy update`. Add a row for anything it reports
+# so the decision is made once rather than every time.
+#
+# name	status	note
+..	ported	
+...	ported	
+....	ported	
+compress	ported	
+d	ported	
+dip	ported	
+dsw	ported	Linux only, inotifywait has no BSD counterpart
+eff	ported	
+fip	ported	
+gcm	ported	predates this, unrelated to Omarchy's gcm
+gd	renamed	gwr -- Omarchy's gd removes a worktree, but gd is the git diff abbreviation here
+iso2sd	ported	Linux only, picks the device with fzf instead of omarchy-drive-select
+lip	ported	uses ps, pgrep -a is a GNU extension
+lsw	ported	Linux only
+mup	ported	
+n	ported	
+open	ported	Linux only, macOS has its own open(1)
+rsw	ported	Linux only
+sff	ported	zsh glob qualifier instead of find -printf
+ssh	ported	the reconnect wrapper, the substantial one
+t	ported	
+tdl	ported	takes the command as an argument; fixes Omarchy's unset $opencode_pane
+tsl	ported	
+tdlm	ported	one tdl window per subdirectory; quotes the command, which Omarchy does not
+ga	renamed	gwa -- ga reads as git add everywhere else
+a	skipped	launches omarchy-agent, which only exists here
+c	skipped	opencode launcher; zsh/abbr has oc and occ already
+cx	skipped	claude launcher, a personal flag choice
+cy	skipped	codex launcher, a personal flag choice
+h	skipped	herdr launcher, a one-word alias
+hdl	ported	takes the command as an argument
+hdlm	ported	one hdl tab per subdirectory; quotes the command
+hds	skipped	hard-codes hunk diff --watch and opencode, as tds does
+hsl	ported	grid math checked against the original; ratios formatted to 4 places
+ic	skipped	alias for tdl c, depends on the AI aliases above
+icx	skipped	alias for tdl c cx
+ix	skipped	alias for tdl cx
+tds	skipped	hard-codes hunk diff --watch and opencode
+r	skipped	rails
+g	skipped	git shorthand; this configuration uses zsh-abbr for those
+gcad	skipped	git commit -a --amend; zsh-abbr territory
+gcam	skipped	git commit -a -m; zsh-abbr territory
+format-drive	skipped	wipefs and dd over a whole disk
+BAT_THEME	ported	
+MANPAGER	ported	
+MANROFFOPT	ported	
+EDITOR	skipped	uwsm injects omarchy-launch-editor at session start, before any shell
+SUDO_EDITOR	skipped	follows EDITOR
+BROWSER	skipped	Omarchy deliberately leaves it unexported session-wide
