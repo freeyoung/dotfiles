@@ -267,7 +267,11 @@ writing an image to a block device has no macOS counterpart.
 ### Fonts
 
 [`fontconfig/fonts.conf`](fontconfig/fonts.conf) is linked to
-`~/.config/fontconfig/fonts.conf`. Noto Sans CJK ships SC, TC, JP, KR and HK
+`~/.config/fontconfig/fonts.conf` on Linux. macOS renders through Core Text,
+so even where a Homebrew package pulls fontconfig in these rules would name
+faces that host does not have; linking there would create the directory and
+stand ready to displace a `fonts.conf` written for something else, for no
+effect. Noto Sans CJK ships SC, TC, JP, KR and HK
 under one family name, and left to itself fontconfig picks between them by
 whatever the ordering leaves first — which is how Chinese ends up rendered in
 Japanese glyph forms. These rules put the Simplified Chinese faces first for

@@ -61,11 +61,15 @@ if command -v ssh >/dev/null 2>&1; then
   done
 fi
 
-for target in \
-  .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt \
-  .gitconfig .ssh/config .config/nvim/init.vim .config/starship.toml \
-  .config/fontconfig/fonts.conf \
-  .config/zsh-abbr/user-abbreviations; do
+linked_targets=(
+  .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt
+  .gitconfig .ssh/config .config/nvim/init.vim .config/starship.toml
+  .config/zsh-abbr/user-abbreviations
+)
+# The installer links this one on Linux only; see the comment there.
+[[ $OSTYPE == linux* ]] && linked_targets+=(.config/fontconfig/fonts.conf)
+
+for target in "${linked_targets[@]}"; do
   [[ -L "$tmp_dir/home/$target" ]] || {
     echo "Installer did not link $target" >&2
     exit 1

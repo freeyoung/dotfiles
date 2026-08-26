@@ -70,9 +70,14 @@ backup_and_link "$repo_dir/zsh/zprofile" "$HOME/.zprofile"
 backup_and_link "$repo_dir/zsh/plugins.txt" "$HOME/.zsh_plugins.txt"
 backup_and_link "$repo_dir/zsh/abbr" "$HOME/.config/zsh-abbr/user-abbreviations"
 backup_and_link "$repo_dir/starship/starship.toml" "$HOME/.config/starship.toml"
-# Linked unconditionally: fontconfig ignores it where it is not the font
-# system, and a host that gains fontconfig later finds it already in place.
-backup_and_link "$repo_dir/fontconfig/fonts.conf" "$HOME/.config/fontconfig/fonts.conf"
+# Linux only. macOS renders through Core Text, so even where a Homebrew
+# package pulls fontconfig in, these rules would name faces that host does not
+# have and resolve to nothing. Linking anyway would create the directory and
+# stand ready to displace a fonts.conf written for something else, in exchange
+# for no effect.
+if [[ $OSTYPE == linux* ]]; then
+  backup_and_link "$repo_dir/fontconfig/fonts.conf" "$HOME/.config/fontconfig/fonts.conf"
+fi
 
 ssh_dir="$HOME/.ssh"
 ssh_config="$ssh_dir/config"
