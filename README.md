@@ -100,6 +100,13 @@ On first run, an existing `~/.gitconfig` is moved to
 `~/.config/git/local.gitconfig`, then replaced with a link to the shared Git
 defaults. This keeps credential helpers and private URL rewrites out of Git.
 
+[`git/ignore`](git/ignore) is linked to `~/.config/git/ignore`, which Git reads
+with no `core.excludesFile` pointing at it. It holds only what is never worth
+committing anywhere — Claude Code's `.claude/`, and the `.DS_Store` files that
+arrive in repositories synced from a Mac. A pattern specific to one project
+belongs in that project's `.gitignore`, where its other contributors can see
+it.
+
 Tools that write to `~/.gitconfig` directly do not know it is a link into this
 repository, so their changes land in the shared file. `gh auth login` is the
 one to watch: it writes a `credential.helper` naming the absolute path of the

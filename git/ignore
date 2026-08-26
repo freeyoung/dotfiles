@@ -1,0 +1,12 @@
+# Global ignores, linked to ~/.config/git/ignore. Git reads that path without
+# core.excludesFile being set, so nothing configures it.
+#
+# Only things that are never worth committing anywhere belong here. A pattern
+# specific to one project belongs in that project's .gitignore, where the rest
+# of its contributors can see it.
+
+# Claude Code's per-project directory.
+.claude/
+
+# macOS Finder metadata, which arrives in repositories synced from a Mac.
+.DS_Store
