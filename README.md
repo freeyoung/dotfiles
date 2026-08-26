@@ -65,7 +65,9 @@ and loader; keep machine-specific settings in `~/.config/zsh/local.zsh`.
 
 [mise](https://mise.jdx.dev/) resolves every pinned runtime version, replacing
 the per-language managers this configuration used before (pyenv,
-pyenv-virtualenv, and fnm). One `mise activate` in
+pyenv-virtualenv, and fnm). [`mise/config.toml`](mise/config.toml) is linked to
+`~/.config/mise/config.toml` and lists the tools every host gets; a
+repository's own `mise.toml` takes precedence over it. One `mise activate` in
 [`zsh/modules/runtimes.zsh`](zsh/modules/runtimes.zsh) covers all of them
 through a single precmd hook, so the deferred-initialisation machinery those
 tools needed — pyenv's own hook cost roughly 80 ms per shell — is gone.
@@ -406,6 +408,49 @@ header each executable carries.
 Completion lists take their filename colours from `LS_COLORS`, which
 `completion.zsh` fills in through `dircolors` — nothing on Arch sets it
 otherwise, and eza reads the same variable.
+
+### Desktop and input
+
+Three things here only make sense on a Linux desktop, so the installer guards
+each on what actually reads it rather than on the platform alone.
+
+These raise the cost of a branch switch inside this repository. Everything is
+linked rather than copied, so a checkout that does not contain one of these
+files leaves a dangling link where the live configuration used to be -- and
+unlike a shell or editor file, that takes the keyboard layout, the touchpad,
+and the input method down with it, on the desktop being used at the time.
+Hyprland reports it as `hypr.input not found`. Keep the working tree on a
+branch that has these files, or checkout them back afterwards:
+
+```bash
+git -C ~/dotfiles checkout master -- hypr fcitx5 mise xcompose
+```
+
+[`hypr/input.lua`](hypr/input.lua) and
+[`hypr/looknfeel.lua`](hypr/looknfeel.lua) are linked into `~/.config/hypr/`
+where a Hyprland binary exists. Omarchy loads these two after its own defaults
+and after the theme, and says so in the `hyprland.lua` it ships -- they are the
+files it sets aside for personal overrides, so it can keep improving its
+defaults without this repository having to track them. `input.lua` maps
+CapsLock to Escape, selects the `mac` variant so right Alt is Option and the
+German umlauts sit where macOS puts them, moves Compose to right Ctrl (right
+Alt being spoken for), and turns on natural scrolling and three-finger drag.
+`looknfeel.lua` carries the border and gap settings ported from the old
+`hyprland.conf`.
+
+[`fcitx5/wubi-large.conf`](fcitx5/wubi-large.conf) is linked to
+`~/.config/fcitx5/table/wubi-large.conf` where fcitx5 exists -- `table/`, not
+`inputmethod/`, which registers the input method rather than configures it. It
+sets four values and leaves the rest to fcitx5's defaults: a four-code
+character that is the only match still waits for the space bar, a fifth
+keystroke commits what is pending, and a phrase is learned after three uses
+instead of ten. Changing any setting through fcitx5's configuration tool
+rewrites the file in full -- the symlink survives, but every default is written
+out explicitly and the comments are lost, so trim it back afterwards.
+
+[`xcompose`](xcompose) is linked to `~/.XCompose` on Linux. It includes the
+locale's own table, adds identification sequences, and vendors Omarchy's emoji
+shortcuts so they work on a host without Omarchy.
 
 ### Tracking Omarchy
 
