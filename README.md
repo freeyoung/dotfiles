@@ -400,6 +400,18 @@ otherwise, and eza reads the same variable.
 Three things here only make sense on a Linux desktop, so the installer guards
 each on what actually reads it rather than on the platform alone.
 
+These raise the cost of a branch switch inside this repository. Everything is
+linked rather than copied, so a checkout that does not contain one of these
+files leaves a dangling link where the live configuration used to be -- and
+unlike a shell or editor file, that takes the keyboard layout, the touchpad,
+and the input method down with it, on the desktop being used at the time.
+Hyprland reports it as `hypr.input not found`. Keep the working tree on a
+branch that has these files, or checkout them back afterwards:
+
+```bash
+git -C ~/dotfiles checkout master -- hypr fcitx5 mise xcompose
+```
+
 [`hypr/input.lua`](hypr/input.lua) and
 [`hypr/looknfeel.lua`](hypr/looknfeel.lua) are linked into `~/.config/hypr/`
 where a Hyprland binary exists. Omarchy loads these two after its own defaults
