@@ -9,5 +9,31 @@
     rebase = true
 [push]
     autoSetupRemote = true
+[diff]
+    # Histogram reads moved and re-indented code far better than the default
+    # Myers, at no practical cost on the diff sizes this sees.
+    algorithm = histogram
+    # Mark blocks that moved rather than showing them as a delete and an add.
+    colorMoved = plain
+    # Prefix paths by what they are -- i/ for index, w/ for working tree --
+    # instead of a/ and b/ for everything.
+    mnemonicPrefix = true
+[commit]
+    # Put the diff below the message template, so the message is written with
+    # the change in view.
+    verbose = true
+[branch]
+    # Most recently committed first: the branch being worked on is at the top.
+    sort = -committerdate
+[tag]
+    # Order tags by version rather than lexically, so v10 follows v9.
+    sort = -version:refname
+[rerere]
+    # Record how each conflict was resolved and replay it when the same
+    # conflict reappears, which a rebase of any length will produce.
+    enabled = true
+    autoupdate = true
+[column]
+    ui = auto
 [include]
     path = ~/.config/git/local.gitconfig
