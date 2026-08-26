@@ -111,6 +111,7 @@ fi
 if command -v Hyprland >/dev/null 2>&1; then
   backup_and_link "$repo_dir/hypr/input.lua" "$HOME/.config/hypr/input.lua"
   backup_and_link "$repo_dir/hypr/looknfeel.lua" "$HOME/.config/hypr/looknfeel.lua"
+  backup_and_link "$repo_dir/hypr/bindings.lua" "$HOME/.config/hypr/bindings.lua"
 fi
 
 # fcitx5 reads table behaviour from table/, not from inputmethod/, which is
@@ -118,6 +119,14 @@ fi
 if command -v fcitx5 >/dev/null 2>&1; then
   backup_and_link "$repo_dir/fcitx5/wubi-large.conf" \
     "$HOME/.config/fcitx5/table/wubi-large.conf"
+fi
+
+# Unlike the Hyprland files above, this replaces Omarchy's kitty.conf rather
+# than layering over it -- kitty has no read-these-last override file. So
+# improvements Omarchy makes to its template have to be picked up by hand;
+# scripts/omarchy-review.sh is what surfaces them.
+if command -v kitty >/dev/null 2>&1; then
+  backup_and_link "$repo_dir/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 fi
 
 ssh_dir="$HOME/.ssh"
