@@ -675,3 +675,115 @@ if [[ $OSTYPE == linux* ]] && (( $+commands[inotifywait] && $+commands[rsync] ))
     (( found )) || print 'No active watches'
   }
 fi
+
+# herdr is a terminal workspace manager (https://github.com/herdrdev/herdr),
+# distributed independently of Omarchy. Its layouts mirror the tmux ones above,
+# so they are here on the same terms: the command is an argument, and the
+# tool-specific square layout is left out.
+if (( $+commands[herdr] && $+commands[jq] )); then
+  # A ratio as a short decimal. zsh arithmetic would render 1/3 as
+  # 0.33333333333333331, and herdr is given a four-place figure like the
+  # original.
+  #   _zsh_herdr_ratio <numerator> <denominator>
+  _zsh_herdr_ratio() { printf '%.4f' $(( 1.0 * $1 / $2 )); }
+
+  # Split a pane and echo the new pane's id.
+  #   _zsh_herdr_split <pane_id> <right|down> <ratio> <cwd>
+  _zsh_herdr_split() {
+    herdr pane split "$1" --direction "$2" --ratio "$3" --cwd "$4" --no-focus |
+      jq -r '.result.pane.pane_id'
+  }
+
+  # Dev layout: editor left, the command right, a shell along the bottom.
+  #   hdl 'claude --permission-mode auto' [second-command]
+  hdl() {
+    if (( $# == 0 )); then
+      print -u2 'Usage: hdl <command> [second-command]'
+      return 1
+    fi
+    [[ -n $HERDR_PANE_ID ]] || { print -u2 'hdl: start herdr first'; return 1; }
+
+    local dir=$PWD editor_pane=$HERDR_PANE_ID side_pane second_pane
+
+    herdr tab rename "$HERDR_TAB_ID" "${dir:t}" >/dev/null
+    _zsh_herdr_split "$editor_pane" down 0.85 "$dir" >/dev/null
+    side_pane=$(_zsh_herdr_split "$editor_pane" right 0.7 "$dir")
+
+    if [[ -n $2 ]]; then
+      second_pane=$(_zsh_herdr_split "$side_pane" down 0.5 "$dir")
+      herdr pane run "$second_pane" "$2" >/dev/null
+    fi
+
+    herdr pane run "$side_pane" "$1" >/dev/null
+    herdr pane run "$editor_pane" "${EDITOR:-vim} ." >/dev/null
+  }
+
+  # One hdl tab per subdirectory of the current one.
+  hdlm() {
+    if (( $# == 0 )); then
+      print -u2 'Usage: hdlm <command> [second-command]'
+      return 1
+    fi
+    [[ -n $HERDR_PANE_ID ]] || { print -u2 'hdlm: start herdr first'; return 1; }
+
+    local base=$PWD dir pane_id hdl_command
+    local -i first=1
+
+    herdr workspace rename "$HERDR_WORKSPACE_ID" "${base:t}" >/dev/null
+
+    for dir in $base/*(N/); do
+      hdl_command="hdl ${(q)1} ${2:+${(q)2}}"
+      if (( first )); then
+        herdr pane run "$HERDR_PANE_ID" "cd ${(q)dir} && $hdl_command" >/dev/null
+        first=0
+      else
+        pane_id=$(herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$dir" --no-focus |
+          jq -r '.result.root_pane.pane_id')
+        herdr pane run "$pane_id" "$hdl_command" >/dev/null
+      fi
+    done
+  }
+
+  # Swarm: the same command across a grid of panes.
+  #   hsl 4 'claude --permission-mode auto'
+  hsl() {
+    if (( $# < 2 )); then
+      print -u2 'Usage: hsl <pane-count> <command>'
+      return 1
+    fi
+    [[ -n $HERDR_PANE_ID ]] || { print -u2 'hsl: start herdr first'; return 1; }
+
+    local -i count=$1 cols=1 k index rows j
+    local cmd=$2 dir=$PWD col last pane
+    local -a columns panes
+
+    herdr tab rename "$HERDR_TAB_ID" "${dir:t}" >/dev/null
+
+    # ceil(sqrt(count)) columns, with the rows spread across them.
+    while (( cols * cols < count )); do (( cols++ )); done
+
+    # Each new column is split off the rightmost one at 1/(n-k+1), which keeps
+    # the columns evenly sized and the array in left-to-right order.
+    columns=("$HERDR_PANE_ID")
+    for (( k = 1; k < cols; k++ )); do
+      columns+=("$(_zsh_herdr_split "${columns[-1]}" right \
+        "$(_zsh_herdr_ratio 1 $(( cols - k + 1 )))" "$dir")")
+    done
+
+    for (( index = 1; index <= cols; index++ )); do
+      col=${columns[index]}
+      rows=$(( count / cols ))
+      (( index <= count % cols )) && (( rows++ ))
+      panes+=("$col")
+      last=$col
+      for (( j = 1; j < rows; j++ )); do
+        last=$(_zsh_herdr_split "$last" down "$(_zsh_herdr_ratio 1 $(( rows - j + 1 )))" "$dir")
+        panes+=("$last")
+      done
+    done
+
+    for pane in "${panes[@]}"; do
+      herdr pane run "$pane" "$cmd" >/dev/null
+    done
+  }
+fi

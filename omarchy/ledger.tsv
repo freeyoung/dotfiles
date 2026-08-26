@@ -35,11 +35,11 @@ a	skipped	launches omarchy-agent, which only exists here
 c	skipped	opencode launcher; zsh/abbr has oc and occ already
 cx	skipped	claude launcher, a personal flag choice
 cy	skipped	codex launcher, a personal flag choice
-h	skipped	herdr launcher; herdr ships only with Omarchy
-hdl	skipped	herdr layout
-hdlm	skipped	herdr layout
-hds	skipped	herdr layout
-hsl	skipped	herdr layout
+h	skipped	herdr launcher, a one-word alias
+hdl	ported	takes the command as an argument
+hdlm	ported	one hdl tab per subdirectory; quotes the command
+hds	skipped	hard-codes hunk diff --watch and opencode, as tds does
+hsl	ported	grid math checked against the original; ratios formatted to 4 places
 ic	skipped	alias for tdl c, depends on the AI aliases above
 icx	skipped	alias for tdl c cx
 ix	skipped	alias for tdl cx
