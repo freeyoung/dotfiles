@@ -100,6 +100,14 @@ On first run, an existing `~/.gitconfig` is moved to
 `~/.config/git/local.gitconfig`, then replaced with a link to the shared Git
 defaults. This keeps credential helpers and private URL rewrites out of Git.
 
+Tools that write to `~/.gitconfig` directly do not know it is a link into this
+repository, so their changes land in the shared file. `gh auth login` is the
+one to watch: it writes a `credential.helper` naming the absolute path of the
+`gh` binary it was run from, which is both machine-specific and wrong on any
+other host. Check `git -C ~/dotfiles status` after running it, and move
+anything it added to `~/.config/git/local.gitconfig`. Authenticating through
+`GH_TOKEN` instead avoids the problem entirely.
+
 The installer links [`ssh/config`](ssh/config) to `~/.ssh/config` and keeps
 machine-specific settings in `~/.ssh/config.local`. On first installation, an
 existing SSH config is copied there before the original is backed up; otherwise
@@ -245,9 +253,11 @@ habit depends on it.
 tree form, each with and without dotfiles.
 
 `tdl <command> [second]` builds a tmux dev layout — editor left, the command
-on the right, a shell along the bottom — and `tsl <n> <command>` tiles the same
-command across n panes. Both take the command as an argument rather than
-hard-coding a particular editor or agent.
+on the right, a shell along the bottom — `tdlm` opens one such window per
+subdirectory, and `tsl <n> <command>` tiles the same command across n panes.
+`hdl`, `hdlm`, and `hsl` are the same three layouts under
+[herdr](https://github.com/herdrdev/herdr). All take the command as an argument
+rather than hard-coding a particular editor or agent.
 
 Every command in this group carries the guard that makes it safe on both
 platforms. `open` and `iso2sd` are defined only on Linux: macOS has its own
@@ -346,3 +356,20 @@ header each executable carries.
 Completion lists take their filename colours from `LS_COLORS`, which
 `completion.zsh` fills in through `dircolors` — nothing on Arch sets it
 otherwise, and eza reads the same variable.
+
+### Tracking Omarchy
+
+Several of the commands above came from
+[Omarchy](https://omarchy.org/)'s own Bash configuration, which keeps growing.
+[`omarchy/ledger.tsv`](omarchy/ledger.tsv) records the verdict on every alias,
+function and export it defines — ported, renamed, or skipped with the reason —
+and [`scripts/omarchy-review.sh`](scripts/omarchy-review.sh) subtracts that
+ledger from what Omarchy currently ships:
+
+```bash
+bash ~/dotfiles/scripts/omarchy-review.sh
+```
+
+Run it after `omarchy update`. The output is only ever what is new, with the
+line that defines it; add a row for each and the next run is quiet. The script
+exits cleanly on a host without Omarchy.
