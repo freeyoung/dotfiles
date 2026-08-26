@@ -10,20 +10,26 @@ command -v vim >/dev/null 2>&1 || {
   exit 2
 }
 
-# -es keeps Vim silent, which means a configuration it rejects fails with no
-# indication of why. Capture both streams and print them on failure.
-vim_output=""
+# -es is silent Ex mode, which suppresses messages -- including the error that
+# made Vim exit non-zero, so a rejected configuration says nothing at all about
+# itself. verbosefile captures what the screen would have shown, and verbose=1
+# names each file as it is sourced, so the log ends at the one that failed.
+verbose_log="$(mktemp "${TMPDIR:-/tmp}/vim-check.XXXXXX")"
+trap 'rm -f "$verbose_log"' EXIT
+
 vim_status=0
-vim_output="$(
+(
   cd "$vim_dir" &&
-    vim --cmd "set runtimepath^=$vim_dir" -Nu "$vim_dir/vimrc" \
-      -i NONE -n -es -c 'qa!' 2>&1
-)" || vim_status=$?
+    vim --cmd "set runtimepath^=$vim_dir" \
+      --cmd "set verbose=1 verbosefile=$verbose_log" \
+      -Nu "$vim_dir/vimrc" -i NONE -n -es -c 'qa!'
+) || vim_status=$?
 
 if (( vim_status != 0 )); then
   printf 'Vim rejected %s (exit %s)\n' "$vim_dir/vimrc" "$vim_status" >&2
-  [[ -n $vim_output ]] && printf '%s\n' "$vim_output" >&2
   vim --version | head -1 >&2
+  printf -- '--- last 40 lines of the load log ---\n' >&2
+  tail -40 "$verbose_log" >&2
   exit 1
 fi
 
