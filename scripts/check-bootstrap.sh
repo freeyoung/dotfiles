@@ -71,6 +71,7 @@ linked_targets=(
   .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt
   .gitconfig .config/git/ignore .ssh/config .config/nvim/init.vim .config/starship.toml
   .config/zsh-abbr/user-abbreviations .config/mise/config.toml
+  .local/bin/cc-search
 )
 # The installer guards these; mirror each guard rather than assume the host.
 [[ $OSTYPE == linux* ]] && linked_targets+=(.config/fontconfig/fonts.conf .XCompose)

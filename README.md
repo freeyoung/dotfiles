@@ -452,6 +452,34 @@ out explicitly and the comments are lost, so trim it back afterwards.
 locale's own table, adds identification sequences, and vendors Omarchy's emoji
 shortcuts so they work on a host without Omarchy.
 
+### Searching past conversations
+
+[`bin/cc-search`](bin/cc-search) is linked to `~/.local/bin/cc-search`.
+
+Claude Code's fullscreen renderer draws on the alternate screen, which keeps
+the conversation out of the terminal's scrollback -- and so out of reach of the
+terminal's own search. Its only built-in search, `Ctrl+R`, searches the prompts
+that were typed, not what was said.
+
+The transcripts under `~/.claude/projects/` are a better thing to search
+anyway: they outlive the window, they cover every session rather than only the
+one still open, and they know who said what and when.
+
+```bash
+cc-search splitratio          # this directory's sessions
+cc-search -a 'wubi|fcitx'     # every project
+cc-search -T pacman           # include tool calls and their output
+cc-search -p pattern          # print instead of opening the picker
+```
+
+A project is found by turning the working directory into the dashed name
+Claude Code files it under, walking upwards until one exists, so running it
+inside a subdirectory still finds the session that started above it. With
+`fzf` present and a terminal attached it opens a picker, with the whole message
+in the preview; otherwise it prints one line per match. Reasoning is not
+searchable -- the transcript records that a thinking block was there but stores
+its text as an empty string.
+
 ### Tracking Omarchy
 
 Several of the commands above came from

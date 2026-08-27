@@ -91,6 +91,11 @@ backup_and_link "$repo_dir/starship/starship.toml" "$HOME/.config/starship.toml"
 # Tools mise installs on every host, whatever the platform. Per-project
 # versions come from each repository's own mise.toml and win over these.
 backup_and_link "$repo_dir/mise/config.toml" "$HOME/.config/mise/config.toml"
+# Claude Code's fullscreen renderer draws on the alternate screen, which keeps
+# the conversation out of the terminal's scrollback and so out of reach of the
+# terminal's own search. This searches the transcripts on disk instead.
+# ~/.local/bin is on PATH on both platforms.
+backup_and_link "$repo_dir/bin/cc-search" "$HOME/.local/bin/cc-search"
 # Linux only. macOS renders through Core Text, so even where a Homebrew
 # package pulls fontconfig in, these rules would name faces that host does not
 # have and resolve to nothing. Linking anyway would create the directory and
@@ -383,6 +388,13 @@ if command -v luac >/dev/null 2>&1; then
     luac -p -- "$lua_config"
   done
   printf 'Lua syntax check passed.\n'
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  for script in "$repo_dir"/bin/*; do
+    python3 -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())' "$script"
+  done
+  printf 'Python syntax check passed.\n'
 fi
 
 if command -v vim >/dev/null 2>&1; then

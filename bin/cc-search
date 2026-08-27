@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+
+"""Search Claude Code transcripts.
+
+The fullscreen renderer draws on the alternate screen, which keeps the
+conversation out of the terminal's scrollback -- and out of reach of the
+terminal's own search. The transcripts on disk are a better thing to search
+anyway: they outlive the window, they cover every session rather than the one
+still open, and they know who said what and when.
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+PROJECTS = Path.home() / ".claude" / "projects"
+
+
+def project_dirs(all_projects, start):
+    """Transcripts for one directory, or for everything.
+
+    A project directory is the working directory with its slashes turned into
+    dashes. A session started higher up than the current directory still holds
+    the answer, so walk upwards until one of them exists.
+    """
+    if all_projects:
+        return sorted(p for p in PROJECTS.iterdir() if p.is_dir())
+    here = Path(start).resolve()
+    for candidate in [here, *here.parents]:
+        directory = PROJECTS / str(candidate).replace("/", "-")
+        if directory.is_dir():
+            return [directory]
+    return []
+
+
+def blocks(entry, tools):
+    """The searchable text of one transcript entry, as (kind, text) pairs."""
+    kind = entry.get("type")
+    if kind not in ("user", "assistant"):
+        return
+    content = entry.get("message", {}).get("content")
+    if isinstance(content, str):
+        yield ("you", content)
+        return
+    if not isinstance(content, list):
+        return
+    for block in content:
+        block_type = block.get("type")
+        if block_type == "text":
+            yield ("you" if kind == "user" else "claude", block.get("text", ""))
+        # Reasoning is not searchable: the transcript records that a thinking
+        # block was there but stores its text as an empty string.
+        elif block_type == "tool_use" and tools:
+            yield (block.get("name", "tool"), json.dumps(block.get("input", {}), ensure_ascii=False))
+        elif block_type == "tool_result" and tools:
+            result = block.get("content")
+            if isinstance(result, list):
+                result = " ".join(part.get("text", "") for part in result if isinstance(part, dict))
+            yield ("result", result if isinstance(result, str) else "")
+
+
+def when(entry):
+    stamp = entry.get("timestamp")
+    if not stamp:
+        return "                "
+    try:
+        moment = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return "                "
+    return moment.astimezone().strftime("%Y-%m-%d %H:%M")
+
+
+def matches(pattern, directories, tools):
+    for directory in directories:
+        for transcript in sorted(directory.glob("*.jsonl")):
+            with transcript.open(encoding="utf-8", errors="replace") as handle:
+                for number, line in enumerate(handle, 1):
+                    try:
+                        entry = json.loads(line)
+                    except ValueError:
+                        continue
+                    for speaker, text in blocks(entry, tools):
+                        if not text or not pattern.search(text):
+                            continue
+                        # The line the match is on reads better than the whole
+                        # message, which can be thousands of characters.
+                        for excerpt in text.splitlines():
+                            if pattern.search(excerpt):
+                                yield transcript, number, when(entry), speaker, excerpt.strip()
+                                break
+
+
+def show(location):
+    """Print one entry in full, for the interactive preview."""
+    path, _, number = location.rpartition(":")
+    with Path(path).open(encoding="utf-8", errors="replace") as handle:
+        for index, line in enumerate(handle, 1):
+            if index == int(number):
+                entry = json.loads(line)
+                print(f"{when(entry)}  {entry.get('type')}  {Path(path).stem[:8]}\n")
+                for speaker, text in blocks(entry, True):
+                    print(f"--- {speaker} ---\n{text}\n")
+                return
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Search Claude Code transcripts.")
+    parser.add_argument("pattern", nargs="?", help="regular expression")
+    parser.add_argument("-a", "--all", action="store_true", help="every project, not only this one")
+    parser.add_argument("-T", "--tools", action="store_true", help="include tool calls and their output")
+    parser.add_argument("-p", "--plain", action="store_true", help="print matches instead of opening the picker")
+    parser.add_argument("--show", help=argparse.SUPPRESS)
+    arguments = parser.parse_args()
+
+    if arguments.show:
+        show(arguments.show)
+        return 0
+    if not arguments.pattern:
+        parser.error("a pattern is required")
+    if not PROJECTS.is_dir():
+        print(f"No transcripts at {PROJECTS}", file=sys.stderr)
+        return 1
+
+    # Smart case, the way ripgrep does it: a pattern in lower case is not
+    # asking about case, one with a capital in it is.
+    flags = 0 if any(character.isupper() for character in arguments.pattern) else re.IGNORECASE
+    try:
+        pattern = re.compile(arguments.pattern, flags)
+    except re.error as error:
+        print(f"Bad pattern: {error}", file=sys.stderr)
+        return 2
+
+    directories = project_dirs(arguments.all, os.getcwd())
+    if not directories:
+        print("No transcripts for this directory; try --all", file=sys.stderr)
+        return 1
+
+    found = list(matches(pattern, directories, arguments.tools))
+    if not found:
+        return 1
+
+    lines = [
+        f"{location}:{number}\t{stamp}  {speaker:<8}{excerpt[:200]}"
+        for location, number, stamp, speaker, excerpt in found
+    ]
+
+    interactive = sys.stdout.isatty() and not arguments.plain
+    if not interactive or not any(
+        os.access(os.path.join(part, "fzf"), os.X_OK) for part in os.environ.get("PATH", "").split(":")
+    ):
+        for line in lines:
+            print(line.split("\t", 1)[1])
+        return 0
+
+    picker = subprocess.run(
+        [
+            "fzf", "--delimiter=\t", "--with-nth=2..", "--tac", "--no-sort", "--exact",
+            "--preview", f"{sys.argv[0]} --show {{1}}",
+            "--preview-window=right,60%,wrap",
+            "--prompt=transcript> ",
+        ],
+        input="\n".join(lines),
+        text=True,
+        capture_output=True,
+    )
+    if picker.returncode == 0 and picker.stdout.strip():
+        show(picker.stdout.split("\t", 1)[0].strip())
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
