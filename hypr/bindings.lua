@@ -338,8 +338,31 @@ o.bind("SUPER + SHIFT + ALT + E", "New email", { webapp = "https://app.fastmail.
 -- regex, and through string.match at runtime, which reads it as a Lua pattern.
 -- Anchored literals like "^slack$" mean the same thing to both, so keep the
 -- pattern to that shape rather than reaching for alternation.
+-- The bar reserves this much at the top. Hyprland's rule expressions cannot see
+-- the reserved area, so a floating window that should sit under the bar has to
+-- be told the number.
+local BAR_HEIGHT = 30
+
 local function bind_peek(key, label, spec)
-  o.window(spec.class, { workspace = "special:" .. spec.workspace })
+  local rules = { workspace = "special:" .. spec.workspace }
+
+  -- A special workspace holds one window, so tiled means full screen. Floating
+  -- is what makes anything else possible:
+  --   half = "left" | "right"  a panel pinned down one side
+  --   float = true             free, at whatever size the app asks for, and
+  --                            movable and resizable from there
+  if spec.half then
+    rules.float = true
+    rules.size = { "(monitor_w/2)", "(monitor_h-" .. BAR_HEIGHT .. ")" }
+    rules.move = {
+      spec.half == "left" and "0" or "(monitor_w/2)",
+      tostring(BAR_HEIGHT),
+    }
+  elseif spec.float then
+    rules.float = true
+  end
+
+  o.window(spec.class, rules)
 
   hl.unbind(key)
   o.bind(key, label, function()
@@ -381,6 +404,7 @@ end
 bind_peek("SUPER + SHIFT + S", "Slack", {
   workspace = "slack",
   class = "^slack$",
+  half = "left",
   tray_id = "Slack_status_icon_1",
   launch = "slack --gtk-version=3 -s",
 })
@@ -389,6 +413,7 @@ bind_peek("SUPER + SHIFT + S", "Slack", {
 bind_peek("SUPER + SHIFT + T", "Telegram", {
   workspace = "telegram",
   class = "^org.telegram.desktop$",
+  half = "left",
   tray_id = "TelegramDesktop",
-  launch = "telegram-desktop",
+  launch = "Telegram",
 })

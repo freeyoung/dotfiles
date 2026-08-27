@@ -1,0 +1,6 @@
+! XWayland reports 96 DPI regardless of the compositor's scale, and Hyprland's
+! xwayland:force_zero_scaling leaves X11 clients to size themselves. fcitx5
+! draws its candidate window as an X11 surface when the client it serves is one,
+! so without this the candidate list renders at half size on this 2x display
+! while the application around it is scaled by its own toolkit.
+Xft.dpi: 192
