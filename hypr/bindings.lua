@@ -169,22 +169,25 @@ local function balance_tiled_windows()
     end
   end
 
-  -- Every share is measured against the same snapshot: a node's share of its
-  -- parent does not change when an ancestor moves, so nothing here goes stale.
+  -- Which windows belong to which split does not change as splits move, but
+  -- where they are does, and a resize is asked for in pixels rather than in
+  -- shares. So each correction is measured against the layout as it stands at
+  -- that moment, not against the snapshot the probing was done on.
   for _, key in ipairs(order) do
     local node = nodes[key]
+    local current = snapshot()
     local extent, position = node.extent, node.position
     local node_start, node_end = math.huge, -math.huge
     for _, side in ipairs({ node.grew, node.shrank }) do
       for _, member in ipairs(side) do
-        local box = baseline[member]
+        local box = current[member]
         node_start = math.min(node_start, box[position])
         node_end = math.max(node_end, box[position] + box[extent])
       end
     end
     local first_end = -math.huge
     for _, member in ipairs(node.grew) do
-      local box = baseline[member]
+      local box = current[member]
       first_end = math.max(first_end, box[position] + box[extent])
     end
 
