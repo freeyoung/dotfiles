@@ -313,3 +313,11 @@ end)
 -- exactly this. SUPER+T is float/tile and SUPER+CTRL+T is Activity, so the
 -- shift variant is the free one next to them.
 o.bind("SUPER + SHIFT + T", "Toggle tray drawer", "omarchy shell tray toggle")
+
+-- Omarchy points both email bindings at HEY, which is Basecamp's own product
+-- and not what this account uses. Fastmail's compose URL takes the same
+-- standalone-window treatment the default relied on.
+hl.unbind("SUPER + SHIFT + E")
+hl.unbind("SUPER + SHIFT + ALT + E")
+o.bind("SUPER + SHIFT + E", "Email", { webapp = "https://app.fastmail.com" })
+o.bind("SUPER + SHIFT + ALT + E", "New email", { webapp = "https://app.fastmail.com/mail/compose" })
