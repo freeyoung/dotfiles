@@ -45,9 +45,20 @@ end
 -- splits sideways next to a wide window and downwards next to a tall one.
 -- preselect overrides that for the next window only, which puts the direction
 -- back in the hands of the key being pressed.
+-- A split is only even once the new window exists, and the terminal is
+-- launched asynchronously, so the split bindings arm this and window.open
+-- below acts on it.
+local balance_next_window = false
+
 local function split_into_terminal(direction)
   return function()
     hl.dispatch(hl.dsp.layout("preselect " .. direction))
+    balance_next_window = true
+    -- Disarm if the terminal never arrives, so an unrelated window opening
+    -- later does not rearrange the screen out of nowhere.
+    hl.timer(function()
+      balance_next_window = false
+    end, { timeout = 5000, type = "oneshot" })
     -- The same launcher SUPER+RETURN uses, so this follows the configured
     -- terminal and opens in the active terminal's directory.
     hl.dispatch(hl.dsp.exec_cmd("omarchy-launch-terminal"))
@@ -210,3 +221,16 @@ local function balance_tiled_windows()
 end
 
 o.bind("SUPER + B", "Balance the tiled windows", balance_tiled_windows)
+
+-- Geometry is already final when this fires -- the window arrives tiled and
+-- placed -- so the layout can be evened out on the spot.
+hl.on("window.open", function()
+  if balance_next_window then
+    balance_next_window = false
+    -- The new window arrives tiled and placed, but the windows it displaced
+    -- have not all been given their new geometry yet, and balancing on stale
+    -- sizes lands short. One turn of the event loop is enough.
+    hl.timer(balance_tiled_windows, { timeout = 50, type = "oneshot" })
+  end
+end)
+
