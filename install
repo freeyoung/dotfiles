@@ -129,6 +129,10 @@ if command -v kitty >/dev/null 2>&1; then
   backup_and_link "$repo_dir/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 fi
 
+# Helper the Hyprland bindings call by name, so it has to be on PATH rather than
+# referenced by path from the configuration.
+backup_and_link "$repo_dir/bin/peek-activate" "$HOME/.local/bin/peek-activate"
+
 # A clone of Omarchy's own tray widget, carrying two changes it does not have:
 # the symbolic-icon fix from basecamp/omarchy#7290, and an IPC target so the
 # drawer can be opened from the keyboard rather than only by hover. Cloning is

@@ -310,14 +310,85 @@ end)
 
 -- The tray drawer opens on hover and nothing else, which leaves it the one bar
 -- widget with no keyboard route in. eric.tray adds a "tray" IPC target for
--- exactly this. SUPER+T is float/tile and SUPER+CTRL+T is Activity, so the
--- shift variant is the free one next to them.
-o.bind("SUPER + SHIFT + T", "Toggle tray drawer", "omarchy shell tray toggle")
+-- exactly this. E rather than a mnemonic: it is the Bartender shortcut this
+-- account already has in its fingers on macOS, and a habit that transfers costs
+-- nothing to keep.
+hl.unbind("SUPER + SHIFT + E")
+o.bind("SUPER + SHIFT + E", "Toggle tray drawer", "omarchy shell tray toggle")
 
 -- Omarchy points both email bindings at HEY, which is Basecamp's own product
--- and not what this account uses. Fastmail's compose URL takes the same
--- standalone-window treatment the default relied on.
-hl.unbind("SUPER + SHIFT + E")
+-- and not what this account uses. Mail moves to M as well, because E now opens
+-- the tray drawer; M was Spotify, which is not installed. The compose URL keeps
+-- the standalone-window shape the HEY default relied on.
 hl.unbind("SUPER + SHIFT + ALT + E")
-o.bind("SUPER + SHIFT + E", "Email", { webapp = "https://app.fastmail.com" })
+hl.unbind("SUPER + SHIFT + M")
+o.bind("SUPER + SHIFT + M", "Email", { webapp = "https://app.fastmail.com" })
 o.bind("SUPER + SHIFT + ALT + E", "New email", { webapp = "https://app.fastmail.com/mail/compose" })
+
+-- Peek at an app the way a scratchpad works: one press brings it in, the next
+-- sends it away. Each app gets a special workspace of its own rather than
+-- sharing Omarchy's, so SUPER+S keeps meaning the general scratchpad and these
+-- keys stay independent of it and of each other.
+--
+-- The window is never destroyed, which is what makes every press after the
+-- first instant. An app that runs from a tray would otherwise rebuild its
+-- window on every visit.
+--
+-- class is used twice: verbatim in the window rule, which Hyprland reads as a
+-- regex, and through string.match at runtime, which reads it as a Lua pattern.
+-- Anchored literals like "^slack$" mean the same thing to both, so keep the
+-- pattern to that shape rather than reaching for alternation.
+local function bind_peek(key, label, spec)
+  o.window(spec.class, { workspace = "special:" .. spec.workspace })
+
+  hl.unbind(key)
+  o.bind(key, label, function()
+    local special = "special:" .. spec.workspace
+
+    for _, window in ipairs(hl.get_windows()) do
+      if window.class:match(spec.class) then
+        -- Window rules only apply as a window maps, so one that was already
+        -- open when this binding arrived is still on an ordinary workspace.
+        -- Collect it on the first press rather than toggling an empty special
+        -- workspace at it.
+        if window.workspace and window.workspace.name ~= special then
+          hl.dispatch(hl.dsp.focus({ window = "address:" .. window.address }))
+          hl.dispatch(hl.dsp.window.move({ workspace = special, follow = false }))
+        end
+        hl.dispatch(hl.dsp.workspace.toggle_special(spec.workspace))
+        return
+      end
+    end
+
+    -- No window yet. Ask for one, and reveal the workspace in the same press:
+    -- assigning a window to a special workspace does not show that workspace,
+    -- so without this the first press after a cold start looks like a no-op.
+    --
+    -- peek-activate prefers the tray icon's own Activate over running the app
+    -- again, because running it again races the single-instance handoff and a
+    -- lost race leaves two processes with two tray icons. It falls back to the
+    -- launch command when nothing is in the tray, which is the app being off.
+    if spec.tray_id then
+      hl.exec_cmd("peek-activate " .. spec.tray_id .. " " .. spec.launch)
+    else
+      hl.exec_cmd(spec.launch)
+    end
+    hl.dispatch(hl.dsp.workspace.toggle_special(spec.workspace))
+  end)
+end
+
+-- SUPER+SHIFT+S was Google Maps, which this account has no use for.
+bind_peek("SUPER + SHIFT + S", "Slack", {
+  workspace = "slack",
+  class = "^slack$",
+  tray_id = "Slack_status_icon_1",
+  launch = "slack --gtk-version=3 -s",
+})
+
+-- T goes to Telegram now that the tray drawer has moved to E.
+bind_peek("SUPER + SHIFT + T", "Telegram", {
+  workspace = "telegram",
+  class = "^org.telegram.desktop$",
+  tray_id = "TelegramDesktop",
+  launch = "telegram-desktop",
+})
