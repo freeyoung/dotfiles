@@ -92,7 +92,12 @@ o.bind("SUPER + ALT + D", "Docker", { tui = "omarchy-launch-docker-tui" })
 -- axis asked for. Every nudge is taken straight back, and Hyprland reports
 -- geometry as soon as a dispatch returns rather than when its animation ends,
 -- so none of this reaches the screen.
-local function balance_tiled_windows()
+-- With no argument every split on the workspace is evened out. Given a window,
+-- only the splits that window sits under are touched, and only for as far up
+-- as they keep running the same way as the one it was just put into. Splitting
+-- a column in two says nothing about how wide that column should be, so the
+-- splits across the row are left exactly as they were found.
+local function balance_tiled_windows(scope)
   local workspace = hl.get_active_workspace()
   if not workspace then
     return
@@ -180,6 +185,70 @@ local function balance_tiled_windows()
     end
   end
 
+  if scope then
+    -- Ancestors of a window are nested, so ordering the splits it sits under by
+    -- how many windows they hold walks outwards from the one holding it.
+    local ancestors = {}
+    for _, key in ipairs(order) do
+      local node = nodes[key]
+      local holds = false
+      for _, side in ipairs({ node.grew, node.shrank }) do
+        for _, member in ipairs(side) do
+          if member == scope then
+            holds = true
+          end
+        end
+      end
+      if holds then
+        ancestors[#ancestors + 1] = {
+          key = key,
+          size = #node.grew + #node.shrank,
+          extent = node.extent,
+        }
+      end
+    end
+    table.sort(ancestors, function(a, b) return a.size < b.size end)
+
+    -- Walking out while the splits keep running the same way finds how far the
+    -- run of them reaches: that is the row, or the column, the window landed
+    -- in, and its outermost split holds everything the run covers.
+    local axis = ancestors[1] and ancestors[1].extent
+    local container
+    for _, ancestor in ipairs(ancestors) do
+      if ancestor.extent ~= axis then
+        break
+      end
+      container = nodes[ancestor.key]
+    end
+
+    order = {}
+    if container then
+      local inside = {}
+      for _, side in ipairs({ container.grew, container.shrank }) do
+        for _, member in ipairs(side) do
+          inside[member] = true
+        end
+      end
+      -- Every split running that way anywhere inside it, not only the ones
+      -- directly above the new window: a row is only even if all of it is.
+      for key, node in pairs(nodes) do
+        if node.extent == axis then
+          local contained = true
+          for _, side in ipairs({ node.grew, node.shrank }) do
+            for _, member in ipairs(side) do
+              if not inside[member] then
+                contained = false
+              end
+            end
+          end
+          if contained then
+            order[#order + 1] = key
+          end
+        end
+      end
+    end
+  end
+
   -- Which windows belong to which split does not change as splits move, but
   -- where they are does, and a resize is asked for in pixels rather than in
   -- shares. So each correction is measured against the layout as it stands at
@@ -224,13 +293,17 @@ o.bind("SUPER + B", "Balance the tiled windows", balance_tiled_windows)
 
 -- Geometry is already final when this fires -- the window arrives tiled and
 -- placed -- so the layout can be evened out on the spot.
-hl.on("window.open", function()
+hl.on("window.open", function(window)
   if balance_next_window then
     balance_next_window = false
+    local opened = window.address
     -- The new window arrives tiled and placed, but the windows it displaced
     -- have not all been given their new geometry yet, and balancing on stale
     -- sizes lands short. One turn of the event loop is enough.
-    hl.timer(balance_tiled_windows, { timeout = 50, type = "oneshot" })
+    hl.timer(function()
+      balance_tiled_windows(opened)
+    end, { timeout = 50, type = "oneshot" })
   end
 end)
+
 
