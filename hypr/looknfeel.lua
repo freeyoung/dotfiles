@@ -6,7 +6,10 @@
 hl.config({
   general = {
     border_size = 1,
-    gaps_in = 2,
+    -- Applied to every edge of every window, so two tiled windows sit
+    -- 2 * gaps_in apart, plus one border each. At 0 the two borders meet and
+    -- read as a single 2 px rule between windows.
+    gaps_in = 0,
     gaps_out = 0,
 
     col = {
