@@ -77,6 +77,8 @@ linked_targets=(
 command -v Hyprland >/dev/null 2>&1 &&
   linked_targets+=(.config/hypr/input.lua .config/hypr/looknfeel.lua .config/hypr/bindings.lua)
 command -v kitty >/dev/null 2>&1 && linked_targets+=(.config/kitty/kitty.conf)
+[[ -d $tmp_dir/home/.config/omarchy ]] &&
+  linked_targets+=(.config/omarchy/plugins/eric.tray)
 command -v fcitx5 >/dev/null 2>&1 &&
   linked_targets+=(.config/fcitx5/table/wubi-large.conf)
 

@@ -307,3 +307,9 @@ hl.on("window.open", function(window)
 end)
 
 
+
+-- The tray drawer opens on hover and nothing else, which leaves it the one bar
+-- widget with no keyboard route in. eric.tray adds a "tray" IPC target for
+-- exactly this. SUPER+T is float/tile and SUPER+CTRL+T is Activity, so the
+-- shift variant is the free one next to them.
+o.bind("SUPER + SHIFT + T", "Toggle tray drawer", "omarchy shell tray toggle")

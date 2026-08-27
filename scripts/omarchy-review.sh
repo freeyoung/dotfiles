@@ -45,6 +45,7 @@ managed_files=(
   'hypr/looknfeel.lua|hypr/looknfeel.lua'
   'hypr/bindings.lua|hypr/bindings.lua'
   'kitty/kitty.conf|kitty/kitty.conf'
+  'omarchy/plugins/eric.tray|omarchy/plugins/eric.tray'
   'starship.toml|starship/starship.toml'
 )
 

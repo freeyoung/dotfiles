@@ -129,6 +129,16 @@ if command -v kitty >/dev/null 2>&1; then
   backup_and_link "$repo_dir/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 fi
 
+# A clone of Omarchy's own tray widget, carrying two changes it does not have:
+# the symbolic-icon fix from basecamp/omarchy#7290, and an IPC target so the
+# drawer can be opened from the keyboard rather than only by hover. Cloning is
+# how Omarchy expects a built-in widget to be modified -- the packaged copy is
+# replaced wholesale on update -- so the clone, not a patch, is what gets kept.
+if [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; then
+  backup_and_link "$repo_dir/omarchy/plugins/eric.tray" \
+    "$HOME/.config/omarchy/plugins/eric.tray"
+fi
+
 ssh_dir="$HOME/.ssh"
 ssh_config="$ssh_dir/config"
 ssh_local="$ssh_dir/config.local"
