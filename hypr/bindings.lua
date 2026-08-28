@@ -517,6 +517,7 @@ end)
 -- SUPER+SHIFT+S was Google Maps, which this account has no use for.
 bind_peek("SUPER + SHIFT + S", "Slack", {
   workspace = "slack",
+  unfocus = "hide",
   class = "^slack$",
   half = "left",
   tray_id = "Slack_status_icon_1",
@@ -526,6 +527,7 @@ bind_peek("SUPER + SHIFT + S", "Slack", {
 -- T goes to Telegram now that the tray drawer has moved to E.
 bind_peek("SUPER + SHIFT + T", "Telegram", {
   workspace = "telegram",
+  unfocus = "hide",
   class = "^org.telegram.desktop$",
   half = "left",
   tray_id = "TelegramDesktop",
