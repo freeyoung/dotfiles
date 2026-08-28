@@ -325,80 +325,194 @@ hl.unbind("SUPER + SHIFT + M")
 o.bind("SUPER + SHIFT + M", "Email", { webapp = "https://app.fastmail.com" })
 o.bind("SUPER + SHIFT + ALT + E", "New email", { webapp = "https://app.fastmail.com/mail/compose" })
 
--- Peek at an app the way a scratchpad works: one press brings it in, the next
--- sends it away. Each app gets a special workspace of its own rather than
--- sharing Omarchy's, so SUPER+S keeps meaning the general scratchpad and these
--- keys stay independent of it and of each other.
+-- Peek at one or more apps the way a scratchpad works: one press brings them
+-- in, the next sends them away. Each peek gets a special workspace of its own
+-- rather than sharing Omarchy's, so SUPER+S keeps meaning the general
+-- scratchpad and these keys stay independent of it and of each other.
 --
--- The window is never destroyed, which is what makes every press after the
+-- The windows are never destroyed, which is what makes every press after the
 -- first instant. An app that runs from a tray would otherwise rebuild its
 -- window on every visit.
 --
--- class is used twice: verbatim in the window rule, which Hyprland reads as a
--- regex, and through string.match at runtime, which reads it as a Lua pattern.
--- Anchored literals like "^slack$" mean the same thing to both, so keep the
--- pattern to that shape rather than reaching for alternation.
+-- A peek can hold several apps. A special workspace is an ordinary workspace
+-- shown as an overlay, so two apps in one tile beside each other with no help
+-- from these bindings -- which is why grouping needs no geometry of its own.
+--
+--   bind_peek("SUPER + SHIFT + S", "Slack", {
+--     workspace = "slack",
+--     class = "^slack$",
+--     launch = "slack --gtk-version=3 -s",
+--   })
+--
+--   bind_peek("SUPER + SHIFT + Q", "Chat", {
+--     workspace = "chat",
+--     unfocus = "hide",
+--     apps = {
+--       { class = "^slack$", launch = "slack --gtk-version=3 -s" },
+--       { class = "^org.telegram.desktop$", launch = "Telegram" },
+--     },
+--   })
+--
+-- Per app: class, launch, and optionally tray_id, half, float.
+-- Per peek: workspace, and optionally unfocus = "hide".
+--
+-- class goes to the window rule verbatim, where Hyprland reads it as a regex.
+-- Matching it against a live window is done by class_matches below rather than
+-- by handing the same string to string.match, because Lua patterns are not
+-- regexes: "-" is a lazy quantifier there, so "^google-chrome$" as a Lua
+-- pattern never matches the class it was written for.
+
 -- The bar reserves this much at the top. Hyprland's rule expressions cannot see
 -- the reserved area, so a floating window that should sit under the bar has to
 -- be told the number.
 local BAR_HEIGHT = 30
 
-local function bind_peek(key, label, spec)
-  local rules = { workspace = "special:" .. spec.workspace }
+-- Every peek that has been bound, by workspace name. The unfocus hook reads it
+-- to tell a peek's own windows from everything else, and `shown` is tracked
+-- here because Hyprland reports the ordinary workspace as active while a
+-- special one is overlaid, so there is nothing to ask.
+local peeks = {}
 
-  -- A special workspace holds one window, so tiled means full screen. Floating
-  -- is what makes anything else possible:
-  --   half = "left" | "right"  a panel pinned down one side
-  --   float = true             free, at whatever size the app asks for, and
-  --                            movable and resizable from there
-  if spec.half then
-    rules.float = true
-    rules.size = { "(monitor_w/2)", "(monitor_h-" .. BAR_HEIGHT .. ")" }
-    rules.move = {
-      spec.half == "left" and "0" or "(monitor_w/2)",
-      tostring(BAR_HEIGHT),
-    }
-  elseif spec.float then
-    rules.float = true
+-- "^something$" is compared literally, because that is what it means in every
+-- class these bindings name: the dots in "^org.telegram.desktop$" and the dash
+-- in "^google-chrome$" are characters, not syntax. Anything not written in that
+-- shape falls through to string.match and takes Lua's pattern rules with it --
+-- which is a reason to keep writing the anchored form.
+local function class_matches(window_class, pattern)
+  local literal = pattern:match("^%^(.-)%$$")
+  if literal then
+    return window_class == literal
   end
+  return window_class:match(pattern) ~= nil
+end
 
-  o.window(spec.class, rules)
+local function peek_owns(peek, window)
+  if not window or not window.class then
+    return false
+  end
+  for _, app in ipairs(peek.apps) do
+    if class_matches(window.class, app.class) then
+      return true
+    end
+  end
+  return false
+end
+
+local function bind_peek(key, label, spec)
+  -- One app can be written flat rather than as a list of one.
+  local apps = spec.apps or { spec }
+  local special = "special:" .. spec.workspace
+  local peek = { apps = apps, special = special, unfocus = spec.unfocus, shown = false }
+  peeks[spec.workspace] = peek
+
+  for _, app in ipairs(apps) do
+    local rules = { workspace = special }
+
+    -- Tiled means the windows share the workspace, which is what a group
+    -- wants. These are for a peek holding one app, where tiled means full
+    -- screen and full screen is the wrong shape for a glance:
+    --   half = "left" | "right"  a panel pinned down one side
+    --   float = true             free, at whatever size the app asks for
+    if app.half then
+      rules.float = true
+      rules.size = { "(monitor_w/2)", "(monitor_h-" .. BAR_HEIGHT .. ")" }
+      rules.move = {
+        app.half == "left" and "0" or "(monitor_w/2)",
+        tostring(BAR_HEIGHT),
+      }
+    elseif app.float then
+      rules.float = true
+    end
+
+    o.window(app.class, rules)
+  end
 
   hl.unbind(key)
   o.bind(key, label, function()
-    local special = "special:" .. spec.workspace
+    local windows = hl.get_windows()
+    local missing = {}
+    local found_any = false
 
-    for _, window in ipairs(hl.get_windows()) do
-      if window.class:match(spec.class) then
-        -- Window rules only apply as a window maps, so one that was already
-        -- open when this binding arrived is still on an ordinary workspace.
-        -- Collect it on the first press rather than toggling an empty special
-        -- workspace at it.
-        if window.workspace and window.workspace.name ~= special then
-          hl.dispatch(hl.dsp.focus({ window = "address:" .. window.address }))
-          hl.dispatch(hl.dsp.window.move({ workspace = special, follow = false }))
+    for _, app in ipairs(apps) do
+      local open = false
+      for _, window in ipairs(windows) do
+        if class_matches(window.class, app.class) then
+          open = true
+          found_any = true
+          -- Window rules only apply as a window maps, so one that was already
+          -- open when this binding arrived is still on an ordinary workspace.
+          -- Collect it rather than toggling an empty special workspace at it.
+          if window.workspace and window.workspace.name ~= special then
+            hl.dispatch(hl.dsp.focus({ window = "address:" .. window.address }))
+            hl.dispatch(hl.dsp.window.move({ workspace = special, follow = false }))
+          end
         end
-        hl.dispatch(hl.dsp.workspace.toggle_special(spec.workspace))
-        return
+      end
+      if not open then
+        missing[#missing + 1] = app
       end
     end
 
-    -- No window yet. Ask for one, and reveal the workspace in the same press:
-    -- assigning a window to a special workspace does not show that workspace,
-    -- so without this the first press after a cold start looks like a no-op.
-    --
-    -- peek-activate prefers the tray icon's own Activate over running the app
-    -- again, because running it again races the single-instance handoff and a
-    -- lost race leaves two processes with two tray icons. It falls back to the
-    -- launch command when nothing is in the tray, which is the app being off.
-    if spec.tray_id then
-      hl.exec_cmd("peek-activate " .. spec.tray_id .. " " .. spec.launch)
-    else
-      hl.exec_cmd(spec.launch)
+    -- Ask the apps with no window for one. peek-activate prefers the tray
+    -- icon's own Activate over running the app again, because running it again
+    -- races the single-instance handoff and a lost race leaves two processes
+    -- with two tray icons. It falls back to the launch command when nothing is
+    -- in the tray, which is the app being off.
+    for _, app in ipairs(missing) do
+      if app.tray_id then
+        hl.exec_cmd("peek-activate " .. app.tray_id .. " " .. app.launch)
+      else
+        hl.exec_cmd(app.launch)
+      end
     end
+
+    -- Launching does not reveal anything: assigning a window to a special
+    -- workspace does not show that workspace, so a press that only launches
+    -- still has to open the overlay. shown is not set here -- the
+    -- workspace.special_active hook below is the only writer.
     hl.dispatch(hl.dsp.workspace.toggle_special(spec.workspace))
   end)
 end
+
+-- unfocus = "hide" sends a peek away as soon as attention moves elsewhere,
+-- which is the other half of a glance: it saves the second press. Focus landing
+-- on another window of the same peek does not count -- that is still looking at
+-- it -- and neither does focus going nowhere, which happens in the gap while a
+-- window is closing.
+-- Hyprland is the authority on whether a peek is on screen, and it has to be:
+-- hide_special_on_workspace_change means it closes one on its own, and a flag
+-- this file kept for itself would be left claiming the peek was still up. The
+-- next unfocus would then "hide" a hidden peek, which toggles it back into
+-- view -- which is exactly what pressing SUPER+1 used to do.
+hl.on("workspace.special_active", function(workspace)
+  local ok, name = pcall(function() return workspace and workspace.name end)
+  local active = ok and name or nil
+  for _, peek in pairs(peeks) do
+    peek.shown = peek.special == active
+  end
+end)
+
+-- The check runs on a timer rather than inline because window.active arrives
+-- before workspace.special_active. Hiding a peek moves focus, so deciding
+-- immediately reads a shown flag that still says "up" for a peek already on its
+-- way down, and hiding it again toggles it back into view -- every press became
+-- two. Letting the events settle and re-reading both the flag and the focused
+-- window costs a frame nobody sees.
+local UNFOCUS_SETTLE_MS = 120
+
+hl.on("window.active", function()
+  hl.timer(function()
+    local active = hl.get_active_window()
+    if not active then
+      return
+    end
+    for _, peek in pairs(peeks) do
+      if peek.unfocus == "hide" and peek.shown and not peek_owns(peek, active) then
+        hl.dispatch(hl.dsp.workspace.toggle_special(peek.special:gsub("^special:", "")))
+      end
+    end
+  end, { timeout = UNFOCUS_SETTLE_MS, type = "oneshot" })
+end)
 
 -- SUPER+SHIFT+S was Google Maps, which this account has no use for.
 bind_peek("SUPER + SHIFT + S", "Slack", {
@@ -417,3 +531,19 @@ bind_peek("SUPER + SHIFT + T", "Telegram", {
   tray_id = "TelegramDesktop",
   launch = "Telegram",
 })
+
+-- Defaults this host has no use for. Four point at applications that are not
+-- installed or at services this account does not have, so the key does nothing
+-- or opens something unwanted; the rest are Basecamp's or DHH's picks rather
+-- than anything universal. Unbinding rather than rebinding: an empty key is
+-- honest, and SUPER+SHIFT is where the apps worth a key will want to live.
+--
+-- Kept on purpose: SUPER+CTRL+ALT+D is the bar's own clock panel, not HEY.
+hl.unbind("SUPER + SHIFT + G")          -- Signal, not installed
+hl.unbind("SUPER + SHIFT + SLASH")      -- 1Password, not installed
+hl.unbind("SUPER + SHIFT + C")          -- HEY calendar
+hl.unbind("SUPER + SHIFT + X")          -- X
+hl.unbind("SUPER + SHIFT + ALT + X")    -- X post
+hl.unbind("SUPER + SHIFT + CTRL + G")   -- Google Messages
+hl.unbind("SUPER + SHIFT + P")          -- Google Photos
+hl.unbind("SUPER + SHIFT + Y")          -- YouTube
