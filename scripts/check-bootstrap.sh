@@ -75,8 +75,11 @@ linked_targets=(
 # The installer guards these; mirror each guard rather than assume the host.
 [[ $OSTYPE == linux* ]] && linked_targets+=(.config/fontconfig/fonts.conf .XCompose)
 command -v Hyprland >/dev/null 2>&1 &&
-  linked_targets+=(.config/hypr/input.lua .config/hypr/looknfeel.lua .config/hypr/bindings.lua)
+  linked_targets+=(.config/hypr/input.lua .config/hypr/looknfeel.lua .config/hypr/bindings.lua .config/hypr/autostart.lua .Xresources)
 command -v kitty >/dev/null 2>&1 && linked_targets+=(.config/kitty/kitty.conf)
+linked_targets+=(.local/bin/peek-activate)
+[[ -d $tmp_dir/home/.config/omarchy ]] &&
+  linked_targets+=(.config/omarchy/plugins/eric.tray)
 command -v fcitx5 >/dev/null 2>&1 &&
   linked_targets+=(.config/fcitx5/table/wubi-large.conf)
 
