@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# Ask a tray-resident application for a window, without starting a second copy.
+#
+# Running such an app again is its documented way back: the new process finds
+# the lock the running one holds, hands the request over and exits. That handoff
+# is a race, and losing it leaves two processes, two tray icons, and a Ctrl+Q
+# that only quits one of them -- the other keeps sitting in the tray looking
+# like the quit did not work.
+#
+# Activating the StatusNotifierItem is what clicking the tray icon does. It
+# reaches the instance already running, so no second process exists to lose
+# track of. The launch command runs only when no item is registered, which is
+# the case when the app is not running at all.
+
+set -euo pipefail
+
+if (($# < 2)); then
+  echo "Usage: peek-activate <tray-id> <launch-command> [args...]" >&2
+  exit 2
+fi
+
+tray_id=$1
+shift
+
+# The watcher hands back "<bus name>/<object path>" strings.
+registered_items() {
+  busctl --user call org.kde.StatusNotifierWatcher /StatusNotifierWatcher \
+    org.freedesktop.DBus.Properties Get ss \
+    org.kde.StatusNotifierWatcher RegisteredStatusNotifierItems 2>/dev/null |
+    grep -oE '"[^"]+"' | tr -d '"'
+}
+
+item_id() {
+  busctl --user get-property "$1" "$2" org.kde.StatusNotifierItem Id 2>/dev/null |
+    sed 's/^s //; s/"//g'
+}
+
+for item in $(registered_items); do
+  service=${item%%/*}
+  object=/${item#*/}
+
+  [[ "$(item_id "$service" "$object")" == "$tray_id" ]] || continue
+
+  # x and y are where the click happened. Nothing reads them for a plain
+  # activation, and zeroes are what a keyboard press honestly reports.
+  if busctl --user call "$service" "$object" \
+      org.kde.StatusNotifierItem Activate ii 0 0 >/dev/null 2>&1; then
+    exit 0
+  fi
+
+  # The item answered the watcher but not the call. Fall through and launch:
+  # a stale registration is exactly the case the launch command is for.
+  break
+done
+
+exec "$@"
