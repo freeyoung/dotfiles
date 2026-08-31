@@ -369,13 +369,48 @@ any() {
 }
 
 # Preserve the familiar archive-extraction command. This intentionally
-# overrides /opt/X11/bin/x in interactive zsh sessions.
+# overrides /opt/X11/bin/x in interactive zsh sessions. ouch handles every
+# format it knows from one command and is what this reaches for; Debian
+# packages it nowhere, so fall back to the standard tools there rather than
+# leave the command broken. GNU tar sniffs the compression itself on extract,
+# which covers the whole .tar.* family in one branch.
 x() {
   if (( $# == 0 )); then
     print -u2 'usage: x <archive> [...]'
     return 2
   fi
-  ouch decompress "$@"
+  if (( $+commands[ouch] )); then
+    ouch decompress "$@"
+    return
+  fi
+
+  local archive
+  integer failures=0
+  for archive in "$@"; do
+    if [[ ! -f $archive ]]; then
+      print -u2 "x: not a file: $archive"
+      (( failures++ ))
+      continue
+    fi
+    # Lowercased so .ZIP and .TGZ match too. The single-file decompressors keep
+    # the archive, which is what ouch does and what the callers here expect.
+    case ${archive:l} in
+      *.tar|*.tar.*|*.tgz|*.tbz|*.tbz2|*.txz|*.tzst) tar -xf "$archive" ;;
+      *.zip|*.jar|*.war|*.whl) unzip -q "$archive" ;;
+      *.gz)  gunzip -k "$archive" ;;
+      *.bz2) bunzip2 -k "$archive" ;;
+      *.xz|*.lzma) unxz -k "$archive" ;;
+      *.zst) unzstd "$archive" ;;
+      *.7z)  7z x "$archive" ;;
+      *.rar) unrar x "$archive" ;;
+      *)
+        print -u2 "x: no extractor for $archive; install ouch"
+        (( failures++ ))
+        continue
+        ;;
+    esac || (( failures++ ))
+  done
+  (( failures == 0 ))
 }
 
 _zsh_github_repo() {

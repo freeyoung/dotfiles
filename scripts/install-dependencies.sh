@@ -2,7 +2,8 @@
 
 # Install shared command-line dependencies. Homebrew provides them on macOS and
 # on Linux hosts that already use Linuxbrew; a native Linux package manager is
-# used otherwise, since distributions ship the same GNU userland directly.
+# used otherwise, since distributions ship the same GNU userland directly. Arch
+# (pacman) and Debian and its derivatives (apt) are mapped.
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -103,6 +104,112 @@ install_with_pacman() {
   fi
 }
 
+# Debian and its derivatives package almost all of the Brewfile set, under
+# their own names: GNU sed is `sed` rather than `gnu-sed`, and Go is
+# `golang-go`. Which of them a given release carries varies -- starship and
+# kubectl are recent arrivals, and Debian and Ubuntu picked them up at
+# different times -- so what is missing from the archive is named rather than
+# silently dropped, and the rest still installs. curl is listed because the
+# plugin restore and the upstream installers below need it and a minimal
+# Debian does not have it; zsh for the same reason as on Arch. Node is
+# deliberately absent -- mise installs the versions projects pin. So are mise,
+# uv and ouch, which no Debian release carries: naming them here would leave
+# the list permanently unsatisfied, and every run would then refresh the
+# package lists over the network to rediscover that. They are handled below.
+install_with_apt() {
+  local -a packages=(
+    zsh curl
+    fzf starship zoxide
+    coreutils gawk grep sed
+    golang-go
+    neovim vim
+    bat git ripgrep kubectl tmux
+  )
+  local -a wanted=() available=() unavailable=()
+  local package candidate
+
+  # dpkg answers from the local status database, so this needs no package
+  # lists and no network for the common case where nothing is missing.
+  for package in "${packages[@]}"; do
+    if [[ "$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null)" != installed ]]; then
+      wanted+=("$package")
+    fi
+  done
+
+  if (( ${#wanted[@]} == 0 )); then
+    printf 'All apt dependencies are already installed.\n'
+    return 0
+  fi
+
+  # apt-cache answers from /var/lib/apt/lists, so stale or empty lists would
+  # report a packaged tool as unavailable. Refresh before asking.
+  sudo apt-get update
+
+  # awk reads apt-cache to the end rather than exiting on the line it wants:
+  # quitting early closes the pipe under the writer, and the SIGPIPE that
+  # follows is a 141 that pipefail propagates and set -e acts on.
+  for package in "${wanted[@]}"; do
+    candidate="$(
+      apt-cache policy "$package" 2>/dev/null |
+        command awk -F': ' '!found && $1 ~ /Candidate$/ { print $2; found = 1 }'
+    )"
+    if [[ -n "$candidate" && "$candidate" != '(none)' ]]; then
+      available+=("$package")
+    else
+      unavailable+=("$package")
+    fi
+  done
+
+  if (( ${#available[@]} )); then
+    printf 'Installing with apt: %s\n' "${available[*]}"
+    # Recommends are left on: git's are less, ssh-client and patch, which this
+    # configuration uses everywhere and which --no-install-recommends drops.
+    # The frontend goes through env rather than a `sudo VAR=value` assignment,
+    # which sudoers rejects unless the rule grants setenv.
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "${available[@]}"
+  fi
+
+  if (( ${#unavailable[@]} )); then
+    printf 'Not packaged for this release, skipped: %s\n' "${unavailable[*]}" >&2
+  fi
+}
+
+# Debian packages neither mise nor uv, and both are load-bearing here: a
+# runtime version comes from mise on every host (see zsh/modules/runtimes.zsh,
+# and mise/config.toml, which the installer links for it), and mise builds
+# project virtualenvs through uv. Each publishes an installer that writes one
+# binary into ~/.local/bin, which ~/.zshrc already puts on PATH -- so neither
+# needs root, and neither leaves an apt source on the host to maintain. A tool
+# a package manager has already provided is left alone.
+install_upstream_binaries() {
+  local tool installer
+
+  # A plain case rather than an associative array: this script is also read by
+  # the bash macOS ships, which is 3.2 and has none.
+  for tool in mise uv; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      continue
+    fi
+    case "$tool" in
+      mise) installer='https://mise.run' ;;
+      uv)   installer='https://astral.sh/uv/install.sh' ;;
+    esac
+    command -v curl >/dev/null 2>&1 || {
+      printf 'curl is required to install %s.\n' "$tool" >&2
+      return 1
+    }
+    printf 'Installing %s from %s\n' "$tool" "$installer"
+    curl -fsSL "$installer" | sh
+  done
+
+  # ouch has no Debian package and no first-party installer worth adding. Only
+  # the x() helper uses it, and that falls back to tar and unzip, so say so
+  # once instead of failing the bootstrap.
+  if ! command -v ouch >/dev/null 2>&1; then
+    printf 'ouch is unavailable; x() will extract with tar and unzip instead.\n'
+  fi
+}
+
 # zsh/modules/plugins.zsh reads this checkout directly; see its candidate list.
 install_antidote_checkout() {
   local antidote_dir="$HOME/.antidote"
@@ -153,6 +260,11 @@ if [[ -n "$brew_path" ]]; then
   ensure_gnu_tools
 elif [[ $(uname -s) == Linux ]] && command -v pacman >/dev/null 2>&1; then
   install_with_pacman
+  install_antidote_checkout
+  ensure_gnu_tools
+elif [[ $(uname -s) == Linux ]] && command -v apt-get >/dev/null 2>&1; then
+  install_with_apt
+  install_upstream_binaries
   install_antidote_checkout
   ensure_gnu_tools
 elif [[ $(uname -s) == Linux ]]; then
