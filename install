@@ -341,10 +341,6 @@ else
   printf 'Kept private SSH configuration: %s\n' "$ssh_local"
 fi
 
-if command -v ssh >/dev/null 2>&1; then
-  ssh -G -T -F "$ssh_dir/config" dotfiles-bootstrap.invalid >/dev/null
-  printf 'SSH configuration check passed.\n'
-fi
 umask "$ssh_previous_umask"
 
 git_local="$HOME/.config/git/local.gitconfig"
@@ -400,6 +396,16 @@ fi
 # runs sees no batcat and quietly links nothing.
 if ! command -v bat >/dev/null 2>&1 && command -v batcat >/dev/null 2>&1; then
   backup_and_link "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
+# Down here with the other validations rather than beside the linking above,
+# for the same reason as the bat link: a minimal Debian has no ssh until the
+# dependency phase pulls openssh-client in as one of git's Recommends, so a
+# guard asked earlier would skip this on a first install -- the one run where a
+# broken ssh/config has not been proven to parse yet.
+if command -v ssh >/dev/null 2>&1; then
+  ssh -G -T -F "$ssh_dir/config" dotfiles-bootstrap.invalid >/dev/null
+  printf 'SSH configuration check passed.\n'
 fi
 
 if command -v zsh >/dev/null 2>&1; then
