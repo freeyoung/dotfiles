@@ -55,14 +55,20 @@ package already claims the name. The installer links `~/.local/bin/bat` to it
 commands that `man` and fzf run outside an interactive shell. A host that has
 `bat` under its own name gets no link.
 
-Which dependencies a Debian release carries varies, and `starship` and
-`kubectl` are recent arrivals, so what the archive does not have is named
-rather than silently dropped and the rest still installs. `apt-get update`
-runs only when something is actually missing, since `dpkg` answers the
-already-installed question offline — which is also why the three below are
-left out of the list asked of apt rather than listed and reported missing
-every time. On a host that is already set up, the whole `apt` step is offline
-and silent.
+Ubuntu takes the same path: the dispatch turns on `apt-get` existing, not on
+which distribution it is. What differs is only what the archive carries, and
+that is measured rather than assumed — Debian 13 has the whole list, Ubuntu
+24.04 is missing `starship` and `kubectl`, and Ubuntu 26.04 is missing only
+`kubectl`. Both of those are guarded in the shell configuration, so an Ubuntu
+host falls back to Zsh's own prompt and to a `k` alias with nothing behind it
+rather than failing to start.
+
+That is the general rule: what the archive does not have is named rather than
+silently dropped, and the rest still installs. `apt-get update` runs only when
+something is actually missing, since `dpkg` answers the already-installed
+question offline — which is also why the three below are left out of the list
+asked of apt rather than listed and reported missing every time. On a host
+that is already set up, the whole `apt` step is offline and silent.
 
 Three are not packaged at all. `mise` and `uv` are load-bearing here — every
 runtime version comes from mise, and mise builds project virtualenvs through
@@ -554,14 +560,31 @@ first -- an absent tool is not a passing check, it is a check that never ran.
 The Ubuntu job tests the linking half only. It runs `install --links-only`,
 which skips
 [`scripts/install-dependencies.sh`](scripts/install-dependencies.sh)
-entirely, so neither package-manager mapping is exercised there -- installing
-packages on a runner would be slow, and the runner image already carries
-Linuxbrew, which the installer would prefer over `apt` anyway. What the job
-proves is the linking half on a Linux that is not this one: the platform
-guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim configuration
-parsing under older tools and no installed plugins. Both of those last two
-caught a real bug the first time it ran. The mappings themselves are covered by
-`bash -n` and by running the installer on a host of each family.
+entirely. What it proves is the linking half on a Linux that is not this one:
+the platform guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim
+configuration parsing under older tools and no installed plugins. Both of
+those last two caught a real bug the first time it ran.
+
+A second job, `bootstrap-apt`, runs the mapping itself. It cannot run on the
+runner directly -- that image carries Linuxbrew, which the installer prefers
+over `apt` -- so it runs in a container instead, on `debian:trixie` and
+`ubuntu:24.04`, and installs real packages with `install --skip-plugins`. Two
+archives rather than one because they answer differently: Debian carries the
+whole list, while Ubuntu 24.04 is missing `starship` and `kubectl` and has to
+report them and carry on, which is the branch that would otherwise never be
+executed anywhere. The job then checks what is unique to this path -- mise
+landing in `~/.local/bin`, `bat` linked to `batcat`, eza present -- and starts
+an interactive Zsh, which is where a missing guard for a tool the archive did
+not supply would surface.
+
+Those images have no `sudo`, which is why `install-dependencies.sh` escalates
+through a helper that runs the command directly when it is already root. That
+is not only a CI convenience: a root shell on a minimal install or a rescue
+boot has no sudo either.
+
+The `pacman` mapping has no such job. Arch publishes no image the runners can
+use as readily, and it is the one this repository's own host exercises on
+every update.
 
 Two guards are invisible to it either way: `Hyprland` and `fcitx5` exist on
 neither runner, so nothing links or checks those files except the host that
