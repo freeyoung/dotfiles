@@ -10,12 +10,27 @@ warn() {
   printf 'Warning: %s\n' "$*" >&2
 }
 
+# The same places zsh/modules/plugins.zsh looks, in the same order -- a shell
+# that finds antidote while this script reports it unavailable would skip
+# compiling the bundle and leave the shell to do it on every start. Arch
+# packages it into /usr/share, which is why the checkout in
+# install-dependencies.sh is not the only path worth trying.
 antidote_source=''
 if command -v brew >/dev/null 2>&1; then
   candidate="$(brew --prefix antidote 2>/dev/null || true)/share/antidote/antidote.zsh"
   [[ -r "$candidate" ]] && antidote_source=$candidate
 fi
-[[ -z "$antidote_source" && -r "$HOME/.antidote/antidote.zsh" ]] && antidote_source="$HOME/.antidote/antidote.zsh"
+if [[ -z "$antidote_source" ]]; then
+  for candidate in \
+    "$HOME/.antidote/antidote.zsh" \
+    /usr/share/zsh-antidote/antidote.zsh \
+    /usr/share/zsh/plugins/antidote/antidote.zsh; do
+    if [[ -r "$candidate" ]]; then
+      antidote_source=$candidate
+      break
+    fi
+  done
+fi
 
 if [[ -n "$antidote_source" ]]; then
   plugins_file="$repo_dir/zsh/plugins.txt"
