@@ -35,16 +35,45 @@ On macOS, the installer installs Homebrew when necessary and applies the
 shared [`Brewfile`](Brewfile). A Linux host that already has Linuxbrew takes
 the same path.
 
-Without Homebrew, a Linux host is bootstrapped from its own package manager;
-Arch (`pacman`) is mapped today, and other distributions still ask for
-Linuxbrew. The native path also installs `zsh`, which macOS provides as the
-login shell but Arch does not install by default, and clones
-[antidote](https://github.com/mattmc3/antidote) into `~/.antidote` so no AUR
-helper becomes a bootstrap dependency. Node is deliberately not installed:
-mise provides the versions projects pin. Where mise itself is packaged under
-another name — Omarchy and the AUR ship `mise-bin`, which conflicts with the
-official `mise` — the installer detects it through `pacman -T` and leaves the
-existing package alone.
+Without Homebrew, a Linux host is bootstrapped from its own package manager.
+Arch (`pacman`) and Debian with its derivatives (`apt`) are mapped; other
+distributions still ask for Linuxbrew. Either native path also installs `zsh`,
+which macOS provides as the login shell and neither distribution installs by
+default, and clones [antidote](https://github.com/mattmc3/antidote) into
+`~/.antidote`, which neither packages. Node is deliberately not installed:
+mise provides the versions projects pin.
+
+On Arch, nothing comes from the AUR, so no AUR helper becomes a bootstrap
+dependency. Where mise is packaged under another name — Omarchy and the AUR
+ship `mise-bin`, which conflicts with the official `mise` — the installer
+detects it through `pacman -T` and leaves the existing package alone.
+
+On Debian the package names differ: GNU sed is `sed` rather than `gnu-sed`, Go
+is `golang-go`, and `bat` installs its binary as `batcat`, because another
+package already claims the name. The installer links `~/.local/bin/bat` to it
+— an alias would not do, since `MANPAGER` and the `ff` preview name `bat` in
+commands that `man` and fzf run outside an interactive shell. A host that has
+`bat` under its own name gets no link.
+
+Which dependencies a Debian release carries varies, and `starship` and
+`kubectl` are recent arrivals, so what the archive does not have is named
+rather than silently dropped and the rest still installs. `apt-get update`
+runs only when something is actually missing, since `dpkg` answers the
+already-installed question offline — which is also why the three below are
+left out of the list asked of apt rather than listed and reported missing
+every time. On a host that is already set up, the whole `apt` step is offline
+and silent.
+
+Three are not packaged at all. `mise` and `uv` are load-bearing here — every
+runtime version comes from mise, and mise builds project virtualenvs through
+uv — so they are installed from their own upstream installers, which write a
+single binary into `~/.local/bin`, need no root, and leave no apt source on
+the host to maintain. `~/.zshrc` puts that directory on `PATH` before the
+modules load, ahead of the guards that ask whether mise and bat exist.
+
+`ouch` is not load-bearing: only the `x` helper reaches for it, and that falls
+back to `tar`, `unzip`, and the single-file decompressors without it. The
+installer names it once and carries on.
 
 Either way the installer verifies the GNU userland this configuration relies
 on and stops if it is incomplete. macOS needs Homebrew's `gls`, `ggrep`,
@@ -240,6 +269,13 @@ already the abbreviation for `git diff`.
 `man` renders through `bat` when it is installed, which colours the synopsis
 and options.
 
+`x archive...` extracts. It hands the work to `ouch`, which knows every format
+from one command; where `ouch` is absent — Debian packages it nowhere — it
+falls back to `tar`, `unzip`, and the single-file decompressors, chosen by
+extension. GNU `tar` sniffs the compression itself, so the whole `.tar.*`
+family is one branch. Anything neither can place is named and the rest of the
+arguments still run.
+
 `ff` picks a file with fzf and previews it with bat on the way — inline images
 too, under Kitty. `eff` opens what it picked in `$EDITOR`, and `sff dest:/path`
 copies it to a remote host, newest files first.
@@ -301,6 +337,13 @@ Fonts that exist only to cover the CJK extension blocks — BabelStone Han,
 HanaMin — claim enough of Unicode besides that fontconfig will otherwise hand
 them ordinary text and even emoji. The language they declare is reassigned so
 they stay what they are for: a last resort for a codepoint nothing else has.
+
+No font is installed on any platform: these rules and `kitty.conf` select
+faces, they do not provide them. Omarchy already ships the Noto CJK families
+and a Nerd Font, which is why nothing here has had to. A Debian desktop does
+not, and a rule that names a face the host lacks simply never fires — install
+`fonts-noto-cjk` and a JetBrains Mono Nerd Font build there to give the
+selection something to choose from.
 
 ### tmux
 
@@ -414,6 +457,17 @@ otherwise, and eza reads the same variable.
 Three things here only make sense on a Linux desktop, so the installer guards
 each on what actually reads it rather than on the platform alone.
 
+This is the part of the repository that stays Omarchy-shaped. Hyprland's Lua
+configuration and the override files named below are Omarchy's arrangement,
+not upstream Hyprland's, and the tray plugin is a clone of one of its widgets;
+the guards link them wherever a Hyprland binary exists, but only Omarchy's
+loader reads them. `kitty.conf` is the exception that had to be portable —
+it pulls the current Omarchy theme in with `globinclude` rather than
+`include`, because a glob that matches nothing is silently skipped where a
+missing named include is a startup error in every kitty window. Off Omarchy it
+keeps kitty's own colours. Nothing here has a Debian equivalent to write:
+`install` on a Debian host that is not running Hyprland links none of it.
+
 These raise the cost of a branch switch inside this repository. Everything is
 linked rather than copied, so a checkout that does not contain one of these
 files leaves a dangling link where the live configuration used to be -- and
@@ -495,15 +549,17 @@ turns on which of the two it is running on. Every check inside the bootstrap is
 guarded on its tool existing, so the workflow installs zsh, vim, tmux, and Lua
 first -- an absent tool is not a passing check, it is a check that never ran.
 
-The workflow reaching for `apt` there is not a claim of Debian support. It runs
-`install --links-only`, which skips
+The Ubuntu job tests the linking half only. It runs `install --links-only`,
+which skips
 [`scripts/install-dependencies.sh`](scripts/install-dependencies.sh)
-entirely, so the package-manager mapping above is never exercised; Ubuntu is
-still supported the way any non-Arch distribution is, through Linuxbrew. What
-the Ubuntu job proves is the linking half on a Linux that is not this one --
-the platform guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim
-configuration parsing under older tools and no installed plugins. Both of those
-last two caught a real bug the first time it ran.
+entirely, so neither package-manager mapping is exercised there -- installing
+packages on a runner would be slow, and the runner image already carries
+Linuxbrew, which the installer would prefer over `apt` anyway. What the job
+proves is the linking half on a Linux that is not this one: the platform
+guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim configuration
+parsing under older tools and no installed plugins. Both of those last two
+caught a real bug the first time it ran. The mappings themselves are covered by
+`bash -n` and by running the installer on a host of each family.
 
 Two guards are invisible to it either way: `Hyprland` and `fcitx5` exist on
 neither runner, so nothing links or checks those files except the host that

@@ -16,7 +16,8 @@ bindkey -e
 fpath=("${${(%):-%N}:A:h:h}/completions" $fpath)
 
 # Colour the completion list the way ls colours a listing. LS_COLORS is what
-# both that and eza read, and nothing on Arch sets it by default.
+# both that and eza read, and no distribution sets it for zsh by default --
+# Arch sets it nowhere, and Debian only in the bash files it ships.
 if (( $+commands[dircolors] )) && [[ -z ${LS_COLORS:-} ]]; then
   eval "$(dircolors -b)"
 fi

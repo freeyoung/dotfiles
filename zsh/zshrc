@@ -5,6 +5,15 @@
 
 [[ -o interactive ]] || return
 
+# Ahead of the modules, not after them: every module guard below asks whether a
+# command exists, and a tool that lives here would answer no if this ran last.
+# That is the normal case on a distribution that packages less than Homebrew --
+# Debian gets mise and uv from their upstream installers, which write here, and
+# bat under the name the installer links here -- and mise in particular has to
+# be visible to runtimes.zsh or no runtime is activated at all. The GNU
+# directories environment.zsh prepends still land in front of this.
+export PATH="$HOME/.local/bin:$PATH"
+
 typeset _zsh_rc_dir=${${(%):-%N}:A:h}
 source "$_zsh_rc_dir/modules/environment.zsh"
 # runtimes.zsh installs mise's precmd hook, so it loads before the modules that
@@ -23,5 +32,3 @@ unset _zsh_rc_dir
 
 # Load machine-specific overrides after all shared modules.
 [[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"
-
-export PATH="$HOME/.local/bin:$PATH"

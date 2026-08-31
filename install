@@ -134,6 +134,15 @@ fi
 # referenced by path from the configuration.
 backup_and_link "$repo_dir/bin/peek-activate" "$HOME/.local/bin/peek-activate"
 
+# Debian installs bat as batcat, because bacula-console-qt already claims the
+# name, and the shell configuration reaches for bat: as MANPAGER, as the ccat
+# alias, and inside the ff() preview command, which fzf runs through sh where
+# an alias would not resolve. One link on PATH answers all three. Only when
+# nothing else provides bat -- a Homebrew or hand-built one is left alone.
+if ! command -v bat >/dev/null 2>&1 && command -v batcat >/dev/null 2>&1; then
+  backup_and_link "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
 # Read by X11 clients only, so this is linked on the same condition as the rest
 # of the desktop configuration rather than unconditionally.
 if command -v Hyprland >/dev/null 2>&1; then
