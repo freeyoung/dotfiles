@@ -12,8 +12,16 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/vim-bootstrap.XXXXXX")"
 trap 'rm -rf "$tmp_dir"' EXIT
 
+# Which stat this is cannot be read off uname: Homebrew's coreutils ships GNU
+# stat as gstat, and a PATH carrying its gnubin directory makes plain `stat` on
+# macOS the GNU one too -- which does not know -f, so the Darwin branch failed
+# on exactly the developer machines most likely to run this by hand. Ask for
+# the GNU build by the name only it answers to, and fall back to whatever the
+# platform's own stat is with the flag that one understands.
 file_mode() {
-  if [[ "$(uname -s)" == Darwin ]]; then
+  if command -v gstat >/dev/null 2>&1; then
+    gstat -c '%a' "$1"
+  elif [[ "$(uname -s)" == Darwin ]]; then
     stat -f '%Lp' "$1"
   else
     stat -c '%a' "$1"
