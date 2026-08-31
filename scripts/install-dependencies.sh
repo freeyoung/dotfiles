@@ -69,6 +69,20 @@ ensure_gnu_tools() {
   fi
 }
 
+# Installing packages needs root, but a root shell -- a container, a minimal
+# install, a rescue boot -- often has no sudo to find. Escalate only when there
+# is something to escalate from.
+as_root() {
+  if (( EUID == 0 )); then
+    "$@"
+  elif command -v sudo >/dev/null 2>&1; then
+    sudo "$@"
+  else
+    printf 'Root privileges are required to install packages, and sudo is not installed.\n' >&2
+    return 1
+  fi
+}
+
 # Arch ships everything in the Brewfile except antidote, which lives in the AUR
 # and is consumed from a plain checkout instead so no AUR helper becomes a
 # bootstrap dependency. zsh is listed explicitly: macOS provides it as the login
@@ -98,7 +112,7 @@ install_with_pacman() {
 
   if (( ${#missing[@]} )); then
     printf 'Installing with pacman: %s\n' "${missing[*]}"
-    sudo pacman -S --needed --noconfirm "${missing[@]}"
+    as_root pacman -S --needed --noconfirm "${missing[@]}"
   else
     printf 'All pacman dependencies are already installed.\n'
   fi
@@ -143,7 +157,7 @@ install_with_apt() {
 
   # apt-cache answers from /var/lib/apt/lists, so stale or empty lists would
   # report a packaged tool as unavailable. Refresh before asking.
-  sudo apt-get update
+  as_root apt-get update
 
   # awk reads apt-cache to the end rather than exiting on the line it wants:
   # quitting early closes the pipe under the writer, and the SIGPIPE that
@@ -164,9 +178,10 @@ install_with_apt() {
     printf 'Installing with apt: %s\n' "${available[*]}"
     # Recommends are left on: git's are less, ssh-client and patch, which this
     # configuration uses everywhere and which --no-install-recommends drops.
-    # The frontend goes through env rather than a `sudo VAR=value` assignment,
-    # which sudoers rejects unless the rule grants setenv.
-    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "${available[@]}"
+    # The frontend goes through env rather than a `VAR=value` assignment on
+    # the sudo command line, which sudoers rejects unless the rule grants
+    # setenv.
+    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "${available[@]}"
   fi
 
   if (( ${#unavailable[@]} )); then

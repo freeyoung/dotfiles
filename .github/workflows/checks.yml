@@ -50,3 +50,61 @@ jobs:
       # it, but it does prove the script parses and runs on both platforms.
       - name: Omarchy review runs where Omarchy is absent
         run: bash scripts/omarchy-review.sh
+
+  # The job above cannot reach the apt mapping: the runner image carries
+  # Linuxbrew, which the installer prefers, and --links-only skips dependency
+  # installation entirely. Run the real thing in a container instead, on the
+  # two archives that answer differently -- Debian carries the whole list,
+  # while Ubuntu 24.04 is missing starship and kubectl and has to report them
+  # and carry on.
+  bootstrap-apt:
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['debian:trixie', 'ubuntu:24.04']
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    steps:
+      # These images ship neither git, which checkout wants, nor sudo, which
+      # is why install-dependencies.sh has to run apt directly when it is
+      # already root. openssh-client is named because every SSH assertion in
+      # the bootstrap check is guarded on `ssh` existing, and a guard that
+      # never fires is not a check that passed.
+      - name: Give the container what checkout needs
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git ca-certificates openssh-client
+
+      - uses: actions/checkout@v4
+
+      # Dependencies and links, but not plugins: the plugin restore is the
+      # same work on every platform and the ubuntu-latest job already covers
+      # the linking half.
+      - name: Bootstrap from apt
+        run: bash install --skip-plugins
+
+      # What the mapping is supposed to leave behind, rather than only that it
+      # exited 0. mise and the bat link are the two pieces unique to this path,
+      # and both are named by absolute path: a step gets the container's own
+      # PATH, which has no ~/.local/bin on it, so `command -v mise` here would
+      # fail on a host where mise installed perfectly well.
+      - name: The pieces unique to the apt path landed
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$HOME/.local/bin/mise" --version
+          [[ "$(readlink "$HOME/.local/bin/bat")" == */batcat ]] ||
+            { echo 'bat was not linked to batcat' >&2; exit 1; }
+          eza --version >/dev/null
+
+      # Ubuntu 24.04 has no starship and neither Ubuntu has kubectl, so this is
+      # where a guard that should have been there and was not would show up: an
+      # interactive shell has to start anyway, on the fallback prompt.
+      - name: An interactive shell starts on whatever the archive provided
+        shell: bash
+        run: |
+          zsh -ic 'print "prompt is ${PROMPT:-<unset>}"; exit'
+
+      - name: Clean offline bootstrap
+        run: bash scripts/check-bootstrap.sh
