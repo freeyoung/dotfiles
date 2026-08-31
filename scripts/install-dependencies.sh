@@ -81,7 +81,7 @@ install_with_pacman() {
     coreutils gawk grep sed
     mise go uv
     neovim vim
-    bat git ripgrep kubectl ouch tmux
+    bat eza git ripgrep kubectl ouch tmux
   )
   local -a missing=()
   local package
@@ -123,7 +123,7 @@ install_with_apt() {
     coreutils gawk grep sed
     golang-go
     neovim vim
-    bat git ripgrep kubectl tmux
+    bat eza git ripgrep kubectl tmux
   )
   local -a wanted=() available=() unavailable=()
   local package candidate

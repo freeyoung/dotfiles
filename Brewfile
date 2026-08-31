@@ -27,6 +27,7 @@ brew "vim"
 
 # Other command-line tools.
 brew "bat"
+brew "eza"
 brew "git"
 brew "ripgrep"
 brew "kubectl"

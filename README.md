@@ -280,15 +280,17 @@ arguments still run.
 too, under Kitty. `eff` opens what it picked in `$EDITOR`, and `sff dest:/path`
 copies it to a remote host, newest files first.
 
-`ls` is rendered by `eza` where it is installed — colour-coded permission
-bits, Git status, human sizes — but keeps GNU `ls`'s flags, because the same
-hands type `ls` on servers that will never have eza, and a half-learned habit
-is worse than none. Where the two disagree the GNU meaning wins: `-t` and `-S`
-sort (eza reads `-t` as which timestamp to *show*, and sorts ascending where
-`ls` puts newest and largest first), `-F` appends type indicators, and `-a`
-lists `.` and `..` as eza's `-aa` does. `-r` reverses whatever sort is in
-effect, so it composes with the rest — `-lt`, `-ltr`, and `-lrt` all order
-exactly as GNU `ls` does. Without eza, `ls` is GNU `ls`.
+`ls` is rendered by `eza`, which the installer installs on every platform —
+colour-coded permission bits, Git status, human sizes — but it keeps GNU
+`ls`'s flags, because the same hands type `ls` on servers that will never have
+eza, and a half-learned habit is worse than none. Where the two disagree the
+GNU meaning wins: `-t` and `-S` sort (eza reads `-t` as which timestamp to
+*show*, and sorts ascending where `ls` puts newest and largest first), `-F`
+appends type indicators, and `-a` lists `.` and `..` as eza's `-aa` does. `-r`
+reverses whatever sort is in effect, so it composes with the rest — `-lt`,
+`-ltr`, and `-lrt` all order exactly as GNU `ls` does. The guard stays
+regardless: on a host bootstrapped with `--links-only`, or a release that does
+not package eza, `ls` is GNU `ls` and the `e` aliases below are not defined.
 
 One difference remains: eza collates byte-wise, so dotfiles sort ahead of
 everything instead of under their letter. eza has no collation setting, and no
