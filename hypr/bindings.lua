@@ -542,18 +542,12 @@ bind_peek("SUPER + SHIFT + T", "Telegram", {
 -- runs it under the Wayland QPA plugin now, with a text-input-v3 input context,
 -- so fcitx5 never reaches for X11 on its behalf and the stacking problem has no
 -- way to arise.
---
--- No tray_id, unlike the two above. WeChat 4.1 changed the bus name its tray
--- item registers under, and the released Portable does not recognise the new
--- pattern, so nothing of WeChat's is in the tray for peek-activate to find.
--- That costs nothing here: peek-activate exists to avoid racing an app's
--- single-instance handoff, and WeChat's handoff was checked by running it again
--- while it was up -- one process before, one after, and one window.
 bind_peek("SUPER + SHIFT + W", "WeChat", {
   workspace = "wechat",
   unfocus = "hide",
   class = "^wechat$",
   half = "left",
+  tray_id = "wechat",
   launch = "wechat",
 })
 
