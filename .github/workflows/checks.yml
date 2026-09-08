@@ -24,7 +24,11 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends zsh vim tmux lua5.4
+          sudo apt-get install -y --no-install-recommends zsh vim tmux lua5.4 kitty
+          # The kitty check passes quietly on a host without kitty, which is
+          # right for a laptop and wrong here. Fail now if the archive did not
+          # provide it, rather than reporting a check that never ran as green.
+          kitty --version
 
       - name: Install the tools the checks look for
         if: runner.os == 'macOS'
@@ -45,6 +49,14 @@ jobs:
         run: |
           bash -n install
           for script in scripts/*.sh; do bash -n "$script"; done
+
+      # Only on Linux: apt has kitty as an ordinary package, while Homebrew has
+      # it as a cask, which is a GUI application download for a check that never
+      # opens a window. One platform is enough, because what is being parsed is
+      # a file rather than anything about the host.
+      - name: Kitty parses its own configuration
+        if: runner.os == 'Linux'
+        run: bash scripts/check-kitty-config.sh
 
       # Off Omarchy this reports that and exits 0. That is all CI can see of
       # it, but it does prove the script parses and runs on both platforms.
