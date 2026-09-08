@@ -534,6 +534,29 @@ bind_peek("SUPER + SHIFT + T", "Telegram", {
   launch = "Telegram",
 })
 
+-- WeChat is back, because the reason it was removed is gone. It was dropped for
+-- rendering through XWayland: fcitx5 draws its candidate window as an X11
+-- surface whenever the client it serves is one, a focused window stacks above
+-- an override-redirect surface, and Hyprland does not manage those at all, so
+-- the candidate list sat behind the window that asked for it. The AUR package
+-- runs it under the Wayland QPA plugin now, with a text-input-v3 input context,
+-- so fcitx5 never reaches for X11 on its behalf and the stacking problem has no
+-- way to arise.
+--
+-- No tray_id, unlike the two above. WeChat 4.1 changed the bus name its tray
+-- item registers under, and the released Portable does not recognise the new
+-- pattern, so nothing of WeChat's is in the tray for peek-activate to find.
+-- That costs nothing here: peek-activate exists to avoid racing an app's
+-- single-instance handoff, and WeChat's handoff was checked by running it again
+-- while it was up -- one process before, one after, and one window.
+bind_peek("SUPER + SHIFT + W", "WeChat", {
+  workspace = "wechat",
+  unfocus = "hide",
+  class = "^wechat$",
+  half = "left",
+  launch = "wechat",
+})
+
 -- Defaults this host has no use for. Four point at applications that are not
 -- installed or at services this account does not have, so the key does nothing
 -- or opens something unwanted; the rest are Basecamp's or DHH's picks rather
