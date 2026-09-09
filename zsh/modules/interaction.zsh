@@ -92,3 +92,10 @@ backward-kill-path-component() {
 }
 zle -N backward-kill-path-component
 bindkey '^W' backward-kill-path-component
+
+# Ctrl-X Ctrl-E opens the current command line in $VISUAL/$EDITOR. zsh ships
+# the widget but binds nothing, unlike bash's readline default. The completion
+# system already claims Ctrl-X e, so take only the double-Ctrl form.
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey -M emacs '^X^E' edit-command-line
