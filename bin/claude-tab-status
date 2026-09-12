@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+# Claude Code hook that records what each session is doing, the way iTerm2's
+# cc-status hook feeds its Session Status dots. Consumers are kitty's custom
+# tab bar (kitty/tab_bar.py) and the omarchy bar widget (omarchy/plugins/
+# eric.claude); neither talks to Claude, they only read the records here.
+#
+# Invoked by Claude Code with the hook payload on stdin. One record per
+# session, under $XDG_RUNTIME_DIR/claude-tabs/<session-id>.json, so a reboot
+# or logout clears everything and a stale record can only mean a crash. The
+# same file doubles as the target for the bar widget's click: `focus <id>`
+# raises the Hyprland window and the kitty tab that session lives in.
+#
+# States, matching iTerm2's cc-status palette so the two feel alike:
+#   working  the model or a tool is running
+#   waiting  a permission or elicitation prompt is up; the session is blocked
+#   idle     finished a turn, waiting for the next prompt
+
+set -u
+
+dir="${XDG_RUNTIME_DIR:-/tmp/claude-tabs-$(id -u)}/claude-tabs"
+
+# The bar widget passes the session id it read out of a record.
+if [[ ${1:-} == focus ]]; then
+  record="$dir/${2:?session id}.json"
+  [[ -r $record ]] || exit 1
+  kitty_pid=$(jq -r '.kitty_pid // empty' "$record")
+  kitty_window=$(jq -r '.kitty_window_id // empty' "$record")
+  if [[ -n $kitty_pid ]]; then
+    hyprctl dispatch focuswindow "pid:$kitty_pid" >/dev/null
+    # kitty only answers over its socket when allow_remote_control is on; a
+    # refusal just leaves the OS window focused, which is most of the value.
+    [[ -n $kitty_window ]] && kitten @ --to "unix:${XDG_RUNTIME_DIR:-/tmp}/omarchy-kitty-$kitty_pid" \
+      focus-window --match "id:$kitty_window" >/dev/null 2>&1
+  fi
+  exit 0
+fi
+
+input=$(cat)
+event=$(jq -r '.hook_event_name // empty' <<<"$input")
+session=$(jq -r '.session_id // empty' <<<"$input")
+[[ -n $event && -n $session ]] || exit 0
+
+# Only the main conversation moves the state. A hook that fires inside an agent
+# carries agent_id, and agents run when nobody is waiting on them: Claude forks
+# one to write the "while you were away" recap after a turn has ended, and its
+# end-of-turn hook arrives as SubagentStop. Counting that as work turned a
+# finished session back to working with nothing left to turn it off again.
+# Agents started from the conversation need nothing of their own here, since
+# the Agent tool call that starts them already marks the session working.
+if [[ $event == SubagentStart || $event == SubagentStop || -n $(jq -r '.agent_id // empty' <<<"$input") ]]; then
+  printf '{"suppressOutput": true}\n'
+  exit 0
+fi
+
+mkdir -p "$dir"
+record="$dir/$session.json"
+
+state=""
+detail=""
+case "$event" in
+  SessionStart)
+    state=idle
+    # A crashed session leaves its record behind; the next start sweeps any
+    # whose Claude process is gone, so a badge cannot outlive its session.
+    for stale in "$dir"/*.json; do
+      [[ -f $stale ]] || continue
+      pid=$(jq -r '.pid // empty' "$stale" 2>/dev/null)
+      [[ -n $pid && -d /proc/$pid ]] || rm -f "$stale"
+    done
+    ;;
+  UserPromptSubmit | PreToolUse | PostToolUse | PostToolUseFailure | PermissionDenied)
+    state=working
+    detail=$(jq -r '.tool_name // empty' <<<"$input")
+    ;;
+  PermissionRequest)
+    state=waiting
+    detail=$(jq -r '.tool_name // empty' <<<"$input")
+    ;;
+  Elicitation)
+    state=waiting
+    detail=$(jq -r '.title // .server_name // empty' <<<"$input")
+    ;;
+  Notification)
+    case "$(jq -r '.notification_type // empty' <<<"$input")" in
+      permission_prompt | elicitation_dialog | elicitation_url_dialog | agent_needs_input | worker_permission_prompt)
+        state=waiting
+        detail=$(jq -r '.message // empty' <<<"$input")
+        ;;
+      idle_prompt) state=idle ;;
+      *) exit 0 ;;
+    esac
+    ;;
+  Stop | StopFailure)
+    state=idle
+    detail=$(jq -r '.last_assistant_message // empty' <<<"$input" | tr '\n' ' ' | cut -c1-120)
+    ;;
+  SessionEnd)
+    rm -f "$record"
+    printf '{"suppressOutput": true}\n'
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+
+# The Claude process is what the liveness sweep above checks for. Hooks run
+# through a shell, and whether that shell execs the command or stays around as
+# a parent depends on the shell, so the tree is walked rather than trusting
+# $PPID. The kitty variables come from the environment Claude inherited; under
+# another terminal or inside tmux they are absent and the kitty side ignores
+# the record.
+claude_pid=$PPID
+while [[ $claude_pid -gt 1 && $(cat "/proc/$claude_pid/comm" 2>/dev/null) != claude ]]; do
+  claude_pid=$(awk '{print $4}' "/proc/$claude_pid/stat" 2>/dev/null) || break
+  [[ -n $claude_pid ]] || break
+done
+
+jq -n \
+  --arg state "$state" \
+  --arg session "$session" \
+  --arg detail "$detail" \
+  --arg cwd "$(jq -r '.cwd // empty' <<<"$input")" \
+  --arg event "$event" \
+  --argjson pid "${claude_pid:-$PPID}" \
+  --arg kitty_pid "${KITTY_PID:-}" \
+  --arg kitty_window_id "${KITTY_WINDOW_ID:-}" \
+  --argjson updated "$(date +%s)" \
+  '{state: $state, session_id: $session, detail: $detail, cwd: $cwd, event: $event,
+    pid: $pid, updated: $updated}
+   + (if $kitty_pid != "" then {kitty_pid: ($kitty_pid | tonumber)} else {} end)
+   + (if $kitty_window_id != "" then {kitty_window_id: ($kitty_window_id | tonumber)} else {} end)' \
+  >"$record.tmp" && mv -f "$record.tmp" "$record"
+
+# No terminal sequence goes back to Claude. OSC 9;4 progress was tried, since
+# kitty draws its own bar for it and a hook may ask Claude to write one, but
+# kitty's indeterminate animation is too fast to read and moves only when the
+# window repaints; the band is drawn by quickshell/claude-rings now.
+#
+# No bell either, though the same route would carry one: kitty turns BEL in an
+# unfocused window into an xdg-activation request, and with Omarchy's
+# misc:focus_on_activate that moves focus to the window rather than only marking
+# it urgent -- measured, not assumed: a permission prompt in a background
+# session pulled focus out of whatever was being typed in.
+printf '{"suppressOutput": true}\n'

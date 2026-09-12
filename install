@@ -134,6 +134,7 @@ fi
 # referenced by path from the configuration.
 backup_and_link "$repo_dir/bin/peek-activate" "$HOME/.local/bin/peek-activate"
 
+
 # Read by X11 clients only, so this is linked on the same condition as the rest
 # of the desktop configuration rather than unconditionally.
 if command -v Hyprland >/dev/null 2>&1; then
@@ -150,6 +151,41 @@ fi
 if [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; then
   backup_and_link "$repo_dir/omarchy/plugins/eric.tray" \
     "$HOME/.config/omarchy/plugins/eric.tray"
+  # The bar's view of the Claude Code sessions claude-tab-status records. The
+  # plugin only appears in the bar once shell.json lists it; see the README.
+  backup_and_link "$repo_dir/omarchy/plugins/eric.claude" \
+    "$HOME/.config/omarchy/plugins/eric.claude"
+
+  # The hook those records come from. Claude runs it by name, and the bar
+  # widget's click runs it by name too, so it lives on PATH. It belongs to this
+  # guard rather than to the machine at large: what reads its records is the
+  # widget above and the Hyprland group-tab ring, and what it reads to write
+  # them -- /proc, $XDG_RUNTIME_DIR -- is Linux's. A Mac sharing this
+  # repository gets neither the script nor the hook registration below.
+  backup_and_link "$repo_dir/bin/claude-tab-status" "$HOME/.local/bin/claude-tab-status"
+
+  # What kitty draws for a Claude session: the status in its tab bar and in
+  # each window's title. kitty looks for all three in its configuration
+  # directory, wherever they are linked from, and claude-status.conf is what
+  # kitty.conf's globinclude picks up -- so it is linked last. A running kitty
+  # reloads on that file appearing and tries the watcher within a fraction of a
+  # second; a watcher that is not there yet is recorded as failed and never
+  # tried again until kitty restarts.
+  if command -v kitty >/dev/null 2>&1; then
+    backup_and_link "$repo_dir/omarchy/kitty/claude_status.py" "$HOME/.config/kitty/claude_status.py"
+    backup_and_link "$repo_dir/omarchy/kitty/claude_title.py" "$HOME/.config/kitty/claude_title.py"
+    backup_and_link "$repo_dir/omarchy/kitty/tab_bar.py" "$HOME/.config/kitty/tab_bar.py"
+    backup_and_link "$repo_dir/omarchy/kitty/claude-status.conf" "$HOME/.config/kitty/claude-status.conf"
+  fi
+
+  # The ring and band over a working session's window, drawn by a Quickshell
+  # instance of its own. Quickshell looks for named configurations under
+  # ~/.config/quickshell/<name>, and the Hyprland autostart runs this one by
+  # name.
+  if command -v quickshell >/dev/null 2>&1; then
+    backup_and_link "$repo_dir/omarchy/quickshell/claude-rings" \
+      "$HOME/.config/quickshell/claude-rings"
+  fi
 fi
 
 ssh_dir="$HOME/.ssh"
@@ -434,6 +470,18 @@ fi
 
 if (( install_plugins )); then
   "$repo_dir/scripts/install-plugins.sh"
+fi
+
+# Claude Code reads its hooks from its own settings file, which also carries
+# choices made from inside Claude, so the hook entries are merged in rather
+# than the file linked. Omarchy only, like the script the hooks call, and
+# skipped where Claude has never been set up: the script would otherwise create
+# the directory for a tool that is not there. Every Claude install has its own
+# settings file, and the one on a Mac has hooks of its own that this repository
+# has no business adding to.
+if { [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; } &&
+  [[ -d "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" ]]; then
+  "$repo_dir/scripts/install-claude-hooks.sh"
 fi
 
 printf '\nDone. Start a new Zsh session (exec zsh) to load the linked configuration.\n'

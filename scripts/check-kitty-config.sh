@@ -43,3 +43,37 @@ load_config('$config')
 "
 
 echo "kitty parsed $config."
+
+# The custom tab bar is Python that kitty runs inside itself, and a file it
+# cannot load falls back to kitty's fade style with one line in a log nobody
+# reads. Running it under kitty's own interpreter catches a syntax error or a
+# renamed kitty internal before a new window does. Only the load is checked;
+# drawing needs a running kitty.
+# The watcher is loaded the same way and fails the same quiet way. Both import
+# claude_status.py by name from the directory they live in, which is what a
+# missing or renamed module would break.
+tab_bar="$repo_dir/omarchy/kitty/tab_bar.py"
+watcher="$repo_dir/omarchy/kitty/claude_title.py"
+if [[ -f "$tab_bar" && -f "$watcher" ]]; then
+  kitty +runpy "
+import runpy
+module = runpy.run_path('$tab_bar')
+assert callable(module.get('draw_tab')), 'tab_bar.py defines no draw_tab'
+module = runpy.run_path('$watcher')
+assert callable(module.get('on_load')), 'claude_title.py defines no on_load'
+"
+  echo "kitty loaded $tab_bar and $watcher."
+fi
+
+# The settings those two files need, which kitty.conf pulls in by glob on an
+# Omarchy host only. Parsed on its own, since the glob matches nothing here.
+fragment="$repo_dir/omarchy/kitty/claude-status.conf"
+if [[ -f "$fragment" ]]; then
+  kitty +runpy "
+from kitty.config import load_config
+opts = load_config('$fragment')
+assert opts.tab_bar_style == 'custom', opts.tab_bar_style
+assert 'claude_title.py' in opts.watcher, opts.watcher
+"
+  echo "kitty parsed $fragment."
+fi
