@@ -485,11 +485,11 @@ Hyprland reports it as `hypr.input not found`. Keep the working tree on a
 branch that has these files, or checkout them back afterwards:
 
 ```bash
-git -C ~/dotfiles checkout master -- hypr fcitx5 mise xcompose
+git -C ~/dotfiles checkout master -- omarchy fcitx5 mise xcompose
 ```
 
-[`hypr/input.lua`](hypr/input.lua) and
-[`hypr/looknfeel.lua`](hypr/looknfeel.lua) are linked into `~/.config/hypr/`
+[`omarchy/hypr/input.lua`](omarchy/hypr/input.lua) and
+[`omarchy/hypr/looknfeel.lua`](omarchy/hypr/looknfeel.lua) are linked into `~/.config/hypr/`
 where a Hyprland binary exists. Omarchy loads these two after its own defaults
 and after the theme, and says so in the `hyprland.lua` it ships -- they are the
 files it sets aside for personal overrides, so it can keep improving its
@@ -533,7 +533,7 @@ exits cleanly on a host without Omarchy.
 
 It checks the other direction too. Omarchy ships user configuration files, and
 four of them this repository either owns or has to keep out of the way:
-`hypr/input.lua`, `hypr/looknfeel.lua`, `starship.toml`, and `tmux/tmux.conf`,
+`omarchy/hypr/input.lua`, `omarchy/hypr/looknfeel.lua`, `starship.toml`, and `tmux/tmux.conf`,
 which must not exist at all since tmux reads it after `~/.tmux.conf`.
 `omarchy-refresh-config` copies Omarchy's version over `~/.config/<path>` with
 `cp -f`, and the Omarchy menu reaches it through `omarchy-refresh-hyprland` and
