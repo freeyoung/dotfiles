@@ -25,6 +25,11 @@ BarWidget {
   property var activeTrayAnchor: null
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
+  // With few enough icons to show them all, the drawer is only in the way:
+  // `"drawer": false` on this widget's shell.json entry keeps every icon out
+  // in the bar and drops the chevron that opened them. The manage popup then
+  // has no right-click target of its own, so the IPC route below opens it.
+  readonly property bool drawerEnabled: setting("drawer", true) !== false
   readonly property var pinnedIds: settings.pinned instanceof Array ? settings.pinned : []
   readonly property var hiddenIds: settings.hidden instanceof Array ? settings.hidden : []
   readonly property var pinnedItems: bucket("pinned")
@@ -162,6 +167,7 @@ BarWidget {
   function classifyItem(item) {
     var iid = String(item.id || "")
     if (hiddenIds.indexOf(iid) !== -1) return "hidden"
+    if (!root.drawerEnabled) return "pinned"
     if (pinnedIds.indexOf(iid) !== -1) return "pinned"
     return "drawer"
   }
@@ -206,6 +212,10 @@ BarWidget {
 
     function close(): void {
       root.ipcExpanded = false
+    }
+
+    function manage(): void {
+      root.managePopupOpen = !root.managePopupOpen
     }
   }
 
@@ -255,7 +265,7 @@ BarWidget {
       id: horizontalTrayRoot
 
       readonly property int pinnedWidth: pinnedRow.implicitWidth
-      readonly property int drawerBlockWidth: root.allItems.length > 0 ? expandIcon.implicitWidth + root.drawerExtent : 0
+      readonly property int drawerBlockWidth: root.drawerEnabled && root.allItems.length > 0 ? expandIcon.implicitWidth + root.drawerExtent : 0
 
       implicitWidth: pinnedWidth + drawerBlockWidth
       implicitHeight: root.barSize
@@ -280,7 +290,7 @@ BarWidget {
         x: 0
         width: horizontalTrayRoot.drawerBlockWidth
         height: root.barSize
-        visible: root.allItems.length > 0
+        visible: root.drawerEnabled && root.allItems.length > 0
 
         HoverHandler {
           onHoveredChanged: root.hoverExpanded = hovered
@@ -342,7 +352,7 @@ BarWidget {
       id: verticalTrayRoot
 
       readonly property int pinnedHeight: pinnedCol.implicitHeight
-      readonly property int drawerBlockHeight: root.allItems.length > 0 ? expandIcon.implicitHeight + root.drawerExtent : 0
+      readonly property int drawerBlockHeight: root.drawerEnabled && root.allItems.length > 0 ? expandIcon.implicitHeight + root.drawerExtent : 0
 
       implicitWidth: root.barSize
       implicitHeight: pinnedHeight + drawerBlockHeight
@@ -362,7 +372,7 @@ BarWidget {
         y: 0
         width: root.barSize
         height: verticalTrayRoot.drawerBlockHeight
-        visible: root.allItems.length > 0
+        visible: root.drawerEnabled && root.allItems.length > 0
 
         HoverHandler {
           onHoveredChanged: root.hoverExpanded = hovered
