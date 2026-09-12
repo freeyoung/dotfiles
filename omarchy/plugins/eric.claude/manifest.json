@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "eric.claude",
+  "name": "Claude sessions",
+  "version": "1.0.0",
+  "author": "Eric",
+  "description": "What each Claude Code session is doing: working, waiting for you, or idle",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Claude sessions",
+    "description": "One dot per state across every Claude Code session; click to jump to the one that needs you",
+    "category": "Status",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}

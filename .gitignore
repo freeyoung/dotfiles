@@ -7,3 +7,6 @@
 /state
 /.ruff_cache
 /.DS_Store
+
+# kitty imports kitty/claude_status.py as a module and compiles it beside itself.
+__pycache__/

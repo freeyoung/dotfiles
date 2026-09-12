@@ -91,7 +91,11 @@ linked_targets+=(.local/bin/peek-activate)
 ! command -v bat >/dev/null 2>&1 && command -v batcat >/dev/null 2>&1 &&
   linked_targets+=(.local/bin/bat)
 [[ -d $tmp_dir/home/.config/omarchy ]] &&
-  linked_targets+=(.config/omarchy/plugins/eric.tray)
+  linked_targets+=(.config/omarchy/plugins/eric.tray .config/omarchy/plugins/eric.claude .local/bin/claude-tab-status)
+[[ -d $tmp_dir/home/.config/omarchy ]] && command -v kitty >/dev/null 2>&1 &&
+  linked_targets+=(.config/kitty/tab_bar.py .config/kitty/claude_title.py .config/kitty/claude_status.py .config/kitty/claude-status.conf)
+[[ -d $tmp_dir/home/.config/omarchy ]] && command -v quickshell >/dev/null 2>&1 &&
+  linked_targets+=(.config/quickshell/claude-rings)
 command -v fcitx5 >/dev/null 2>&1 &&
   linked_targets+=(.config/fcitx5/table/wubi-large.conf)
 
