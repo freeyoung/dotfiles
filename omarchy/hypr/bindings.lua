@@ -308,13 +308,14 @@ end)
 
 
 
--- The tray drawer opens on hover and nothing else, which leaves it the one bar
--- widget with no keyboard route in. eric.tray adds a "tray" IPC target for
--- exactly this. E rather than a mnemonic: it is the Bartender shortcut this
--- account already has in its fingers on macOS, and a habit that transfers costs
--- nothing to keep.
+-- The tray shows every icon rather than folding most of them into a drawer, so
+-- the key that used to open that drawer opens the popup that pins and hides
+-- icons instead -- the one part of the tray with no pointer route left once the
+-- chevron that carried its right-click is gone. E rather than a mnemonic: it is
+-- the Bartender shortcut this account already has in its fingers on macOS, and
+-- a habit that transfers costs nothing to keep.
 hl.unbind("SUPER + SHIFT + E")
-o.bind("SUPER + SHIFT + E", "Toggle tray drawer", "omarchy shell tray toggle")
+o.bind("SUPER + SHIFT + E", "Manage tray icons", "omarchy shell tray manage")
 
 -- Omarchy points both email bindings at HEY, which is Basecamp's own product
 -- and not what this account uses. Mail moves to M as well, because E now opens

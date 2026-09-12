@@ -510,6 +510,15 @@ instead of ten. Changing any setting through fcitx5's configuration tool
 rewrites the file in full -- the symlink survives, but every default is written
 out explicitly and the comments are lost, so trim it back afterwards.
 
+[`omarchy/plugins/eric.tray`](omarchy/plugins/eric.tray) is that clone of the
+tray widget. Beside the symbolic-icon fix it carries a `drawer` setting of its
+own: `"drawer": false` on its `shell.json` entry keeps every tray icon out in
+the bar, rather than folding all but the pinned ones into a drawer behind a
+chevron, which is worth its place only with more icons than this account has.
+That chevron carried the right-click that opened the popup for pinning and
+hiding icons, so with it gone the popup is opened over the widget's IPC by
+`omarchy shell tray manage`, bound to SUPER+SHIFT+E.
+
 [`xcompose`](xcompose) is linked to `~/.XCompose` on Linux. It includes the
 locale's own table, adds identification sequences, and vendors Omarchy's emoji
 shortcuts so they work on a host without Omarchy.
