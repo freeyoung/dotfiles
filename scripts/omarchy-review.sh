@@ -41,10 +41,10 @@ fi
 # reads a file there after ~/.tmux.conf and would override it.
 managed_files=(
   'tmux/tmux.conf|-'
-  'hypr/input.lua|hypr/input.lua'
-  'hypr/looknfeel.lua|hypr/looknfeel.lua'
-  'hypr/bindings.lua|hypr/bindings.lua'
-  'hypr/autostart.lua|hypr/autostart.lua'
+  'hypr/input.lua|omarchy/hypr/input.lua'
+  'hypr/looknfeel.lua|omarchy/hypr/looknfeel.lua'
+  'hypr/bindings.lua|omarchy/hypr/bindings.lua'
+  'hypr/autostart.lua|omarchy/hypr/autostart.lua'
   'kitty/kitty.conf|kitty/kitty.conf'
   'omarchy/plugins/eric.tray|omarchy/plugins/eric.tray'
   'starship.toml|starship/starship.toml'

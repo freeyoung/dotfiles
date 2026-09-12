@@ -109,10 +109,10 @@ fi
 # on the compositor rather than on Linux, because on a host without it these
 # would only create a directory nothing reads.
 if command -v Hyprland >/dev/null 2>&1; then
-  backup_and_link "$repo_dir/hypr/input.lua" "$HOME/.config/hypr/input.lua"
-  backup_and_link "$repo_dir/hypr/looknfeel.lua" "$HOME/.config/hypr/looknfeel.lua"
-  backup_and_link "$repo_dir/hypr/bindings.lua" "$HOME/.config/hypr/bindings.lua"
-  backup_and_link "$repo_dir/hypr/autostart.lua" "$HOME/.config/hypr/autostart.lua"
+  backup_and_link "$repo_dir/omarchy/hypr/input.lua" "$HOME/.config/hypr/input.lua"
+  backup_and_link "$repo_dir/omarchy/hypr/looknfeel.lua" "$HOME/.config/hypr/looknfeel.lua"
+  backup_and_link "$repo_dir/omarchy/hypr/bindings.lua" "$HOME/.config/hypr/bindings.lua"
+  backup_and_link "$repo_dir/omarchy/hypr/autostart.lua" "$HOME/.config/hypr/autostart.lua"
 fi
 
 # fcitx5 reads table behaviour from table/, not from inputmethod/, which is
@@ -418,7 +418,7 @@ fi
 # Hyprland reports a Lua error by carrying on with the previous configuration,
 # so a typo here is quiet. luac -p only parses; it writes nothing.
 if command -v luac >/dev/null 2>&1; then
-  for lua_config in "$repo_dir"/hypr/*.lua; do
+  for lua_config in "$repo_dir"/omarchy/hypr/*.lua; do
     luac -p -- "$lua_config"
   done
   printf 'Lua syntax check passed.\n'
