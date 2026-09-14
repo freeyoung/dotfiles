@@ -518,7 +518,8 @@ its app.
 registers the input method rather than configures it. Both hosts use the wbx
 table (五笔字型) rather than wubi-large, whose extra rare characters give about
 27% of its codes more than one candidate, against 15% for wbx. The file sets
-five values and leaves the rest to fcitx5's defaults: a four-code character
+six values and leaves the rest to fcitx5's defaults: nine candidates to a row
+instead of five, a four-code character
 that is the only match still waits for the space bar, a fifth keystroke commits
 what is pending, candidates are ranked by the word typed before them, and an
 auto phrase never becomes a user phrase on repetition alone -- it has to be
