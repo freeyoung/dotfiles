@@ -117,9 +117,17 @@ fi
 
 # fcitx5 reads table behaviour from table/, not from inputmethod/, which is
 # where the input method is registered rather than configured. fcitx5-macos
-# reads the same path but puts no fcitx5 on PATH, so it is found by its app.
+# reads the same paths but puts no fcitx5 on PATH, so it is found by its app.
+has_fcitx5=0
 if command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; then
+  has_fcitx5=1
+fi
+if (( has_fcitx5 )); then
   backup_and_link "$repo_dir/fcitx5/wbx.conf" "$HOME/.config/fcitx5/table/wbx.conf"
+  # A punctuation map in the data directory replaces the system one whole, so
+  # the file carries every key, not only the quotes it changes.
+  backup_and_link "$repo_dir/fcitx5/punc.mb.zh_CN" \
+    "$HOME/.local/share/fcitx5/punctuation/punc.mb.zh_CN"
   # The table used to be wubi-large. Its link now points at a file that is gone.
   legacy="$HOME/.config/fcitx5/table/wubi-large.conf"
   if [[ -L "$legacy" && "$(readlink "$legacy")" == "$repo_dir/fcitx5/wubi-large.conf" ]]; then
@@ -488,6 +496,36 @@ fi
 if { [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; } &&
   [[ -d "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" ]]; then
   "$repo_dir/scripts/install-claude-hooks.sh"
+fi
+
+# fcitx-dict syncs the fcitx5 word lists between hosts. The words are personal,
+# so they live in that private repository rather than in this public one; this
+# repository keeps only the preferences. A networked run clones it where the
+# account can reach it. Installing it the first time is left to a person: a
+# host that switches tables has to move its learned words over first, or
+# fcitx-dict's first run would treat the old auto phrases as chosen words.
+# Once installed, it is refreshed here like everything else.
+fcitx_dict_dir="${FCITX_DICT_REPO:-$HOME/.local/share/fcitx-dict}"
+fcitx_dict_url=git@github.com:freeyoung/fcitx-dict.git
+if (( has_fcitx5 )); then
+  if [[ -d "$fcitx_dict_dir/.git/fcitx-dict" ]]; then
+    "$fcitx_dict_dir/bin/install" ||
+      printf 'Warning: fcitx-dict install failed; run %s/bin/install for details.\n' "$fcitx_dict_dir" >&2
+  else
+    if [[ ! -e "$fcitx_dict_dir" ]] && (( install_dependencies )) &&
+      GIT_SSH_COMMAND='ssh -o BatchMode=yes' git ls-remote "$fcitx_dict_url" >/dev/null 2>&1; then
+      mkdir -p "$(dirname "$fcitx_dict_dir")"
+      git clone -q "$fcitx_dict_url" "$fcitx_dict_dir"
+      printf 'Cloned fcitx-dict: %s\n' "$fcitx_dict_dir"
+    fi
+    if [[ -d "$fcitx_dict_dir/.git" ]]; then
+      printf 'fcitx-dict is not installed. Read %s/README.md, then run %s/bin/install.\n' \
+        "$fcitx_dict_dir" "$fcitx_dict_dir"
+    else
+      printf 'fcitx-dict syncs the fcitx5 word lists. Clone %s into %s to use it.\n' \
+        "$fcitx_dict_url" "$fcitx_dict_dir"
+    fi
+  fi
 fi
 
 printf '\nDone. Start a new Zsh session (exec zsh) to load the linked configuration.\n'

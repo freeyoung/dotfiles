@@ -500,21 +500,53 @@ Alt being spoken for), and turns on natural scrolling and three-finger drag.
 `looknfeel.lua` carries the border and gap settings ported from the old
 `hyprland.conf`.
 
+fcitx5 is split between this repository and
+[fcitx-dict](https://github.com/freeyoung/fcitx-dict), a private one. The rule
+is what each kind of file is: preferences written by hand live here, and the
+word lists -- personal, and committed by a scheduled job several times a day --
+live there, together with the scripts that sync them. A setting that fcitx-dict
+depends on but that is a preference stays here, and fcitx-dict only checks it.
+The one exception is `AutoSavePeriod`, which fcitx-dict sets itself: it sits in
+fcitx5's global `config`, which differs between hosts and which fcitx5 rewrites
+whenever any global option changes, so linking that file would do more harm
+than the one line is worth. Everything below is linked where fcitx5 or
+fcitx5-macos exists; fcitx5-macos puts no `fcitx5` on `PATH`, so it is found by
+its app.
+
 [`fcitx5/wbx.conf`](fcitx5/wbx.conf) is linked to
-`~/.config/fcitx5/table/wbx.conf` where fcitx5 or fcitx5-macos exists --
-`table/`, not `inputmethod/`, which registers the input method rather than
-configures it. Both hosts use the wbx table (五笔字型) rather than wubi-large,
-whose extra rare characters give about 27% of its codes more than one
-candidate, against 15% for wbx. The file sets five values and leaves the rest
-to fcitx5's defaults: a four-code character that is the only match still waits
-for the space bar, a fifth keystroke commits what is pending, candidates are
-ranked by the word typed before them, and an auto phrase never becomes a user
-phrase on repetition alone -- it has to be chosen, which is what lets
-[fcitx-dict](https://github.com/freeyoung/fcitx-dict) sync every user phrase
-between hosts. The installer removes the link a wubi-large.conf of earlier
-versions left behind. Changing any setting through fcitx5's configuration tool
-rewrites the file in full -- the symlink survives, but every default is written
-out explicitly and the comments are lost, so trim it back afterwards.
+`~/.config/fcitx5/table/wbx.conf` -- `table/`, not `inputmethod/`, which
+registers the input method rather than configures it. Both hosts use the wbx
+table (五笔字型) rather than wubi-large, whose extra rare characters give about
+27% of its codes more than one candidate, against 15% for wbx. The file sets
+five values and leaves the rest to fcitx5's defaults: a four-code character
+that is the only match still waits for the space bar, a fifth keystroke commits
+what is pending, candidates are ranked by the word typed before them, and an
+auto phrase never becomes a user phrase on repetition alone -- it has to be
+chosen, which is what lets fcitx-dict sync every user phrase between hosts. The
+installer removes the link a wubi-large.conf of earlier versions left behind.
+
+[`fcitx5/punc.mb.zh_CN`](fcitx5/punc.mb.zh_CN) is linked to
+`~/.local/share/fcitx5/punctuation/punc.mb.zh_CN`. It is fcitx5's own map with
+two lines changed: the double quote key gives 「 and then 」, and the single
+quote key gives 『 and then 』. The curly quotes stay one step away, among the
+candidates behind the bracket keys. A map in the data directory replaces the
+system one whole rather than overriding single keys, which is why the file
+carries every key; and it cannot hold comments, because `#` is itself a key.
+
+Changing a table setting through fcitx5's configuration tool rewrites
+`wbx.conf` in full -- the symlink survives, but every default is written out
+explicitly and the comments are lost, so trim it back afterwards. The
+punctuation map is saved by different code, and whether its symlink survives an
+edit there has not been checked: look at the link afterwards, or edit the file
+in this repository instead.
+
+The installer also brings in fcitx-dict. Once it is installed, each run
+refreshes it through its own `bin/install`. Before that, a networked run clones
+it into `~/.local/share/fcitx-dict` (or `$FCITX_DICT_REPO`) where the account can
+reach it, and then only says how to install it: a host that moves from another
+table has to copy its learned words over first, as fcitx-dict's README
+describes, or fcitx-dict's first run would take the old auto phrases for
+chosen words.
 
 [`omarchy/plugins/eric.tray`](omarchy/plugins/eric.tray) is that clone of the
 tray widget. Beside the symbolic-icon fix it carries a `drawer` setting of its
