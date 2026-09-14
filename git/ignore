@@ -8,5 +8,9 @@
 # Claude Code's per-project directory.
 .claude/
 
+# The oh-my-opencode plugin's per-project working state for OpenCode: plans,
+# drafts and boulder.json.
+.omo/
+
 # macOS Finder metadata, which arrives in repositories synced from a Mac.
 .DS_Store
