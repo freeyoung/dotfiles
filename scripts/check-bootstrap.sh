@@ -99,6 +99,12 @@ linked_targets+=(.local/bin/peek-activate)
 { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
   linked_targets+=(.config/fcitx5/table/wbx.conf .local/share/fcitx5/punctuation/punc.mb.zh_CN)
 
+if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
+  ! grep -qx 'ActiveByDefault=False' "$tmp_dir/home/.config/fcitx5/config" 2>/dev/null; then
+  echo 'Installer did not set ActiveByDefault=False in the fcitx5 config' >&2
+  exit 1
+fi
+
 for target in "${linked_targets[@]}"; do
   [[ -L "$tmp_dir/home/$target" ]] || {
     echo "Installer did not link $target" >&2

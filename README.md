@@ -506,10 +506,12 @@ is what each kind of file is: preferences written by hand live here, and the
 word lists -- personal, and committed by a scheduled job several times a day --
 live there, together with the scripts that sync them. A setting that fcitx-dict
 depends on but that is a preference stays here, and fcitx-dict only checks it.
-The one exception is `AutoSavePeriod`, which fcitx-dict sets itself: it sits in
-fcitx5's global `config`, which differs between hosts and which fcitx5 rewrites
-whenever any global option changes, so linking that file would do more harm
-than the one line is worth. Everything below is linked where fcitx5 or
+fcitx5's global `config` is never linked: it holds hotkeys that differ between
+hosts, and fcitx5 rewrites it whenever any global option changes. Single keys in
+it are set in place instead. This installer sets `ActiveByDefault=False`, so a
+new input context starts in the first input method of the group (keyboard-us)
+and the trigger key switches it to wbx. fcitx-dict sets `AutoSavePeriod`, which
+only its sync needs. Everything below is linked where fcitx5 or
 fcitx5-macos exists; fcitx5-macos puts no `fcitx5` on `PATH`, so it is found by
 its app.
 
