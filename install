@@ -93,6 +93,98 @@ set_ini_key() {
   rm -f "$tmp"
 }
 
+# fcitx5 binds Shift_L to AltTriggerKeys by default. That key only goes back
+# to the input method that it left, so it cannot activate a context that
+# starts inactive. With ActiveByDefault=False every new context starts
+# inactive, and Shift_L did nothing in a new window. So Shift_L becomes a
+# trigger key, and AltTriggerKeys becomes empty. The trigger keys differ per
+# host, so Shift_L is added to the list and the other keys stay. The list is
+# the active one, else fcitx5's commented defaults, uncommented, else those
+# defaults, written out.
+fcitx5_shift_toggles() {
+  local file="$1" defaults tmp
+
+  if [[ -L "$file" ]]; then
+    printf 'Not editing a symlink: %s\n' "$file" >&2
+    return
+  fi
+  if [[ $(uname -s) == Darwin ]]; then
+    defaults="Control+Shift_L Zenkaku_Hankaku Hangul"
+  else
+    defaults="Control+space Zenkaku_Hankaku Hangul"
+  fi
+  mkdir -p "$(dirname "$file")"
+  [[ -e "$file" ]] || : >"$file"
+  tmp="$(mktemp)"
+  awk -v defaults="$defaults" '
+    function keep(line, eq) {
+      eq = index(line, "=")
+      if (substr(line, 1, eq - 1) + 0 > max) max = substr(line, 1, eq - 1) + 0
+      if (substr(line, eq + 1) == "Shift_L") has = 1
+    }
+    function flush() {
+      if (inlist && !has) print max + 1 "=Shift_L"
+      inlist = 0
+    }
+    # The first pass only learns whether an active or a commented list exists.
+    FNR == NR {
+      if ($0 == "[Hotkey/TriggerKeys]") active = 1
+      if ($0 ~ /^#[ \t]*\[Hotkey\/TriggerKeys\]$/) commented = 1
+      next
+    }
+    /^\[.*\]$/ {
+      flush()
+      dropping = ($0 == "[Hotkey/AltTriggerKeys]")
+      if (dropping) next
+      if ($0 == "[Hotkey/TriggerKeys]") { inlist = 1; has = 0; max = -1 }
+      print
+      next
+    }
+    # Drop an active AltTriggerKeys list: its header, its keys, and the blank
+    # line after it. The comments of the next section stay.
+    dropping && /^[0-9]+=/ { next }
+    dropping && /^[ \t]*$/ { dropping = 0; next }
+    dropping { dropping = 0 }
+    inlist && /^[0-9]+=/ { keep($0); print; next }
+    !active && !uncommented && /^#[ \t]*\[Hotkey\/TriggerKeys\]$/ {
+      print "[Hotkey/TriggerKeys]"
+      uncommented = 1; incomment = 1; inlist = 1; has = 0; max = -1
+      next
+    }
+    incomment && /^#[ \t]*[0-9]+=/ {
+      line = $0
+      sub(/^#[ \t]*/, "", line)
+      keep(line)
+      print line
+      next
+    }
+    incomment { incomment = 0; flush() }
+    inlist && /^[ \t]*$/ { flush() }
+    { print }
+    END {
+      flush()
+      if (!active && !commented) {
+        if (NR) print ""
+        print "[Hotkey/TriggerKeys]"
+        n = split(defaults, d, " ")
+        for (i = 1; i <= n; i++) print i - 1 "=" d[i]
+        print n "=Shift_L"
+      }
+    }
+  ' "$file" "$file" >"$tmp"
+  if cmp -s "$tmp" "$file"; then
+    printf 'Already set: Shift_L in TriggerKeys in %s\n' "$file"
+  else
+    # Write in place, so the file keeps its permissions.
+    cat "$tmp" >"$file"
+    printf 'Set: Shift_L in TriggerKeys in %s\n' "$file"
+  fi
+  rm -f "$tmp"
+  # Only after the list is uncommented: before that, the [Hotkey] section
+  # runs on past its commented header, and the key would land in the list.
+  set_ini_key "$file" Hotkey AltTriggerKeys ""
+}
+
 # tmux applies every configuration file it finds rather than stopping at the
 # first, so a second file does not supplement ~/.tmux.conf -- it overrides
 # every setting the two have in common. Omarchy installs one at the XDG path,
@@ -166,6 +258,7 @@ if (( has_fcitx5 )); then
   # its global config back whenever any global option changes, and the file
   # holds hotkeys that differ per host, so only this key is managed.
   set_ini_key "$HOME/.config/fcitx5/config" Behavior ActiveByDefault False
+  fcitx5_shift_toggles "$HOME/.config/fcitx5/config"
   # The table used to be wubi-large. Its link now points at a file that is gone.
   legacy="$HOME/.config/fcitx5/table/wubi-large.conf"
   if [[ -L "$legacy" && "$(readlink "$legacy")" == "$repo_dir/fcitx5/wubi-large.conf" ]]; then

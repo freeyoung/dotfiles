@@ -105,6 +105,15 @@ if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.a
   exit 1
 fi
 
+if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } && {
+  ! grep -qx 'AltTriggerKeys=' "$tmp_dir/home/.config/fcitx5/config" ||
+    ! awk '/^\[/ { in_list = ($0 == "[Hotkey/TriggerKeys]") } in_list && /^[0-9]+=Shift_L$/ { found = 1 } END { exit !found }' \
+      "$tmp_dir/home/.config/fcitx5/config"
+}; then
+  echo 'Installer did not make Shift_L a fcitx5 trigger key with no AltTriggerKeys' >&2
+  exit 1
+fi
+
 if [[ $(uname -s) == Darwin && -d "/Library/Input Methods/Fcitx5.app" ]] && command -v swiftc >/dev/null 2>&1; then
   [[ -x "$tmp_dir/home/.local/bin/fcitx5-hotkey" && -f "$tmp_dir/home/Library/LaunchAgents/com.eric.fcitx5-hotkey.plist" ]] || {
     echo 'Installer did not build the fcitx5 Cmd+Space hotkey agent' >&2

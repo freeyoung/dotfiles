@@ -510,7 +510,11 @@ fcitx5's global `config` is never linked: it holds hotkeys that differ between
 hosts, and fcitx5 rewrites it whenever any global option changes. Single keys in
 it are set in place instead. This installer sets `ActiveByDefault=False`, so a
 new input context starts in the first input method of the group (keyboard-us)
-and the trigger key switches it to wbx. fcitx-dict sets `AutoSavePeriod`, which
+and the trigger key switches it to wbx. It also adds left Shift to the trigger
+keys and keeps the keys each host already has there. It empties
+`AltTriggerKeys`, where fcitx5 puts left Shift by default. A key in that list
+only goes back to the input method it left, so it cannot activate a new
+context, and left Shift did nothing in a new window. fcitx-dict sets `AutoSavePeriod`, which
 only its sync needs. Everything below is linked where fcitx5 or
 fcitx5-macos exists; fcitx5-macos puts no `fcitx5` on `PATH`, so it is found by
 its app.
