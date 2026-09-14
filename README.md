@@ -500,13 +500,19 @@ Alt being spoken for), and turns on natural scrolling and three-finger drag.
 `looknfeel.lua` carries the border and gap settings ported from the old
 `hyprland.conf`.
 
-[`fcitx5/wubi-large.conf`](fcitx5/wubi-large.conf) is linked to
-`~/.config/fcitx5/table/wubi-large.conf` where fcitx5 exists -- `table/`, not
-`inputmethod/`, which registers the input method rather than configures it. It
-sets four values and leaves the rest to fcitx5's defaults: a four-code
-character that is the only match still waits for the space bar, a fifth
-keystroke commits what is pending, and a phrase is learned after three uses
-instead of ten. Changing any setting through fcitx5's configuration tool
+[`fcitx5/wbx.conf`](fcitx5/wbx.conf) is linked to
+`~/.config/fcitx5/table/wbx.conf` where fcitx5 or fcitx5-macos exists --
+`table/`, not `inputmethod/`, which registers the input method rather than
+configures it. Both hosts use the wbx table (五笔字型) rather than wubi-large,
+whose extra rare characters give about 27% of its codes more than one
+candidate, against 15% for wbx. The file sets five values and leaves the rest
+to fcitx5's defaults: a four-code character that is the only match still waits
+for the space bar, a fifth keystroke commits what is pending, candidates are
+ranked by the word typed before them, and an auto phrase never becomes a user
+phrase on repetition alone -- it has to be chosen, which is what lets
+[fcitx-dict](https://github.com/freeyoung/fcitx-dict) sync every user phrase
+between hosts. The installer removes the link a wubi-large.conf of earlier
+versions left behind. Changing any setting through fcitx5's configuration tool
 rewrites the file in full -- the symlink survives, but every default is written
 out explicitly and the comments are lost, so trim it back afterwards.
 

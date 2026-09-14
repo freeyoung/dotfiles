@@ -116,10 +116,16 @@ if command -v Hyprland >/dev/null 2>&1; then
 fi
 
 # fcitx5 reads table behaviour from table/, not from inputmethod/, which is
-# where the input method is registered rather than configured.
-if command -v fcitx5 >/dev/null 2>&1; then
-  backup_and_link "$repo_dir/fcitx5/wubi-large.conf" \
-    "$HOME/.config/fcitx5/table/wubi-large.conf"
+# where the input method is registered rather than configured. fcitx5-macos
+# reads the same path but puts no fcitx5 on PATH, so it is found by its app.
+if command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; then
+  backup_and_link "$repo_dir/fcitx5/wbx.conf" "$HOME/.config/fcitx5/table/wbx.conf"
+  # The table used to be wubi-large. Its link now points at a file that is gone.
+  legacy="$HOME/.config/fcitx5/table/wubi-large.conf"
+  if [[ -L "$legacy" && "$(readlink "$legacy")" == "$repo_dir/fcitx5/wubi-large.conf" ]]; then
+    rm "$legacy"
+    printf 'Removed stale link: %s\n' "$legacy"
+  fi
 fi
 
 # Unlike the Hyprland files above, this replaces Omarchy's kitty.conf rather

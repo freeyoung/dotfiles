@@ -96,8 +96,8 @@ linked_targets+=(.local/bin/peek-activate)
   linked_targets+=(.config/kitty/tab_bar.py .config/kitty/claude_title.py .config/kitty/claude_status.py .config/kitty/claude-status.conf)
 [[ -d $tmp_dir/home/.config/omarchy ]] && command -v quickshell >/dev/null 2>&1 &&
   linked_targets+=(.config/quickshell/claude-rings)
-command -v fcitx5 >/dev/null 2>&1 &&
-  linked_targets+=(.config/fcitx5/table/wubi-large.conf)
+{ command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
+  linked_targets+=(.config/fcitx5/table/wbx.conf)
 
 for target in "${linked_targets[@]}"; do
   [[ -L "$tmp_dir/home/$target" ]] || {
