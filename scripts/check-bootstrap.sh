@@ -105,6 +105,13 @@ if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.a
   exit 1
 fi
 
+if [[ $(uname -s) == Darwin && -d "/Library/Input Methods/Fcitx5.app" ]] && command -v swiftc >/dev/null 2>&1; then
+  [[ -x "$tmp_dir/home/.local/bin/fcitx5-hotkey" && -f "$tmp_dir/home/Library/LaunchAgents/com.eric.fcitx5-hotkey.plist" ]] || {
+    echo 'Installer did not build the fcitx5 Cmd+Space hotkey agent' >&2
+    exit 1
+  }
+fi
+
 for target in "${linked_targets[@]}"; do
   [[ -L "$tmp_dir/home/$target" ]] || {
     echo "Installer did not link $target" >&2

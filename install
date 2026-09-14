@@ -536,6 +536,94 @@ if { [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; } &
   "$repo_dir/scripts/install-claude-hooks.sh"
 fi
 
+# iTerm2 drops Cmd+key events before they reach the input method, so the
+# fcitx5 trigger key Super+space does nothing there. fcitx5/macos-hotkey.swift
+# registers Cmd+Space as a system hotkey that runs fcitx5-remote -t instead.
+# It is built here, rebuilt only when its source changes, and run by launchd.
+install_fcitx5_hotkey() {
+  local source="$repo_dir/fcitx5/macos-hotkey.swift"
+  local binary="$HOME/.local/bin/fcitx5-hotkey"
+  local stamp="$HOME/.local/state/dotfiles/fcitx5-hotkey.sha256"
+  local label=com.eric.fcitx5-hotkey
+  local plist="$HOME/Library/LaunchAgents/$label.plist"
+  local hash changed=0 tmp real_home
+
+  mkdir -p "$(dirname "$binary")" "$(dirname "$stamp")" "$(dirname "$plist")" "$HOME/Library/Logs"
+  hash="$(shasum -a 256 "$source" | cut -d' ' -f1)"
+  if [[ ! -x "$binary" || "$(cat "$stamp" 2>/dev/null)" != "$hash" ]]; then
+    swiftc -O -o "$binary.tmp" "$source"
+    mv "$binary.tmp" "$binary"
+    printf '%s\n' "$hash" >"$stamp"
+    printf 'Built: %s\n' "$binary"
+    changed=1
+  fi
+
+  tmp="$(mktemp)"
+  cat >"$tmp" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$label</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>$binary</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    <key>LimitLoadToSessionType</key>
+    <string>Aqua</string>
+    <key>ProcessType</key>
+    <string>Interactive</string>
+    <key>StandardErrorPath</key>
+    <string>$HOME/Library/Logs/fcitx5-hotkey.log</string>
+</dict>
+</plist>
+PLIST
+  if cmp -s "$tmp" "$plist"; then
+    rm -f "$tmp"
+  else
+    chmod 644 "$tmp"
+    mv "$tmp" "$plist"
+    printf 'Wrote: %s\n' "$plist"
+    changed=1
+  fi
+
+  # launchd jobs belong to the login session, not to $HOME. A run with a
+  # temporary HOME, as scripts/check-bootstrap.sh does, must not replace the
+  # running job with one whose files are about to be deleted.
+  real_home="$(eval echo "~$(id -un)")"
+  if [[ "$HOME" != "$real_home" ]]; then
+    printf 'Not loading %s: HOME is not %s\n' "$label" "$real_home"
+    return
+  fi
+  if launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1; then
+    if (( ! changed )); then
+      printf 'Already running: %s\n' "$label"
+      return
+    fi
+    launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+  fi
+  launchctl bootstrap "gui/$(id -u)" "$plist"
+  printf 'Loaded: %s\n' "$label"
+}
+
+if (( has_fcitx5 )) && [[ $(uname -s) == Darwin ]]; then
+  if command -v swiftc >/dev/null 2>&1; then
+    install_fcitx5_hotkey
+  else
+    printf 'swiftc is missing, so Cmd+Space will not toggle fcitx5 in iTerm2. Install the Command Line Tools.\n' >&2
+  fi
+fi
+
 # fcitx-dict syncs the fcitx5 word lists between hosts. The words are personal,
 # so they live in that private repository rather than in this public one; this
 # repository keeps only the preferences. A networked run clones it where the
