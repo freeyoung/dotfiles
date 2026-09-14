@@ -33,3 +33,8 @@ brew "ripgrep"
 brew "kubectl"
 brew "ouch"
 brew "tmux"
+
+# macOS only. fcitx-dict (github.com/freeyoung/fcitx-dict) copies its app to
+# send sync notifications with the Fcitx5 icon, and falls back to osascript
+# without it. Linux uses notify-send, so the pacman and apt lists skip it.
+brew "terminal-notifier" if OS.mac?
