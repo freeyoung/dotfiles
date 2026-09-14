@@ -532,6 +532,7 @@ and then 』, and the single quote key gives the single ones 「 and then 」. T
 candidates behind the bracket keys. A map in the data directory replaces the
 system one whole rather than overriding single keys, which is why the file
 carries every key; and it cannot hold comments, because `#` is itself a key.
+fcitx5 reads the map when it starts, so restart it after an edit.
 
 Changing a table setting through fcitx5's configuration tool rewrites
 `wbx.conf` in full -- the symlink survives, but every default is written out
