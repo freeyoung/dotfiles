@@ -259,6 +259,13 @@ if (( has_fcitx5 )); then
   # holds hotkeys that differ per host, so only this key is managed.
   set_ini_key "$HOME/.config/fcitx5/config" Behavior ActiveByDefault False
   fcitx5_shift_toggles "$HOME/.config/fcitx5/config"
+  # The candidate window theme is fcitx5-macos's web panel. fcitx5 on Linux
+  # draws with classicui, which reads a different theme format. The theme is
+  # only made available here: it is chosen once in the Theme Editor.
+  if [[ $(uname -s) == Darwin ]]; then
+    backup_and_link "$repo_dir/fcitx5/theme/wetype.conf" \
+      "$HOME/.local/share/fcitx5/theme/wetype.conf"
+  fi
   # The table used to be wubi-large. Its link now points at a file that is gone.
   legacy="$HOME/.config/fcitx5/table/wubi-large.conf"
   if [[ -L "$legacy" && "$(readlink "$legacy")" == "$repo_dir/fcitx5/wubi-large.conf" ]]; then
