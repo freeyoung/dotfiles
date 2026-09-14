@@ -548,7 +548,20 @@ punctuation map is saved by different code, and whether its symlink survives an
 edit there has not been checked: look at the link afterwards, or edit the file
 in this repository instead.
 
-On macOS the installer also builds
+On macOS the installer also links
+[`fcitx5/theme/wetype.conf`](fcitx5/theme/wetype.conf) to
+`~/.local/share/fcitx5/theme/wetype.conf`. It is a theme for the fcitx5-macos
+candidate window in the colours of WeType, the WeChat keyboard: a green
+highlight on a translucent grey panel, with a light and a dark set. Choose it
+once under Theme Editor → Basic → User theme. Loading a theme writes every
+option to `conf/webpanel.conf`, which is not linked for the same reason as the
+global `config`, so choose the theme again after an edit to the file. Its Blur
+is Blur, not System, because Liquid Glass takes light or dark from the app
+behind the window and would ignore the two colour sets. fcitx5 on Linux draws
+with classicui, which reads a different theme format, so the file is not
+linked there.
+
+On macOS the installer builds
 [`fcitx5/macos-hotkey.swift`](fcitx5/macos-hotkey.swift) into
 `~/.local/bin/fcitx5-hotkey` and runs it from the launchd agent
 `com.eric.fcitx5-hotkey`. iTerm2 returns early from any Cmd+key it has no

@@ -98,6 +98,8 @@ linked_targets+=(.local/bin/peek-activate)
   linked_targets+=(.config/quickshell/claude-rings)
 { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
   linked_targets+=(.config/fcitx5/table/wbx.conf .local/share/fcitx5/punctuation/punc.mb.zh_CN)
+[[ $(uname -s) == Darwin && -d "/Library/Input Methods/Fcitx5.app" ]] &&
+  linked_targets+=(.local/share/fcitx5/theme/wetype.conf)
 
 if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
   ! grep -qx 'ActiveByDefault=False' "$tmp_dir/home/.config/fcitx5/config" 2>/dev/null; then
