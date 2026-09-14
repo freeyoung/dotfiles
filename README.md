@@ -527,8 +527,8 @@ installer removes the link a wubi-large.conf of earlier versions left behind.
 
 [`fcitx5/punc.mb.zh_CN`](fcitx5/punc.mb.zh_CN) is linked to
 `~/.local/share/fcitx5/punctuation/punc.mb.zh_CN`. It is fcitx5's own map with
-two lines changed: the double quote key gives 「 and then 」, and the single
-quote key gives 『 and then 』. The curly quotes stay one step away, among the
+two lines changed: the double quote key gives the double corner brackets 『
+and then 』, and the single quote key gives the single ones 「 and then 」. The curly quotes stay one step away, among the
 candidates behind the bracket keys. A map in the data directory replaces the
 system one whole rather than overriding single keys, which is why the file
 carries every key; and it cannot hold comments, because `#` is itself a key.
