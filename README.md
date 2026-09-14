@@ -544,6 +544,19 @@ punctuation map is saved by different code, and whether its symlink survives an
 edit there has not been checked: look at the link afterwards, or edit the file
 in this repository instead.
 
+On macOS the installer also builds
+[`fcitx5/macos-hotkey.swift`](fcitx5/macos-hotkey.swift) into
+`~/.local/bin/fcitx5-hotkey` and runs it from the launchd agent
+`com.eric.fcitx5-hotkey`. iTerm2 returns early from any Cmd+key it has no
+mapping for, before the event reaches the input method, so fcitx5's own
+`Super+space` trigger does nothing there. The agent registers Cmd+Space as a
+Carbon system hotkey, which fires before any app sees the key, and runs
+`fcitx5-remote -t`. `Super+space` stays in fcitx5's trigger keys as a fallback
+in the apps that pass the key on. The binary is rebuilt only when the source
+changes. The agent is loaded only when `$HOME` is the account's own home, so
+the bootstrap check, which runs the installer with a temporary one, never
+replaces the running agent. It logs to `~/Library/Logs/fcitx5-hotkey.log`.
+
 The installer also brings in fcitx-dict. Once it is installed, each run
 refreshes it through its own `bin/install`. Before that, a networked run clones
 it into `~/.local/share/fcitx-dict` (or `$FCITX_DICT_REPO`) where the account can
