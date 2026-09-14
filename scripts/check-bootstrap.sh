@@ -97,7 +97,7 @@ linked_targets+=(.local/bin/peek-activate)
 [[ -d $tmp_dir/home/.config/omarchy ]] && command -v quickshell >/dev/null 2>&1 &&
   linked_targets+=(.config/quickshell/claude-rings)
 { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
-  linked_targets+=(.config/fcitx5/table/wbx.conf)
+  linked_targets+=(.config/fcitx5/table/wbx.conf .local/share/fcitx5/punctuation/punc.mb.zh_CN)
 
 for target in "${linked_targets[@]}"; do
   [[ -L "$tmp_dir/home/$target" ]] || {
