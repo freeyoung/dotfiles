@@ -13,10 +13,15 @@
 import json
 import os
 import re
+# kitty.fast_data_types gained its own monotonic only after 0.32, which
+# Ubuntu 24.04 still ships. This module only measures intervals and animation
+# phase, so the clock's starting point does not matter and the standard one
+# serves every kitty.
+from time import monotonic
 from typing import Any, Callable
 
 from kitty.boss import get_boss
-from kitty.fast_data_types import add_timer, monotonic, remove_timer
+from kitty.fast_data_types import add_timer, remove_timer
 from kitty.utils import log_error
 
 STATE_DIR = os.path.join(
