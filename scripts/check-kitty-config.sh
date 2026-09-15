@@ -65,6 +65,19 @@ assert callable(module.get('on_load')), 'claude_title.py defines no on_load'
   echo "kitty loaded $tab_bar and $watcher."
 fi
 
+# The smart selection rules kitty.conf names, on every host. They need only the
+# standard library, so any kitty can load them, and a sample line must get a mark
+# for each rule.
+hints="$repo_dir/kitty/smart_hints.py"
+kitty +runpy "
+import runpy
+module = runpy.run_path('$hints')
+text = 'git@github.com:owner/repo.git ssh://git@example.com:22/owner/repo owner/repo#12'
+urls = [m[4]['url'] for m in module['mark'](text, None, lambda *m: m, None)]
+assert urls == ['https://github.com/owner/repo', 'https://example.com/owner/repo', 'https://github.com/owner/repo/issues/12'], urls
+"
+echo "kitty loaded $hints."
+
 # The settings those two files need, which kitty.conf pulls in by glob on an
 # Omarchy host only. Parsed on its own, since the glob matches nothing here.
 fragment="$repo_dir/omarchy/kitty/claude-status.conf"
@@ -76,4 +89,49 @@ assert opts.tab_bar_style == 'custom', opts.tab_bar_style
 assert 'claude_title.py' in opts.watcher, opts.watcher
 "
   echo "kitty parsed $fragment."
+fi
+
+# The macOS layer, which kitty.conf pulls in by glob on macOS only. Its includes
+# name files in its own directory, so parsing it in place also parses them.
+# kitty skips an option it does not know with a warning, so a Linux kitty older
+# than the Mac one still parses the file.
+macos_config="$repo_dir/macos/kitty/macos.conf"
+if [[ -f "$macos_config" ]]; then
+  kitty +runpy "
+from kitty.config import load_config
+opts = load_config('$macos_config')
+assert opts.tab_bar_style == 'custom', opts.tab_bar_style
+assert 'iterm2_watcher.py' in opts.watcher, opts.watcher
+"
+  echo "kitty parsed $macos_config."
+
+  # These files import kitty internals that a Linux kitty from apt can lack, so
+  # they are only compiled, and each is checked for the function kitty calls.
+  # On a Mac they are also loaded, under the kitty they are written for.
+  kitty +runpy "
+import ast, pathlib
+wanted = {
+    'tab_bar.py': 'draw_tab',
+    'window_title_bar.py': 'draw_window_title',
+    'iterm2_watcher.py': 'on_focus_change',
+    'tmux_or_kitty.py': 'handle_result',
+    'toggle_transparency.py': 'handle_result',
+    'cc_status.py': 'main',
+}
+root = pathlib.Path('$repo_dir/macos/kitty')
+for name, function in wanted.items():
+    tree = ast.parse((root / name).read_text(), filename=name)
+    defined = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
+    assert function in defined, f'{name} defines no {function}'
+"
+  echo "kitty compiled the Python files in $repo_dir/macos/kitty."
+
+  if [[ $(uname -s) == Darwin ]]; then
+    kitty +runpy "
+import runpy
+for name in ('tab_bar.py', 'window_title_bar.py', 'iterm2_watcher.py', 'tmux_or_kitty.py', 'toggle_transparency.py'):
+    runpy.run_path('$repo_dir/macos/kitty/' + name)
+"
+    echo "kitty loaded the Python files in $repo_dir/macos/kitty."
+  fi
 fi

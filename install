@@ -287,6 +287,50 @@ fi
 # scripts/omarchy-review.sh is what surfaces them.
 if command -v kitty >/dev/null 2>&1; then
   backup_and_link "$repo_dir/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+  backup_and_link "$repo_dir/kitty/smart_hints.py" "$HOME/.config/kitty/smart_hints.py"
+fi
+
+# On macOS, kitty is set up to look and work like iTerm2. The shared kitty.conf
+# pulls in macos.conf by glob as its last line, so it is linked last, after
+# every file it includes. The theme stays per host in macos-theme.conf, which
+# is not linked. The Claude Code hook script is linked, but the hook is not
+# registered: the Claude settings on a Mac also carry the iTerm2 hooks, so the
+# README says how to add it by hand.
+if [[ $(uname -s) == Darwin ]] && command -v kitty >/dev/null 2>&1; then
+  for kitty_file in iterm2-profile.conf iterm2-look.conf iterm2-keys.conf \
+    tab_bar.py window_title_bar.py iterm2_watcher.py tmux_or_kitty.py \
+    toggle_transparency.py cc-status cc_status.py \
+    quick-access-terminal.conf macos-launch-services-cmdline "themes/My iTerm2.conf" \
+    macos.conf; do
+    backup_and_link "$repo_dir/macos/kitty/$kitty_file" "$HOME/.config/kitty/$kitty_file"
+  done
+
+  # A new host starts with My iTerm2, the colors of the iTerm2 profile, which is
+  # published nowhere else. It includes the linked file, so a color changed in
+  # the repository reaches every host that has not selected another theme. The
+  # file is written only when it is missing, so a theme selected later stays.
+  kitty_theme="$HOME/.config/kitty/macos-theme.conf"
+  if [[ ! -e "$kitty_theme" ]]; then
+    printf '# BEGIN_KITTY_THEME\n# My iTerm2\ninclude themes/My iTerm2.conf\n# END_KITTY_THEME\n' >"$kitty_theme"
+    printf 'Selected kitty theme: My iTerm2\n'
+  fi
+
+  # cmd+f opens this search kitten. It is a clone of a third-party repository,
+  # checked out at a fixed commit so an upstream change cannot alter it unseen.
+  kitty_search_dir="$HOME/.config/kitty/kitty_search"
+  kitty_search_url=https://github.com/trygveaa/kitty-kitten-search.git
+  kitty_search_commit=992c1f3d220dc3e1ae18a24b15fcaf47f4e61ff8
+  if (( install_plugins )); then
+    if [[ ! -e "$kitty_search_dir" ]]; then
+      git clone -q "$kitty_search_url" "$kitty_search_dir"
+    fi
+    if [[ "$(git -C "$kitty_search_dir" rev-parse HEAD 2>/dev/null)" != "$kitty_search_commit" ]]; then
+      git -C "$kitty_search_dir" fetch -q origin &&
+        git -C "$kitty_search_dir" checkout -q "$kitty_search_commit" ||
+        printf 'Warning: could not check out %s in %s.\n' "$kitty_search_commit" "$kitty_search_dir" >&2
+    fi
+    printf 'kitty search kitten at %s: %s\n' "${kitty_search_commit:0:7}" "$kitty_search_dir"
+  fi
 fi
 
 # Helper the Hyprland bindings call by name, so it has to be on PATH rather than
