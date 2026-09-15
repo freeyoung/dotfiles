@@ -99,3 +99,18 @@ bindkey '^W' backward-kill-path-component
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey -M emacs '^X^E' edit-command-line
+
+# In kitty, Ctrl-L keeps the cleared lines in scrollback, as iTerm2 does. zsh's
+# clear-screen erases the display, and kitty drops what it erases instead of
+# saving it, so ask kitty to scroll the prompt to the top. That needs kitty's
+# shell integration (prompt marks) and its remote control socket. Programs such
+# as Claude Code still receive Ctrl-L as before, because only this zle binding
+# changes. Other terminals keep the stock widget.
+if [[ -n $KITTY_WINDOW_ID && -n $KITTY_LISTEN_ON ]] && (( $+commands[kitten] )); then
+  clear-screen-keep-scrollback() {
+    kitten @ --to "$KITTY_LISTEN_ON" action --match "id:$KITTY_WINDOW_ID" scroll_prompt_to_top \
+      >/dev/null 2>&1 || zle clear-screen
+  }
+  zle -N clear-screen-keep-scrollback
+  bindkey -M emacs '^L' clear-screen-keep-scrollback
+fi
