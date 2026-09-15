@@ -2,8 +2,9 @@
 
 # Claude Code hook that records what each session is doing, the way iTerm2's
 # cc-status hook feeds its Session Status dots. Consumers are kitty's custom
-# tab bar (kitty/tab_bar.py) and the omarchy bar widget (omarchy/plugins/
-# eric.claude); neither talks to Claude, they only read the records here.
+# tab bar and window titles (omarchy/kitty/), the omarchy bar widget
+# (omarchy/plugins/eric.claude) and the ring (omarchy/quickshell/claude-rings);
+# none talks to Claude, they only read the records here.
 #
 # Invoked by Claude Code with the hook payload on stdin. One record per
 # session, under $XDG_RUNTIME_DIR/claude-tabs/<session-id>.json, so a reboot
@@ -19,6 +20,9 @@
 set -u
 
 dir="${XDG_RUNTIME_DIR:-/tmp/claude-tabs-$(id -u)}/claude-tabs"
+# This script is a link into the repository; the permission text comes from
+# claude/permission_detail.py there, shared with the kitty hook on macOS.
+repo_dir="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 
 # The bar widget passes the session id it read out of a record.
 if [[ ${1:-} == focus ]]; then
@@ -58,6 +62,7 @@ record="$dir/$session.json"
 
 state=""
 detail=""
+tool=""
 case "$event" in
   SessionStart)
     state=idle
@@ -75,7 +80,11 @@ case "$event" in
     ;;
   PermissionRequest)
     state=waiting
-    detail=$(jq -r '.tool_name // empty' <<<"$input")
+    # The tool name is the short question a kitty tab shows ("Bash?"). The
+    # detail is the whole question ("Allow Bash: make test?") for the bar's
+    # tooltip, with the tool name in its place if python3 fails.
+    tool=$(jq -r '.tool_name // empty' <<<"$input")
+    detail=$(python3 "$repo_dir/claude/permission_detail.py" <<<"$input" 2>/dev/null) || detail=$tool
     ;;
   Elicitation)
     state=waiting
@@ -86,6 +95,14 @@ case "$event" in
       permission_prompt | elicitation_dialog | elicitation_url_dialog | agent_needs_input | worker_permission_prompt)
         state=waiting
         detail=$(jq -r '.message // empty' <<<"$input")
+        # A permission prompt's notification follows its PermissionRequest,
+        # and its message ("Claude needs your permission to use Bash") says
+        # less. Keep what the PermissionRequest recorded.
+        if [[ $(jq -r '.notification_type' <<<"$input") == permission_prompt && -r $record &&
+          $(jq -r '.state // empty' "$record" 2>/dev/null) == waiting ]]; then
+          detail=$(jq -r '.detail // empty' "$record")
+          tool=$(jq -r '.tool // empty' "$record")
+        fi
         ;;
       idle_prompt) state=idle ;;
       *) exit 0 ;;
@@ -121,6 +138,7 @@ jq -n \
   --arg state "$state" \
   --arg session "$session" \
   --arg detail "$detail" \
+  --arg tool "$tool" \
   --arg cwd "$(jq -r '.cwd // empty' <<<"$input")" \
   --arg event "$event" \
   --argjson pid "${claude_pid:-$PPID}" \
@@ -129,6 +147,7 @@ jq -n \
   --argjson updated "$(date +%s)" \
   '{state: $state, session_id: $session, detail: $detail, cwd: $cwd, event: $event,
     pid: $pid, updated: $updated}
+   + (if $tool != "" then {tool: $tool} else {} end)
    + (if $kitty_pid != "" then {kitty_pid: ($kitty_pid | tonumber)} else {} end)
    + (if $kitty_window_id != "" then {kitty_window_id: ($kitty_window_id | tonumber)} else {} end)' \
   >"$record.tmp" && mv -f "$record.tmp" "$record"

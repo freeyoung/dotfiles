@@ -161,7 +161,11 @@ def blink_on() -> bool:
 
 
 def waiting_ask(record: dict[str, Any]) -> str:
-    # A tool name reads as a question ("Bash?"); a notification's sentence
-    # does not fit a tab, so it is left out.
+    # A tool name reads as a question ("Bash?"); a sentence does not fit a tab,
+    # so it is left out. A permission prompt records the tool name on its own,
+    # beside the whole question in detail, which the bar's tooltip shows.
+    tool = str(record.get('tool', ''))
+    if tool:
+        return tool if len(tool) <= 16 else ''
     detail = str(record.get('detail', ''))
     return detail if detail and ' ' not in detail and len(detail) <= 16 else ''
