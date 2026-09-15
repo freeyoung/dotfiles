@@ -1,0 +1,5 @@
+#!/bin/sh
+# Claude Code hook for kitty, a port of iTerm2's cc-status.
+# Outside kitty, or when kitty has no remote control socket, do nothing.
+[ -n "$KITTY_WINDOW_ID" ] && [ -n "$KITTY_LISTEN_ON" ] || exit 0
+exec python3 "$HOME/.config/kitty/cc_status.py"

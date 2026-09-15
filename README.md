@@ -609,6 +609,64 @@ is Omarchy's alone sits under `omarchy/`, including the kitty files, which
 `kitty/kitty.conf` reaches by a glob that matches nothing on any other host.
 Outside it there is only a script in `bin/` and one in `scripts/`.
 
+On macOS, kitty shows the Claude Code status from a different hook. The next
+section tells how to set it up.
+
+On every host, `ctrl+shift+p` then `o` in kitty marks git remotes and
+references such as `owner/repo#123`, and a hint key opens the match in the
+browser. The rules are in [`kitty/smart_hints.py`](kitty/smart_hints.py).
+
+### kitty on macOS
+
+On macOS, kitty looks and works like iTerm2. The files are in
+[`macos/kitty/`](macos/kitty), and `install` links them into `~/.config/kitty`
+only on macOS. `kitty/kitty.conf` is shared with Omarchy, and its last line
+pulls in `macos.conf` by glob. On other hosts the glob matches nothing. On
+macOS, the settings in `macos.conf` override the shared settings above it.
+
+- `iterm2-profile.conf` has the font, cursor, transparency, window size and
+  remote control from the iTerm2 profile.
+- `iterm2-look.conf` has the tab bar, the pane title bars and the dividers.
+  `tab_bar.py`, `window_title_bar.py` and `iterm2_watcher.py` draw them.
+- `iterm2-keys.conf` has the split, tab and pane keys. Inside tmux,
+  `tmux_or_kitty.py` sends the same keys to tmux.
+- `cc_status.py` is the Claude Code hook. It stores the status on the pane, and
+  the tab bar and the pane title bars show it. A waiting dot blinks. While a
+  session works, a band of green light runs along the bottom of its tab, like
+  the ring iTerm2 draws around the tab. The tab bar is 1 row of cells, so the
+  band is an underline and only the bottom edge has it.
+  `iterm2_watcher.py` removes the status when Claude Code ends without its
+  `SessionEnd` hook, for example after a crash. The permission question comes
+  from [`claude/permission_detail.py`](claude/permission_detail.py), which the
+  Omarchy hook also uses.
+- cmd+f opens [kitty-kitten-search](https://github.com/trygveaa/kitty-kitten-search).
+  `install` clones it into `~/.config/kitty/kitty_search` at a fixed commit.
+  `install --links-only` does not clone it.
+
+The repository keeps `themes/My iTerm2.conf`, the colors of the iTerm2 profile.
+No other place publishes this theme. The selected theme is local to each host:
+`macos.conf` pulls in `macos-theme.conf` by glob. When that file is missing,
+`install` writes one that selects My iTerm2. To select a different theme, run:
+
+```sh
+kitten themes --config-file-name macos-theme.conf
+```
+
+Without `--config-file-name`, `kitten themes` writes into the shared
+`kitty.conf`, which is a link into this repository.
+
+`install` does not do these 2 steps, so do them by hand:
+
+- The Claude Code hook. `install` links `cc-status` but does not register it.
+  The Claude settings on a Mac also have the iTerm2 hooks, so `install` does
+  not edit them. Add `~/.config/kitty/cc-status` as a `command` hook to
+  `~/.claude/settings.json` for these events: `SessionStart`,
+  `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`,
+  `PermissionRequest`, `PermissionDenied`, `Elicitation`, `Notification`,
+  `Stop`, `StopFailure` and `SessionEnd`. The script does nothing outside kitty.
+- The quick access terminal. In System Settings, go to Keyboard > Keyboard
+  Shortcuts > Services. Give "Quick access to kitty" the shortcut cmd+F12.
+
 ### Tracking Omarchy
 
 Several of the commands above came from
