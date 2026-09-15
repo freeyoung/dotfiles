@@ -107,6 +107,12 @@ if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.a
   exit 1
 fi
 
+if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
+  ! grep -qx 'TypePairedPunctuationsTogether=True' "$tmp_dir/home/.config/fcitx5/conf/punctuation.conf" 2>/dev/null; then
+  echo 'Installer did not set TypePairedPunctuationsTogether=True in the fcitx5 punctuation config' >&2
+  exit 1
+fi
+
 if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } && {
   ! grep -qx 'AltTriggerKeys=' "$tmp_dir/home/.config/fcitx5/config" ||
     ! awk '/^\[/ { in_list = ($0 == "[Hotkey/TriggerKeys]") } in_list && /^[0-9]+=Shift_L$/ { found = 1 } END { exit !found }' \

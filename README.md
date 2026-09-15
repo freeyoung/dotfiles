@@ -514,7 +514,10 @@ and the trigger key switches it to wbx. It also adds left Shift to the trigger
 keys and keeps the keys each host already has there. It empties
 `AltTriggerKeys`, where fcitx5 puts left Shift by default. A key in that list
 only goes back to the input method it left, so it cannot activate a new
-context, and left Shift did nothing in a new window. fcitx-dict sets `AutoSavePeriod`, which
+context, and left Shift did nothing in a new window. The same applies to
+`conf/punctuation.conf`, which also holds a hotkey: the installer only sets
+`TypePairedPunctuationsTogether=True` there, so quotes and brackets are typed
+as a pair. fcitx-dict sets `AutoSavePeriod`, which
 only its sync needs. Everything below is linked where fcitx5 or
 fcitx5-macos exists; fcitx5-macos puts no `fcitx5` on `PATH`, so it is found by
 its app.
