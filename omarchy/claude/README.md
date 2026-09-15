@@ -6,7 +6,8 @@ what reads the records is the Omarchy bar widget and the Hyprland group-tab
 ring, and what writes them leans on `/proc` and `$XDG_RUNTIME_DIR`. The kitty files
 are linked there too and nowhere else: `kitty.conf` is one file shared across
 hosts, so it names them through a glob that matches nothing off Omarchy, and a
-host without them keeps kitty's own tab bar.
+host without them keeps kitty's own tab bar. macOS has a separate hook and tab
+bar for kitty, in `macos/kitty/`.
 
 iTerm2 3.7 tells a tab running Claude Code apart from the rest: a band of
 green light runs around the tab while the model works, and a coloured dot says
@@ -26,7 +27,11 @@ removes the record. Hooks that fire inside an agent leave the state alone:
 Claude runs one after a turn to write its "while you were away" recap, and
 counting that as work turned finished sessions back to working. The states and
 colours are iTerm2's own, from the
-`cc-status` hook it ships, so the two feel alike. A waiting session does not
+`cc-status` hook it ships, so the two feel alike. A permission prompt records
+the tool name in `tool` and the whole question in `detail`, for example
+`Allow Bash: make test?`. The question comes from
+[`claude/permission_detail.py`](../../claude/permission_detail.py), which the
+kitty hook on macOS uses too. A waiting session does not
 ring the bell: kitty turns that into an activation request, and with Omarchy's
 `misc:focus_on_activate` Hyprland answers it by moving focus to the window.
 
@@ -41,17 +46,10 @@ draws exactly as before, and the file is checked by
 [`scripts/check-kitty-config.sh`](../../scripts/check-kitty-config.sh) under kitty's
 own interpreter, since a file kitty cannot load falls back silently.
 
-The hook also asks Claude to write an OSC 9;4 progress report into the terminal
-it runs in, which kitty draws as a thin bar along the window's top edge --
-`progress_bar` and `scrollbar_handle_color` in
-[`kitty/kitty.conf`](../../kitty/kitty.conf) place and colour it. Working reports
-indeterminate progress, which kitty animates as a green segment sliding back
-and forth, the band Claude Code shows under iTerm2; every other state clears it.
-Claude sends this sequence itself under iTerm2 and Ghostty but not under kitty,
-and a hook may only emit notification and title sequences, of which the 9;4
-progress form is one. kitty forgets a progress report that has not been repeated
-for a minute, so a long turn that makes no tool calls loses the band until the
-next one.
+The hook sends nothing back to the terminal. It once asked Claude to write an
+OSC 9;4 progress report, which kitty draws as a bar along the top edge of the
+window. kitty's animation for it was too fast to read, and it moved only when
+the window repainted, so the ring below replaced it.
 
 [`omarchy/kitty/claude_title.py`](../kitty/claude_title.py) is a kitty watcher that puts
 the same state into each window's title, for a Hyprland group: its tab bar
