@@ -63,7 +63,8 @@ backup_and_link() {
 # Set one key in an INI file that cannot be linked, because its program writes
 # the whole file back and the file also holds settings that differ per host.
 # The active or commented line for the key in the section is replaced; a
-# missing key or section is added. A symlinked file is left alone.
+# missing key or section is added. An empty section means the keys before the
+# first section header. A symlinked file is left alone.
 set_ini_key() {
   local file="$1" section="$2" key="$3" value="$4" tmp
 
@@ -76,6 +77,7 @@ set_ini_key() {
   tmp="$(mktemp)"
   awk -v sec="[$section]" -v key="$key" -v val="$value" '
     function add() { if (insec && !done) { print key "=" val; done = 1 } }
+    BEGIN { if (sec == "[]") insec = seen = 1 }
     /^\[.*\]$/ { add(); insec = ($0 == sec); if (insec) seen = 1; print; next }
     insec && !done && index($0, key "=") && $0 ~ ("^(#[ \t]*)?" key "=") {
       print key "=" val; done = 1; next
@@ -258,6 +260,11 @@ if (( has_fcitx5 )); then
   # its global config back whenever any global option changes, and the file
   # holds hotkeys that differ per host, so only this key is managed.
   set_ini_key "$HOME/.config/fcitx5/config" Behavior ActiveByDefault False
+  # Quotes and brackets are typed as a pair. conf/punctuation.conf also holds
+  # the punctuation toggle key, which may differ per host, so only this key is
+  # managed.
+  set_ini_key "$HOME/.config/fcitx5/conf/punctuation.conf" "" \
+    TypePairedPunctuationsTogether True
   fcitx5_shift_toggles "$HOME/.config/fcitx5/config"
   # The candidate window theme is fcitx5-macos's web panel. fcitx5 on Linux
   # draws with classicui, which reads a different theme format. The theme is
