@@ -338,67 +338,21 @@ fi
 # a shader by name. The Claude Code hook is linked but not registered, for the
 # same reason as kitty's: the Claude settings on a Mac also carry the iTerm2
 # hooks. The README says how to add it.
-install_ghostty_agent() {
-  local label=com.eric.ghostty-agent
-  local plist="$HOME/Library/LaunchAgents/$label.plist"
-  local script="$HOME/.config/ghostty/agent.js"
-  local tmp
-
-  mkdir -p "$(dirname "$plist")" "$HOME/Library/Logs"
-  tmp="$(mktemp)"
-  cat >"$tmp" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>$label</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/usr/bin/osascript</string>
-        <string>-l</string>
-        <string>JavaScript</string>
-        <string>$script</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>ThrottleInterval</key>
-    <integer>30</integer>
-    <key>LimitLoadToSessionType</key>
-    <string>Aqua</string>
-    <key>ProcessType</key>
-    <string>Background</string>
-    <key>StandardErrorPath</key>
-    <string>$HOME/Library/Logs/ghostty-agent.log</string>
-</dict>
-</plist>
-PLIST
-  if cmp -s "$tmp" "$plist"; then
-    rm -f "$tmp"
-    printf 'Already installed: %s\n' "$label"
-    return
-  fi
-  mv "$tmp" "$plist"
-  chmod 644 "$plist"
-  launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
-  launchctl bootstrap "gui/$(id -u)" "$plist" 2>/dev/null ||
-    printf 'Warning: could not load %s; run launchctl bootstrap by hand.\n' "$label" >&2
-  printf 'Installed: %s\n' "$label"
-}
-
 if [[ $(uname -s) == Darwin ]] && [[ -d /Applications/Ghostty.app ]]; then
-  for ghostty_file in config ring.glsl cc-status agent.js "themes/My iTerm2"; do
+  for ghostty_file in config ring.glsl cc-status "themes/My iTerm2"; do
     backup_and_link "$repo_dir/macos/ghostty/$ghostty_file" "$HOME/.config/ghostty/$ghostty_file"
   done
-  # Keeps the splits equal when one closes and paints the Claude Code badge on
-  # the tab, neither of which Ghostty can do on its own. It drives Ghostty over
-  # AppleScript, so macOS asks once for permission.
-  # The agent was called ghostty-rebalance before it painted badges.
-  launchctl bootout "gui/$(id -u)/com.eric.ghostty-rebalance" 2>/dev/null || true
-  rm -f "$HOME/Library/LaunchAgents/com.eric.ghostty-rebalance.plist"
-  install_ghostty_agent
+
+  # Equal splits and the tab badge were a launch agent that drove Ghostty over
+  # AppleScript, until the Ghostty build in ~/code/ai/ghostty did both itself.
+  for ghostty_agent in com.eric.ghostty-agent com.eric.ghostty-rebalance; do
+    if [[ -e "$HOME/Library/LaunchAgents/$ghostty_agent.plist" ]]; then
+      launchctl bootout "gui/$(id -u)/$ghostty_agent" 2>/dev/null || true
+      rm -f "$HOME/Library/LaunchAgents/$ghostty_agent.plist"
+      printf 'Removed: %s\n' "$ghostty_agent"
+    fi
+  done
+  rm -f "$HOME/.config/ghostty/agent.js" "$HOME/.config/ghostty/rebalance.js"
 fi
 
 # Helper the Hyprland bindings call by name, so it has to be on PATH rather than

@@ -64,16 +64,14 @@ copy-on-select = clipboard
 # The animation runs for the focused pane, and for any pane that is drawing
 # output, which a working session is. `always` would animate every pane in
 # every visible window, at 17% of a core against 4% here, and it is not needed:
-# the badge agent.js paints on the tab is what shows a session in another tab.
+# the tab carries the same state for a session in another tab.
 custom-shader = ring.glsl
 custom-shader-animation = true
 
-# Ghostty equalizes nothing on its own, so each new split is followed by one.
-# A closing split cannot be handled here: see bin/ghostty-rebalance.
-keybind = cmd+d=new_split:right
-keybind = chain=equalize_splits
-keybind = cmd+shift+d=new_split:down
-keybind = chain=equalize_splits
+# Keep every split the same size, when one opens and when one closes. This is
+# not a Ghostty option: it is the patch in ~/code/ai/ghostty. Stock Ghostty
+# ignores the line with a warning, and splits stay uneven on close.
+split-auto-equalize = true
 
 # Keys that Ghostty has no default for. The rest of the iTerm2 keys are
 # Ghostty defaults already: cmd+d, cmd+shift+d, cmd+w, cmd+t, cmd+[, cmd+],

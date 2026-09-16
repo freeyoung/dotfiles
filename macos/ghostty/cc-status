@@ -2,82 +2,38 @@
 """Claude Code hook for Ghostty: show what a session is doing.
 
 Ghostty has no tab bar a script can draw in and no pane title bars, so the
-state goes to 2 places, neither of which a program can normally reach:
+state goes through the 2 channels a pane does own, and the terminal draws it:
 
-  The pane.  The palette carries it: this sets color 255, the last grayscale
-             slot, with OSC 4, and ring.glsl draws a ring of light around the
-             pane whose palette carries the mark. The ring is only visible
-             while its tab is.
+  OSC 9;4  the progress report, which Ghostty shows on the tab (the patch in
+           ~/code/ai/ghostty) and as a bar along the top of the pane. Claude
+           Code sends `working` itself; it has nothing for a prompt waiting to
+           be answered, so this hook sends the pause state for that.
 
-  The tab.   agent.js paints a badge into the tab title, which is the only
-             per-tab thing a script can change, and it needs to know which
-             terminal this session runs in. That is what the record below is
-             for: this hook resolves its own terminal once, when the session
-             starts, and writes a record that agent.js reads.
+  OSC 4    the palette. Color 255, the last grayscale slot, is set to a value
+           nothing draws with, and ring.glsl draws a ring around a pane whose
+           palette carries it. This is what shows the state inside the tab.
 
 The detail text of a permission prompt has nowhere to go, unlike in kitty,
 where the tab bar and the pane title bars show it.
 """
 import json
 import os
-import secrets
 import subprocess
 import sys
-import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'claude'))
 from session_state import END, IDLE, WAITING, WORKING, classify  # noqa: E402
 
-MARKS = {WORKING: '\033]4;255;rgb:00/ff/01\007', WAITING: '\033]4;255;rgb:00/00/fe\007'}
-CLEAR = '\033]104;255\007'
-# OSC 9;4, the progress report. Claude Code sends 3 (indeterminate) itself while
-# the model works, and 0 when it stops, which is what Ghostty draws the bar in a
-# pane for. It has nothing for waiting, so the hook sends 4 (pause) there. A
-# Ghostty built from ~/code/ai/ghostty shows both states on the tab as well.
+RING = {WORKING: '\033]4;255;rgb:00/ff/01\007', WAITING: '\033]4;255;rgb:00/00/fe\007'}
+RING_CLEAR = '\033]104;255\007'
+# OSC 9;4 state 4 is pause. Claude Code sends 3 (indeterminate) while the model
+# works and 0 when it stops, so only the waiting state is left to send.
 PROGRESS = {WAITING: '\033]9;4;4;0\007'}
 PROGRESS_CLEAR = '\033]9;4;0;0\007'
-# A reboot empties TMPDIR, so a record can only outlive its session by a crash,
-# which agent.js clears when the process it names is gone.
-STATE_DIR = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'claude-ghostty')
-# Ghostty reports the terminal it is asked about by title, so the pane is given
-# a title no one else would use, for as long as it takes to find it.
-FIND_TERMINAL = '''
-const app = Application('Ghostty');
-(function () {
-  for (const w of app.windows()) {
-    for (const t of w.tabs()) {
-      for (const s of t.terminals()) {
-        if (s.name() === %s) return s.id();
-      }
-    }
-  }
-  return '';
-})();
-'''
 
 
-def terminal():
-    """The pane this hook runs in.
-
-    /dev/tty is the pane whenever Claude Code passes its terminal on, which it
-    does today. If it ever stops, the tty of the Claude process itself is the
-    same pane, so that is tried next.
-    """
-    try:
-        return open('/dev/tty', 'w')
-    except OSError:
-        pass
-    tty = claude_process()[1]
-    if tty in ('??', ''):
-        return None
-    try:
-        return open(f'/dev/{tty}', 'w')
-    except OSError:
-        return None
-
-
-def claude_process() -> tuple[int, str]:
-    """The pid and tty of the Claude Code process this hook was run by."""
+def claude_tty() -> str:
+    """The tty of the Claude Code process this hook was run by."""
     pid = os.getppid()
     for _ in range(8):
         try:
@@ -89,55 +45,31 @@ def claude_process() -> tuple[int, str]:
             break
         command, parent, tty = out[0], out[1], out[2]
         if os.path.basename(command) == 'claude':
-            return pid, tty
+            return tty
         pid = int(parent)
-    return os.getppid(), ''
-
-
-def write(text: str) -> None:
-    out = terminal()
-    if out is None:
-        return
-    with out:
-        out.write(text)
-        out.flush()
-
-
-def find_terminal() -> str:
-    """The id of the Ghostty terminal this hook runs in, or '' if it is not found.
-
-    The pane is given a title no one else would use, so that Ghostty can be
-    asked which terminal carries it. The title is pushed on the terminal's own
-    title stack first and popped after, so the marker is not what the tab is
-    left showing.
-    """
-    token = f'\u27e6claude {secrets.token_hex(3)}\u27e7'
-    write(f'\033[22;2t\033]2;{token}\007')
-    try:
-        return find_by_title(token)
-    finally:
-        write('\033[23;2t')
-
-
-def find_by_title(token: str) -> str:
-    script = FIND_TERMINAL % json.dumps(token)
-    # Claude Code sets a title of its own as soon as it works, so the name is
-    # only ours for a moment. A few tries cover a slow first Apple event, which
-    # also asks the user for permission to control Ghostty.
-    for _ in range(6):
-        try:
-            found = subprocess.run(['osascript', '-l', 'JavaScript', '-e', script],
-                                   capture_output=True, text=True, timeout=10).stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            return ''
-        if found:
-            return found
-        time.sleep(0.2)
     return ''
 
 
-def record_path(session: str) -> str:
-    return os.path.join(STATE_DIR, f'{session}.json')
+def write(text: str) -> None:
+    """Send escape codes to the pane this hook runs in.
+
+    /dev/tty is that pane whenever Claude Code passes its terminal on, which it
+    does today. If it ever stops, the tty of the Claude process itself is the
+    same pane, so that is tried next.
+    """
+    try:
+        out = open('/dev/tty', 'w')
+    except OSError:
+        tty = claude_tty()
+        if tty in ('??', ''):
+            return
+        try:
+            out = open(f'/dev/{tty}', 'w')
+        except OSError:
+            return
+    with out:
+        out.write(text)
+        out.flush()
 
 
 def main() -> None:
@@ -149,49 +81,13 @@ def main() -> None:
         event = json.load(sys.stdin)
     except ValueError:
         return
-    state, detail = classify(event)
+    state, _ = classify(event)
     if state is None:
         return
-    session = str(event.get('session_id') or '')
-    path = record_path(session) if session else ''
-
-    if state == END:
-        write(CLEAR + PROGRESS_CLEAR)
-        if path:
-            try:
-                os.remove(path)
-            except OSError:
-                pass
-        return
-
-    if state == IDLE:
-        write(CLEAR + PROGRESS_CLEAR)
+    if state in (IDLE, END):
+        write(RING_CLEAR + PROGRESS_CLEAR)
     else:
-        write(MARKS[state] + PROGRESS.get(state, ''))
-    if not path:
-        return
-
-    os.makedirs(STATE_DIR, exist_ok=True)
-    try:
-        with open(path) as f:
-            record = json.load(f)
-    except (OSError, ValueError):
-        record = {}
-    if not record.get('terminal'):
-        record['terminal'] = find_terminal()
-        record['pid'] = claude_process()[0]
-    record['state'] = state
-    # What the tab is called while the pane has no title of its own.
-    cwd = str(event.get('cwd') or '')
-    if cwd:
-        record['cwd'] = os.path.basename(cwd.rstrip('/')) or cwd
-    if detail is not None:
-        record['detail'] = detail
-    record['updated'] = int(time.time())
-    tmp = f'{path}.tmp'
-    with open(tmp, 'w') as f:
-        json.dump(record, f)
-    os.replace(tmp, path)
+        write(RING[state] + PROGRESS.get(state, ''))
 
 
 if __name__ == '__main__':

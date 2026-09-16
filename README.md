@@ -678,70 +678,37 @@ bar (`macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
 dims the other panes, `cmd+f` searches, and `toggle_quick_terminal` is built in.
 What is left is the font, the colors, 4 keys, and the 2 things below.
 
-**Equal splits.** Ghostty equalizes nothing on its own. A new split is followed
-by `equalize_splits` through a keybind chain. A closing split cannot be: the
-chain stops with the surface it ran in, and Ghostty has no event API.
+**This expects a patched Ghostty.** Two things Ghostty does not do are a
+30-line patch each, kept on the `split-auto-equalize` branch of a checkout in
+`~/code/ai/ghostty`, and built with `zig build -Doptimize=ReleaseFast
+-Dxcframework-target=native`:
 
-**What a Claude Code session is doing.** Ghostty has no tab bar a script can
-write and no pane title bars, so the state is shown twice, and
-[`cc-status`](macos/ghostty/cc-status) is the hook behind both.
+- `split-auto-equalize` equalizes the splits in a window when one opens and
+  when one closes. A keybind chain can do the first (`new_split` then
+  `equalize_splits`) but not the second: the chain ends with the surface it
+  ran in. Ghostty has no event API either, so the alternative was a launch
+  agent polling its AppleScript interface, which this replaced.
+- The tab of a window whose surface reports progress shows a spinner, and one
+  that reports a pause shows a dot. Ghostty already reads OSC 9;4 into a
+  published value per surface, and already draws a bar for it inside the pane;
+  the patch puts the same state in the tab, where the existing accessory view
+  holds the tab colour dot and the `⌘1` label.
 
-On the pane, as a ring of light, the way iTerm2 3.7 rings a working tab. The
-hook cannot talk to Ghostty, so it marks its own pane with OSC 4, setting color
-255 -- the last grayscale slot, which nothing draws with -- and
-[`ring.glsl`](macos/ghostty/ring.glsl) draws the ring for a pane whose palette
-carries the mark:
+Stock Ghostty runs this configuration and ignores the unknown setting with a
+warning. What is lost is equal splits on close, and the tab indicator.
 
-- `#00ff01` working: a light runs around the pane, 1 turn every 3 seconds.
-- `#0000fe` waiting: the outline pulses.
-- idle or ended: the mark is removed and no ring is drawn.
+**What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
+model works, so the spinner needs no hook at all.
+[`cc-status`](macos/ghostty/cc-status) fills in the 2 states Claude does not
+report:
 
-While waiting, the hook also sends an OSC 9;4 pause report, which Ghostty
-draws as a paused progress bar along the top of the pane. Claude Code sends
-that sequence itself while the model works, and nothing sends it for a prompt
-waiting to be answered, so the hook fills in the state that is missing.
-
-On the tab, as a badge, because a pane is only visible while its tab is: a
-spinner while the model works, a blinking blue dot while a prompt waits, a
-green dot when the turn is done. The tab title is the only per-tab thing a
-script can change, and a title set through `set_tab_title` overrides the one
-the program in the pane sets, so Claude's own title does not wipe the badge
-out. The badge goes in front of that title.
-
-[`agent.js`](macos/ghostty/agent.js) does both: it equalizes a tab that lost a
-split, and it paints the badges. `install` runs it through the
-`com.eric.ghostty-agent` launch agent.
-
-Every question asked of Ghostty is an Apple event, and they are not cheap.
-Walking the windows object by object costs about 80 ms; asking a whole
-specifier for 1 property costs about 18 ms for the same tree. So the loop asks
-the cheap question -- `app.windows.tabs.terminals.id()`, which is 1 event -- and
-only when the shape it returns has lost a surface, or a record has changed,
-does it walk for the tab ids and titles it needs to paint. Setting a title
-costs about 15 ms, which is what a frame of the spinner is.
-
-The loop runs every 0.3 s while Ghostty is in front and there is something to
-watch -- a tab with a split in it, which can be closed, or a session, whose
-badge moves -- and every 1.5 s while there is not. Away from the front it runs
-every 2 s. Whether Ghostty is in front is asked of Ghostty, since `NSWorkspace`
-in a launch agent reports the front application of its own session, which is
-never Ghostty. A closing split is equalized within about 0.8 s, and watching a
-window with splits in it costs 2 to 3 percent of a core in the agent and 6 to 7
-percent in Ghostty, which answers the events; a window of single-pane tabs
-costs almost nothing. macOS asks once for permission to control Ghostty.
-
-A pane can close while the agent is in the middle of asking about it, and the
-answer is then an error. Each tab, each badge and each equalize is guarded on
-its own, and a failure only drops what it was about and asks for a fresh walk:
-an earlier version let 1 stale reference stop the whole loop, and the agent
-went on running while doing nothing at all.
-
-To paint a tab, the agent has to know which terminal a session runs in, and
-nothing in the pane's environment names it. So the hook gives the pane a title
-no one else would use, asks Ghostty which terminal carries it, and writes that
-id into a record under `$TMPDIR/claude-ghostty/`. The title is pushed on the
-terminal's title stack first and popped after. A record whose process is gone
-is dropped by the agent, so a session that was killed does not keep its badge.
+- Waiting for an answer: it sends the OSC 9;4 pause state, which the tab shows
+  as a dot and the pane as a paused bar.
+- Which pane: it sets palette color 255 with OSC 4 -- the last grayscale slot,
+  which nothing draws with -- and [`ring.glsl`](macos/ghostty/ring.glsl) draws
+  a ring of light around a pane whose palette carries the mark, green while
+  working and pulsing blue while waiting. The ring is what shows the state
+  inside the tab; the tab shows it from outside.
 
 The event rules are shared with the kitty hook in
 [`claude/session_state.py`](claude/session_state.py). The detail text of a
