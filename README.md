@@ -685,20 +685,20 @@ application needs the Accessibility permission.
 **Two behaviors here are not upstream.** The splits in a window stay equal when
 one opens and when one closes, and a tab shows what the session in it is doing:
 a colored dot in the same colors as the kitty tab bar, and, while the session
-works, a band of light -- around the tab the way iTerm2 3.7 rings a working
-tab, or along the bottom of it the way the kitty tab bar does. Both come from a
-local patch, because a keybind chain covers only the opening half -- the chain
-ends with the surface it ran in -- and Ghostty has no event API to hang the
-rest on.
+works, a band of light. Both come from a local patch, because a keybind chain
+covers only the opening half -- the chain ends with the surface it ran in --
+and Ghostty has no event API to hang the rest on.
 
-Both are that build's default and neither is a setting, so this file says
-nothing about them and stock Ghostty reads it without complaining and simply
-goes without. What that build adds is switched through the defaults of the
-application instead:
+Neither is a setting, so this file says nothing about them and stock Ghostty
+reads it without complaining and simply goes without. That build is switched
+through the defaults of the application instead, and it starts out with the
+light off, as Ghostty itself has none:
 
 ```
-defaults write com.mitchellh.ghostty TabActivityLight underline    # the kitty light
-defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits
+defaults write com.mitchellh.ghostty TabActivityLight ring         # around the tab, as iTerm2 runs it
+defaults write com.mitchellh.ghostty TabActivityLight underline    # along the bottom, as the kitty tab bar lays it
+defaults delete com.mitchellh.ghostty TabActivityLight             # no light
+defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits, as Ghostty leaves them
 ```
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
