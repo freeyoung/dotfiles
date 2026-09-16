@@ -23,7 +23,7 @@ import os
 import subprocess
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'claude'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'claude'))
 from session_state import END, IDLE, WAITING, WORKING, classify  # noqa: E402
 
 RING = {

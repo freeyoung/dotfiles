@@ -333,15 +333,40 @@ if [[ $(uname -s) == Darwin ]] && command -v kitty >/dev/null 2>&1; then
   fi
 fi
 
-# Ghostty on macOS, set up like the kitty configuration beside it. Everything
-# is linked into ~/.config/ghostty, where Ghostty reads config and a theme by
-# name. The Claude Code hook is linked but not registered, for the
-# same reason as kitty's: the Claude settings on a Mac also carry the iTerm2
-# hooks. The README says how to add it.
-if [[ $(uname -s) == Darwin ]] && [[ -d /Applications/Ghostty.app ]]; then
+# Ghostty, set up like the kitty configuration beside it. Everything is linked
+# into ~/.config/ghostty, where Ghostty reads config and a theme by name. The
+# shared config pulls in macos.conf or linux.conf, whichever is linked beside
+# it. The Claude Code hook is linked but not registered, for the same reason as
+# kitty's: the Claude settings on a Mac also carry the iTerm2 hooks. The README
+# says how to add it.
+if [[ $(uname -s) == Darwin && -d /Applications/Ghostty.app ]] || command -v ghostty >/dev/null 2>&1; then
   for ghostty_file in config cc-status "themes/My iTerm2"; do
-    backup_and_link "$repo_dir/macos/ghostty/$ghostty_file" "$HOME/.config/ghostty/$ghostty_file"
+    backup_and_link "$repo_dir/ghostty/$ghostty_file" "$HOME/.config/ghostty/$ghostty_file"
   done
+
+  if [[ $(uname -s) == Darwin ]]; then
+    backup_and_link "$repo_dir/macos/ghostty/macos.conf" "$HOME/.config/ghostty/macos.conf"
+
+    # What the Ghostty build in a local checkout adds is off until it is asked
+    # for, so that the build behaves like the Ghostty it came from and the config
+    # file above works with either. These are the answers this setup wants. A
+    # value already set on this Mac is left alone, so an experiment survives.
+    while read -r key value; do
+      if ! defaults read com.mitchellh.ghostty "$key" >/dev/null 2>&1; then
+        defaults write com.mitchellh.ghostty "$key" $value
+      fi
+    done <<'GHOSTTY_DEFAULTS'
+TabActivityLight ring
+TabSessionDot -bool true
+TabTitleContrast -bool true
+TabSeparators -bool true
+SurfaceProgressBarStyle match
+ProgressReportTimeout -float 120
+SplitAutoEqualize -bool true
+GHOSTTY_DEFAULTS
+  elif command -v hyprland >/dev/null 2>&1 || command -v Hyprland >/dev/null 2>&1; then
+    backup_and_link "$repo_dir/omarchy/ghostty/linux.conf" "$HOME/.config/ghostty/linux.conf"
+  fi
 
   # Equal splits and the tab badge were a launch agent that drove Ghostty over
   # AppleScript, until the Ghostty build in a local checkout did both itself.
@@ -353,24 +378,6 @@ if [[ $(uname -s) == Darwin ]] && [[ -d /Applications/Ghostty.app ]]; then
     fi
   done
   rm -f "$HOME/.config/ghostty/agent.js" "$HOME/.config/ghostty/rebalance.js"
-
-  # What the Ghostty build in a local checkout adds is off until it is asked
-  # for, so that the build behaves like the Ghostty it came from and the config
-  # file above works with either. These are the answers this setup wants. A
-  # value already set on this Mac is left alone, so an experiment survives.
-  while read -r key value; do
-    if ! defaults read com.mitchellh.ghostty "$key" >/dev/null 2>&1; then
-      defaults write com.mitchellh.ghostty "$key" $value
-    fi
-  done <<'GHOSTTY_DEFAULTS'
-TabActivityLight ring
-TabSessionDot -bool true
-TabTitleContrast -bool true
-TabSeparators -bool true
-SurfaceProgressBarStyle match
-ProgressReportTimeout -float 120
-SplitAutoEqualize -bool true
-GHOSTTY_DEFAULTS
 fi
 
 # Helper the Hyprland bindings call by name, so it has to be on PATH rather than

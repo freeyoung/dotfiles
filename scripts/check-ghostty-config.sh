@@ -14,7 +14,7 @@ set -euo pipefail
 # together, not that this host has installed them.
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-config_dir="$repo_dir/macos/ghostty"
+config_dir="$repo_dir/ghostty"
 
 if [[ ! -f "$config_dir/config" ]]; then
   echo "No macos/ghostty/config to check." >&2
@@ -42,7 +42,7 @@ for event, wanted in cases:
 detail = classify(cases[3][0])[1]
 assert detail == 'Allow Bash: make test?', detail
 import ast
-ast.parse(open(f'{repo}/macos/ghostty/cc-status').read())
+ast.parse(open(f'{repo}/ghostty/cc-status').read())
 print('The Claude Code hook and claude/session_state.py are in order.')
 PY
 
@@ -58,6 +58,13 @@ trap 'rm -rf "$tmp_home"' EXIT
 mkdir -p "$tmp_home/ghostty/themes"
 cp "$config_dir/config" "$tmp_home/ghostty/"
 cp "$config_dir/themes/My iTerm2" "$tmp_home/ghostty/themes/"
-XDG_CONFIG_HOME="$tmp_home" ghostty +validate-config --config-file="$tmp_home/ghostty/config"
 
-echo "Ghostty parsed $config_dir/config."
+# The shared config pulls in whichever of these is beside it. Each is checked
+# on its own, and then with the shared one, because a desktop only ever has 1.
+for overlay in "$repo_dir/macos/ghostty/macos.conf" "$repo_dir/omarchy/ghostty/linux.conf"; do
+  name="$(basename "$overlay")"
+  rm -f "$tmp_home/ghostty/macos.conf" "$tmp_home/ghostty/linux.conf"
+  cp "$overlay" "$tmp_home/ghostty/$name"
+  XDG_CONFIG_HOME="$tmp_home" ghostty +validate-config --config-file="$tmp_home/ghostty/config"
+  echo "Ghostty parsed the shared config with $name."
+done
