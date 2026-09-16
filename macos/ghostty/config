@@ -68,10 +68,10 @@ copy-on-select = clipboard
 custom-shader = ring.glsl
 custom-shader-animation = true
 
-# Keep every split the same size, when one opens and when one closes. This is
-# not a Ghostty option: it is the patch in ~/code/ai/ghostty. Stock Ghostty
-# ignores the line with a warning, and splits stay uneven on close.
-split-auto-equalize = true
+# Splits stay the same size, when one opens and when one closes. That is the
+# default of the Ghostty this is written for, and nothing is written here for
+# it, so stock Ghostty reads this file without complaining -- it just leaves the
+# splits uneven.
 
 # Keys that Ghostty has no default for. The rest of the iTerm2 keys are
 # Ghostty defaults already: cmd+d, cmd+shift+d, cmd+w, cmd+t, cmd+[, cmd+],

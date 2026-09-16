@@ -681,14 +681,14 @@ bar (`macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
 dims the other panes, `cmd+f` searches, and `toggle_quick_terminal` is built in.
 What is left is the font, the colors, 4 keys, and the 2 things below.
 
-**Two settings here are not upstream.** `split-auto-equalize` keeps the splits
-in a window equal when one opens and when one closes, and the tab of a window
-whose surface reports progress carries a band of light running around it, the
-way iTerm2 3.7 rings a working tab. Both come from a local
-patch, because a keybind chain covers only the opening half -- the chain ends
-with the surface it ran in -- and Ghostty has no event API to hang the rest on.
-Stock Ghostty runs this configuration, warns about the setting it does not
-know, and goes without those 2 things.
+**Two behaviors here are not upstream.** The splits in a window stay equal when
+one opens and when one closes, and the tab of a window whose surface reports
+progress carries a band of light running around it, the way iTerm2 3.7 rings a
+working tab. Both come from a local patch, because a keybind chain covers only
+the opening half -- the chain ends with the surface it ran in -- and Ghostty
+has no event API to hang the rest on. Both are that build's default, so nothing
+in this file asks for them: stock Ghostty reads the same file without
+complaining and simply goes without.
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
 model works, so the light around the tab needs no hook at all.
