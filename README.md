@@ -664,8 +664,10 @@ Without `--config-file-name`, `kitten themes` writes into the shared
   `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`,
   `PermissionRequest`, `PermissionDenied`, `Elicitation`, `Notification`,
   `Stop`, `StopFailure` and `SessionEnd`. The script does nothing outside kitty.
-- The quick access terminal. In System Settings, go to Keyboard > Keyboard
-  Shortcuts > Services. Give "Quick access to kitty" the shortcut cmd+F12.
+- The quick access terminal, if it is wanted. In System Settings, go to
+  Keyboard > Keyboard Shortcuts > Services, and give "Quick access to kitty" a
+  shortcut. Ghostty binds cmd+F12 to its own quick terminal, so only 1 of the 2
+  can have that key.
 
 ### Ghostty on macOS
 
