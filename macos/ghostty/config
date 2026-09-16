@@ -1,0 +1,86 @@
+# Ghostty on macOS, set up like the kitty configuration next door, which copies
+# iTerm2. Most of what kitty needed Python for is a setting here, so this file
+# is short: what is left is the font, the colors, the window, and 4 keys that
+# Ghostty has no default for.
+#
+# install links this to ~/.config/ghostty/config on macOS, with ring.glsl,
+# cc-status and the theme beside it.
+
+# Colors, from the iTerm2 "Default" profile. The theme file is linked into
+# ~/.config/ghostty/themes/, where Ghostty looks for a theme by name.
+theme = My iTerm2
+
+# Font. The Mono variant keeps every glyph 1 cell wide, and the cell is cut
+# down to the same size as the iTerm2 profile: kitty says 94% and 96%, which is
+# the same as -6% and -4% here.
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 14
+adjust-cell-width = -6%
+adjust-cell-height = -4%
+font-feature = -calt
+font-feature = -liga
+font-feature = -dlig
+window-inherit-font-size = false
+
+# Cursor: a block that does not blink, as in iTerm2. Ghostty's shell
+# integration would otherwise make it a bar at the prompt.
+cursor-style = block
+cursor-style-blink = false
+shell-integration-features = no-cursor,ssh-env,ssh-terminfo
+
+# A transparent window, and cmd+u turns the transparency off and on.
+background-opacity = 0.8
+
+# Window and tabs. The title bar stays opaque, as in the kitty configuration,
+# and the macOS tab bar sits under it. The "tabs" style, which would put the
+# tabs in the title bar, draws only the active tab in Ghostty 1.3.1: the others
+# are invisible, whatever the window width. "transparent" works but lets the
+# window behind show through the title bar.
+macos-titlebar-style = native
+window-width = 114
+window-height = 62
+window-padding-balance = true
+quit-after-last-window-closed = true
+confirm-close-surface = false
+scrollback-limit = 100000000
+
+# A new window, tab or split starts at home, not in the directory of the pane
+# it came from.
+window-inherit-working-directory = false
+tab-inherit-working-directory = false
+split-inherit-working-directory = false
+
+# Dim the panes that are not focused, like iTerm2's "Dim inactive split panes".
+unfocused-split-opacity = 0.8
+unfocused-split-fill = ffffff
+
+# Select to copy, like iTerm2.
+copy-on-select = clipboard
+
+# What a Claude Code session is doing, drawn as a ring of light around the pane
+# that runs it. cc-status, the hook, marks the pane through the palette; the
+# shader reads the mark. See macos/ghostty/ring.glsl.
+#
+# The animation runs for the focused pane, and for any pane that is drawing
+# output, which a working session is. `always` would animate every pane in
+# every visible window, at 17% of a core against 4% here, and it is not needed:
+# the badge agent.js paints on the tab is what shows a session in another tab.
+custom-shader = ring.glsl
+custom-shader-animation = true
+
+# Ghostty equalizes nothing on its own, so each new split is followed by one.
+# A closing split cannot be handled here: see bin/ghostty-rebalance.
+keybind = cmd+d=new_split:right
+keybind = chain=equalize_splits
+keybind = cmd+shift+d=new_split:down
+keybind = chain=equalize_splits
+
+# Keys that Ghostty has no default for. The rest of the iTerm2 keys are
+# Ghostty defaults already: cmd+d, cmd+shift+d, cmd+w, cmd+t, cmd+[, cmd+],
+# cmd+alt+arrows, cmd+shift+enter, cmd+f and cmd+1 to cmd+9.
+keybind = cmd+u=toggle_background_opacity
+keybind = cmd+left=previous_tab
+keybind = cmd+right=next_tab
+keybind = cmd+shift+left=move_tab:-1
+keybind = cmd+shift+right=move_tab:1
+keybind = global:cmd+f12=toggle_quick_terminal
