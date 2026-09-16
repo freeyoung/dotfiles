@@ -366,6 +366,13 @@ SplitAutoEqualize -bool true
 GHOSTTY_DEFAULTS
   elif command -v hyprland >/dev/null 2>&1 || command -v Hyprland >/dev/null 2>&1; then
     backup_and_link "$repo_dir/omarchy/ghostty/linux.conf" "$HOME/.config/ghostty/linux.conf"
+
+    # The same answers as the defaults above, in the only place this desktop
+    # has for them. A switch of the patched build is an environment variable
+    # here, and it has to reach the session: systemd's user manager reads
+    # ~/.config/environment.d at login and hands it to everything uwsm starts.
+    backup_and_link "$repo_dir/omarchy/environment.d/50-ghostty.conf" \
+      "$HOME/.config/environment.d/50-ghostty.conf"
   fi
 
   # Equal splits and the tab badge were a launch agent that drove Ghostty over
