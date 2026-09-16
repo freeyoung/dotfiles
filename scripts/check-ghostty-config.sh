@@ -17,7 +17,19 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 config_dir="$repo_dir/ghostty"
 
 if [[ ! -f "$config_dir/config" ]]; then
-  echo "No macos/ghostty/config to check." >&2
+  echo "No ghostty/config to check." >&2
+  exit 1
+fi
+
+# `omarchy-display-text-size` rewrites ~/.config/ghostty/config with `sed -i`,
+# which replaces the link install made with a regular file and takes the
+# configuration out of this repository without saying so. Nothing else notices,
+# so this does.
+live="$HOME/.config/ghostty/config"
+if [[ -e $live && ! -L $live ]]; then
+  echo "$live is a file, not a link into this repository." >&2
+  echo "Something rewrote it in place -- on Omarchy, the display text size menu" >&2
+  echo "does that. Keep whatever it changed, then run ./install to link it again." >&2
   exit 1
 fi
 
