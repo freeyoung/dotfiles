@@ -81,7 +81,3 @@ keybind = cmd+left=previous_tab
 keybind = cmd+right=next_tab
 keybind = cmd+shift+left=move_tab:-1
 keybind = cmd+shift+right=move_tab:1
-# A global keybind here would need the Accessibility permission, so this one
-# works only while Ghostty is in front. Put `global:` in front of the key to
-# call the quick terminal from any application, and grant the permission.
-keybind = cmd+f12=toggle_quick_terminal
