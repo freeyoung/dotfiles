@@ -700,12 +700,17 @@ defaults write com.mitchellh.ghostty TabActivityLight underline    # along the b
 defaults delete com.mitchellh.ghostty TabActivityLight             # no light
 defaults write com.mitchellh.ghostty TabActivityLightSeconds 1.5   # 1 turn in 1.5 seconds, against 3
 defaults write com.mitchellh.ghostty TabActivityLightLength 150    # a shorter light, against 220 points
+defaults write com.mitchellh.ghostty TabActivityLightFPS 30        # half the cost, against 60 a second
 defaults write com.mitchellh.ghostty TabActivityLightOnSelectedTab -bool true
 defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits, as Ghostty leaves them
 ```
 
 The tab you are looking at carries no light, because its own pane draws a
 progress bar for the same work; the key above lights it as well.
+
+The light costs about a tenth of a core while a session works, and the rate it
+is drawn at is nearly all of that: the pace it runs at costs nothing, its
+length little, and the light along the bottom about half what the ring costs.
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
 model works, so the light around the tab needs no hook at all.
