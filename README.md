@@ -686,13 +686,20 @@ application needs the Accessibility permission.
 one opens and when one closes, and a tab shows what the session in it is doing:
 a colored dot in the same colors as the kitty tab bar, and, while the session
 works, a band of light -- around the tab the way iTerm2 3.7 rings a working
-tab, or along the bottom of it the way the kitty tab bar does, which
-`defaults write com.mitchellh.ghostty TabActivityLight underline` picks. Both
-come from a local patch, because a keybind chain covers only the opening half
--- the chain ends with the surface it ran in -- and Ghostty has no event API to
-hang the rest on. Both are that build's default, so nothing in this file asks
-for them: stock Ghostty reads the same file without complaining and simply
-goes without.
+tab, or along the bottom of it the way the kitty tab bar does. Both come from a
+local patch, because a keybind chain covers only the opening half -- the chain
+ends with the surface it ran in -- and Ghostty has no event API to hang the
+rest on.
+
+Both are that build's default and neither is a setting, so this file says
+nothing about them and stock Ghostty reads it without complaining and simply
+goes without. What that build adds is switched through the defaults of the
+application instead:
+
+```
+defaults write com.mitchellh.ghostty TabActivityLight underline    # the kitty light
+defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits
+```
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
 model works, so the light around the tab needs no hook at all.
