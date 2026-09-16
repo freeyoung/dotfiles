@@ -708,9 +708,11 @@ defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven spli
 The tab you are looking at carries no light, because its own pane draws a
 progress bar for the same work; the key above lights it as well.
 
-The light costs about a tenth of a core while a session works, and the rate it
-is drawn at is nearly all of that: the pace it runs at costs nothing, its
-length little, and the light along the bottom about half what the ring costs.
+The light costs a few percent of a core while a session works, and the rate it
+is drawn at is nearly all of that: the pace it runs at costs nothing and its
+length little. Measured against an idle terminal, the light along the bottom
+costs 3.4 points of a core at 30 frames a second and 1 point at 15, and the
+ring around the tab 3.8 at 30 and 7.3 at 60.
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
 model works, so the light around the tab needs no hook at all.
