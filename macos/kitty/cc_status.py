@@ -23,15 +23,21 @@ import shutil
 import subprocess
 import sys
 
-# The permission text is shared with the Omarchy hook. This file is a link into the
-# dotfiles repository, and the shared module is at claude/ in the repository.
+# Which state an event asks for is shared with the Ghostty hook, and the
+# permission text under it with the Omarchy one. This file is a link into the
+# dotfiles repository, and the shared modules are at claude/ there.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'claude'))
-from permission_detail import MAX_DETAIL, one_line, permission_detail  # noqa: E402
+from session_state import END  # noqa: E402
+from session_state import WAITING as WAITING_STATE  # noqa: E402
+from session_state import WORKING as WORKING_STATE  # noqa: E402
+from session_state import classify  # noqa: E402
 
 IDLE = ('idle', '#00d75f', '#888888')
 WORKING = ('working', '#ff9500', '#ff9500')
 WAITING = ('waiting', '#5f87ff', '#5f87ff')
 VARS = ('cc_status', 'cc_dot', 'cc_text', 'cc_detail', 'cc_bg_tasks')
+
+
 def kitten() -> list[str]:
     exe = shutil.which('kitten') or '/Applications/kitty.app/Contents/MacOS/kitten'
     return [exe, '@', '--to', os.environ['KITTY_LISTEN_ON'], 'set-user-vars', '--match', f"id:{os.environ['KITTY_WINDOW_ID']}"]
@@ -85,42 +91,30 @@ def main() -> None:
     except ValueError:
         return
     name = event.get('hook_event_name', '')
-    # Only the main conversation changes the status. A hook that fires inside an agent has
-    # agent_id, and an agent can run after the turn ends: Claude runs one to write the
-    # "while you were away" recap. If its hooks set working, nothing sets idle again.
-    # An agent that the conversation starts needs nothing here, because the Agent tool
-    # call that starts it already sets working.
-    if name in ('SubagentStart', 'SubagentStop') or event.get('agent_id'):
+    # Which state the event asks for is the same question in every terminal, so
+    # claude/session_state.py answers it. What a state looks like is kitty's own.
+    state, detail = classify(event)
+    if state is None:
         return
-    if name == 'SessionStart':
+    if state == END:
+        set_vars(None)
+    elif name == 'SessionStart':
         set_vars(IDLE, '', 0)
-    elif name in ('UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'PostToolUseFailure', 'PermissionDenied'):
-        set_vars(WORKING, '')
-    elif name == 'PermissionRequest':
-        set_vars(WAITING, permission_detail(event.get('tool_name', ''), event.get('tool_input') or {}))
-    elif name == 'Elicitation':
-        # An MCP server asks the user for input.
-        set_vars(WAITING, one_line(event.get('title') or event.get('server_name') or '', MAX_DETAIL))
-    elif name == 'Notification':
-        kind = event.get('notification_type', '')
-        if kind == 'permission_prompt':
-            set_vars(WAITING)
-        elif kind == 'idle_prompt':
-            idle_or_background()
-        else:
-            message = event.get('message')
-            set_vars(WAITING, one_line(message, MAX_DETAIL) if message else None)
+    elif state == WORKING_STATE:
+        set_vars(WORKING, detail)
+    elif state == WAITING_STATE:
+        set_vars(WAITING, detail)
     elif name == 'Stop':
+        # iTerm2 counts a session with background tasks as working, and the
+        # count is only in this event, so it is stored for the events after it.
         tasks = event.get('background_tasks')
         count = len(tasks) if isinstance(tasks, list) else None
         if count:
             set_vars(WORKING, background_text(count), count)
         else:
-            set_vars(IDLE, one_line(event.get('last_assistant_message', ''), MAX_DETAIL), count)
-    elif name == 'StopFailure':
-        idle_or_background()
-    elif name == 'SessionEnd':
-        set_vars(None)
+            set_vars(IDLE, detail, count)
+    else:
+        idle_or_background(detail or '')
 
 
 if __name__ == '__main__':
