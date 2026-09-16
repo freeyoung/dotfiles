@@ -667,8 +667,7 @@ Without `--config-file-name`, `kitten themes` writes into the shared
   `Stop`, `StopFailure` and `SessionEnd`. The script does nothing outside kitty.
 - The quick access terminal, if it is wanted. In System Settings, go to
   Keyboard > Keyboard Shortcuts > Services, and give "Quick access to kitty" a
-  shortcut. Ghostty also binds cmd+F12 to its own quick terminal, but only
-  while Ghostty is in front, so the 2 can share the key.
+  shortcut.
 
 ### Ghostty on macOS
 
@@ -678,8 +677,10 @@ the terminal that does most of it natively. `install` links it into
 no watcher and no search kitten: its tabs are macOS tabs under a native title
 bar (`macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
 1.3.1 draws only the active one there), `unfocused-split-*`
-dims the other panes, `cmd+f` searches, and `toggle_quick_terminal` is built in.
-What is left is the font, the colors, 4 keys, and the 2 things below.
+dims the other panes and `cmd+f` searches. What is left is the font, the
+colors, 5 keys, and the 2 things below. Ghostty has a quick access terminal as
+well, but nothing here binds a key to it: a key that works from another
+application needs the Accessibility permission.
 
 **Two behaviors here are not upstream.** The splits in a window stay equal when
 one opens and when one closes, and the tab of a window whose surface reports
