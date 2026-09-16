@@ -688,6 +688,15 @@ which follows the Omarchy theme. The shared file pulls in whichever is there
 with a `?` in front of the name, the way `kitty.conf` reaches its own by a glob
 that matches nothing.
 
+On Omarchy, change the font and the size in this file and nowhere else.
+`omarchy font set` and the display text size menu rewrite
+`~/.config/ghostty/config` in place with `sed -i`, which does not follow a
+symlink: it replaces the link with a regular file, and the configuration
+quietly stops being this repository's. `omarchy-font-set` matches only a
+quoted `font-family`, which this file does not have, but
+`omarchy-display-text-size` matches `font-size` and will. kitty is not touched
+this way.
+
 Ghostty needs no custom tab bar, no watcher and no search kitten: its tabs are
 the desktop's own (on macOS under a native title bar --
 `macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
