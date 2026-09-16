@@ -10,6 +10,15 @@
 # kitty loads this through tab_bar_style custom. Its tab bar otherwise redraws
 # only when something in a tab changes, so the shared timer is what makes the
 # animation move.
+#
+# PILL below swaps the whole bar for the one the Mac here draws: the iTerm2
+# rounded track and pills, a dot in the same colors, and a band of light running
+# along the bottom of a working tab in place of the spinner. The drawing is
+# kitty/pill_tab_bar.py, shared between the two. It is off until someone has
+# looked at it on a screen: the colors come from whatever Omarchy theme is
+# loaded, and a theme this bar looks wrong in is the sort of thing only an eye
+# can find.
+PILL = False
 
 import os
 import sys
@@ -31,6 +40,31 @@ _here = os.path.dirname(os.path.realpath(__file__))
 if _here not in sys.path:
     sys.path.insert(0, _here)
 import claude_status as cs  # noqa: E402
+
+_shared = os.path.join(_here, '..', '..', 'kitty')
+if _shared not in sys.path:
+    sys.path.insert(0, _shared)
+import pill_tab_bar as pill  # noqa: E402
+
+
+def _palette(draw_data: DrawData) -> 'pill.Palette':
+    """The bar in the colors of the theme kitty is running."""
+    return pill.Palette(
+        track=int(draw_data.inactive_bg),
+        pill=int(draw_data.active_bg),
+        divider=int(draw_data.inactive_fg),
+        fg_active=int(draw_data.active_fg),
+        fg_inactive=int(draw_data.inactive_fg),
+        band=0x00FF00,
+        dots=cs.COLORS,
+        bell=cs.COLORS['working'],
+    )
+
+
+def _state(tab: TabBarData) -> str | None:
+    """What the session in a tab is doing, from the records on disk."""
+    session = _session_for_tab(tab)
+    return str(session[1].get('state', '')) if session else None
 
 
 class _Drawn:
@@ -118,6 +152,13 @@ def draw_tab(
     cs.listen('tab_bar', _on_tick)
     cs.scan()
     _Drawn.signature = cs.signature()
+    if PILL:
+        return pill.draw_tab(
+            draw_data, screen, tab, before, max_tab_length, index, is_last, extra_data,
+            palette=_palette(draw_data),
+            state_of=_state,
+            hint_of=lambda index: f'⌥{index}' if index < 10 else '',
+        )
     session = _session_for_tab(tab)
     if session is None:
         return draw_tab_with_powerline(draw_data, screen, tab, before, max_tab_length, index, is_last, extra_data)

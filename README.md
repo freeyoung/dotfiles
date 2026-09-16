@@ -612,6 +612,12 @@ Outside it there is only a script in `bin/` and one in `scripts/`.
 On macOS, kitty shows the Claude Code status from a different hook. The next
 section tells how to set it up.
 
+The pill tab bar of the Mac below is [`kitty/pill_tab_bar.py`](kitty/pill_tab_bar.py),
+which both kitty setups can draw: the colors, where the state of a session comes
+from and what a tab's shortcut looks like are passed in. Omarchy draws kitty's
+own powerline bar until `PILL` at the top of
+[`omarchy/kitty/tab_bar.py`](omarchy/kitty/tab_bar.py) is turned on.
+
 On every host, `ctrl+shift+p` then `o` in kitty marks git remotes and
 references such as `owner/repo#123`, and a hint key opens the match in the
 browser. The rules are in [`kitty/smart_hints.py`](kitty/smart_hints.py).
