@@ -698,8 +698,13 @@ light off, as Ghostty itself has none:
 defaults write com.mitchellh.ghostty TabActivityLight ring         # around the tab, as iTerm2 runs it
 defaults write com.mitchellh.ghostty TabActivityLight underline    # along the bottom, as the kitty tab bar lays it
 defaults delete com.mitchellh.ghostty TabActivityLight             # no light
+defaults write com.mitchellh.ghostty TabActivityLightSeconds 3     # 1 turn in 3 seconds, against 1.5
+defaults write com.mitchellh.ghostty TabActivityLightOnSelectedTab -bool true
 defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits, as Ghostty leaves them
 ```
+
+The tab you are looking at carries no light, because its own pane draws a
+progress bar for the same work; the key above lights it as well.
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
 model works, so the light around the tab needs no hook at all.
