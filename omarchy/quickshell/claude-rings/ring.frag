@@ -3,13 +3,21 @@
 // A ring of light running clockwise around a rounded rectangle, drawn inside
 // the item's bounds. The light is iTerm2's indeterminate progress gradient --
 // alpha 0, .5, 1, 1, .5, 0 at even stops -- laid along the outline instead of
-// across a bar: two copies, each half the perimeter long, end to end, so the
-// ring is never dark and a full turn takes one run of `phase` from 0 to 1.
+// across a bar. One light of LIGHT_SHARE of the perimeter runs round it, and
+// the rest of the ring is dark; a full turn takes one run of `phase` from 0
+// to 1.
+//
+// It was 2 lights, each half the perimeter, which left the ring lit end to end.
+// A light that grows with the shape it runs on reads as slow however fast it
+// goes, the more so on a window outline, which is long. The tab light of the
+// Ghostty build in the same setup was changed the same way and for the same
+// reason.
 //
 // Position along the outline is measured by perimeter, not by angle, so the
 // light keeps an even pace on a tab that is fifty times wider than it is tall.
 //
-// Compile with: /usr/lib/qt6/bin/qsb --glsl "150,330,300 es" -o ring.frag.qsb ring.frag
+// Compile with build.sh beside this file, on a host that has Qt 6, and commit
+// the blob it writes along with this: a stale blob is a change that does nothing.
 
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
@@ -24,6 +32,10 @@ layout(std140, binding = 0) uniform buf {
     float baseAlpha;
     vec4 ringColor;
 };
+
+// How much of the outline the light covers. A quarter leaves three quarters
+// dark, which is what makes it read as something running.
+const float LIGHT_SHARE = 0.25;
 
 float profile(float v) {
     float x = clamp(v, 0.0, 1.0) * 5.0;
@@ -56,7 +68,9 @@ void main() {
     }
     float t = s / (4.0 * (hx + hy));
 
-    float glow = profile(fract(2.0 * (t - phase)));
+    // 0 at the head of the light, 1 at the tail of it, dark behind that.
+    float along = fract(t - phase) / LIGHT_SHARE;
+    float glow = along < 1.0 ? profile(along) : 0.0;
     float a = stroke * max(baseAlpha, glow) * ringColor.a * qt_Opacity;
     fragColor = vec4(ringColor.rgb * a, a);
 }

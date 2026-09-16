@@ -603,7 +603,9 @@ shortcuts so they work on a host without Omarchy.
 Omarchy only, and its own thing rather than a setting: a Claude Code hook
 records what each session is doing, and a kitty tab bar, a kitty window title,
 an Omarchy bar widget and a ring drawn over Hyprland's group tabs show it, the
-way iTerm2 3.7 shows a busy tab.
+way iTerm2 3.7 shows a busy tab. The ring is a shader, and the blob quickshell
+loads is built from it by
+[`build.sh`](omarchy/quickshell/claude-rings/build.sh) on a host with Qt 6.
 [`omarchy/claude/README.md`](omarchy/claude/README.md) has the whole of it; what
 is Omarchy's alone sits under `omarchy/`, including the kitty files, which
 `kitty/kitty.conf` reaches by a glob that matches nothing on any other host.
