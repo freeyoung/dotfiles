@@ -58,6 +58,12 @@ jobs:
         if: runner.os == 'Linux'
         run: bash scripts/check-kitty-config.sh
 
+      # Ghostty is macOS-only here, and the runner has no copy of it, so what
+      # this proves on either platform is the half that needs no Ghostty: the
+      # Claude Code hook and the event rules it shares with kitty's hook.
+      - name: Ghostty configuration and its Claude Code hook
+        run: bash scripts/check-ghostty-config.sh
+
       # Off Omarchy this reports that and exits 0. That is all CI can see of
       # it, but it does prove the script parses and runs on both platforms.
       - name: Omarchy review runs where Omarchy is absent
