@@ -1,9 +1,9 @@
 # Ghostty on macOS, set up like the kitty configuration next door, which copies
 # iTerm2. Most of what kitty needed Python for is a setting here, so this file
-# is short: what is left is the font, the colors, the window, and 4 keys that
+# is short: what is left is the font, the colors, the window, and 5 keys that
 # Ghostty has no default for.
 #
-# install links this to ~/.config/ghostty/config on macOS, with ring.glsl,
+# install links this to ~/.config/ghostty/config on macOS, with
 # cc-status and the theme beside it.
 
 # Colors, from the iTerm2 "Default" profile. The theme file is linked into
@@ -56,17 +56,6 @@ unfocused-split-fill = ffffff
 
 # Select to copy, like iTerm2.
 copy-on-select = clipboard
-
-# What a Claude Code session is doing, drawn as a ring of light around the pane
-# that runs it. cc-status, the hook, marks the pane through the palette; the
-# shader reads the mark. See macos/ghostty/ring.glsl.
-#
-# The animation runs for the focused pane, and for any pane that is drawing
-# output, which a working session is. `always` would animate every pane in
-# every visible window, at 17% of a core against 4% here, and it is not needed:
-# the tab carries the same state for a session in another tab.
-custom-shader = ring.glsl
-custom-shader-animation = true
 
 # Splits stay the same size, when one opens and when one closes. That is the
 # default of the Ghostty this is written for, and nothing is written here for

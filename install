@@ -334,12 +334,12 @@ if [[ $(uname -s) == Darwin ]] && command -v kitty >/dev/null 2>&1; then
 fi
 
 # Ghostty on macOS, set up like the kitty configuration beside it. Everything
-# is linked into ~/.config/ghostty, where Ghostty reads config, and a theme and
-# a shader by name. The Claude Code hook is linked but not registered, for the
+# is linked into ~/.config/ghostty, where Ghostty reads config and a theme by
+# name. The Claude Code hook is linked but not registered, for the
 # same reason as kitty's: the Claude settings on a Mac also carry the iTerm2
 # hooks. The README says how to add it.
 if [[ $(uname -s) == Darwin ]] && [[ -d /Applications/Ghostty.app ]]; then
-  for ghostty_file in config ring.glsl cc-status "themes/My iTerm2"; do
+  for ghostty_file in config cc-status "themes/My iTerm2"; do
     backup_and_link "$repo_dir/macos/ghostty/$ghostty_file" "$HOME/.config/ghostty/$ghostty_file"
   done
 
