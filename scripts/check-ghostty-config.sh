@@ -56,7 +56,7 @@ fi
 tmp_home="$(mktemp -d)"
 trap 'rm -rf "$tmp_home"' EXIT
 mkdir -p "$tmp_home/ghostty/themes"
-cp "$config_dir/config" "$config_dir/ring.glsl" "$tmp_home/ghostty/"
+cp "$config_dir/config" "$tmp_home/ghostty/"
 cp "$config_dir/themes/My iTerm2" "$tmp_home/ghostty/themes/"
 XDG_CONFIG_HOME="$tmp_home" ghostty +validate-config --config-file="$tmp_home/ghostty/config"
 

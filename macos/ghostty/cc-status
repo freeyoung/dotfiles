@@ -10,12 +10,10 @@ state goes through the 2 channels a pane does own, and the terminal draws it:
            be answered, so this hook sends the pause state for that.
 
   OSC 4    the palette. Color 255, the last grayscale slot, is set to a value
-           nothing draws with. ring.glsl draws a ring around a pane whose
-           palette carries a working or a waiting color, and the patched
-           Ghostty draws the colored dot of the tab from the same mark. The
-           mark is the only channel that tells a session with nothing to do
-           from no session at all, so it has a third color for that, which the
-           shader ignores.
+           nothing draws with, and the patched Ghostty draws the colored dot of
+           the tab from that mark. It is the only channel that tells a session
+           with nothing to do from no session at all, so it has a color for
+           that as well.
 
 The detail text of a permission prompt has nowhere to go, unlike in kitty,
 where the tab bar and the pane title bars show it.
