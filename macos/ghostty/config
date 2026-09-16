@@ -37,7 +37,10 @@ background-opacity = 0.8
 # are invisible, whatever the window width. "transparent" works but lets the
 # window behind show through the title bar.
 macos-titlebar-style = native
-window-width = 114
+# Half the screen, which is how the windows on this Mac are arranged. The size
+# is in cells, so this is the count that comes to 960 points of the 1920 this
+# screen has, at font-size 14. window-padding-balance takes up what is left over.
+window-width = 118
 window-height = 62
 window-padding-balance = true
 quit-after-last-window-closed = true
