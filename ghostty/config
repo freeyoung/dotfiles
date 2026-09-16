@@ -1,10 +1,12 @@
-# Ghostty on macOS, set up like the kitty configuration next door, which copies
-# iTerm2. Most of what kitty needed Python for is a setting here, so this file
-# is short: what is left is the font, the colors, the window, and 5 keys that
-# Ghostty has no default for.
+# Ghostty, set up like the kitty configuration next door, which copies iTerm2.
+# Most of what kitty needed Python for is a setting here, so this file is short:
+# what is left is the font, the colors and the behaviour, all of which mean the
+# same thing on every desktop.
 #
-# install links this to ~/.config/ghostty/config on macOS, with
-# cc-status and the theme beside it.
+# install links this to ~/.config/ghostty/config wherever Ghostty is, with
+# cc-status and the theme beside it, and links macos.conf or linux.conf next to
+# it for what only one desktop wants. The last 2 lines here pull those in; the ?
+# in front of each means the one that is not there is not an error.
 
 # Colors, from the iTerm2 "Default" profile. The theme file is linked into
 # ~/.config/ghostty/themes/, where Ghostty looks for a theme by name.
@@ -31,17 +33,7 @@ shell-integration-features = no-cursor,ssh-env,ssh-terminfo
 # A transparent window, and cmd+u turns the transparency off and on.
 background-opacity = 0.8
 
-# Window and tabs. The title bar stays opaque, as in the kitty configuration,
-# and the macOS tab bar sits under it. The "tabs" style, which would put the
-# tabs in the title bar, draws only the active tab in Ghostty 1.3.1: the others
-# are invisible, whatever the window width. "transparent" works but lets the
-# window behind show through the title bar.
-macos-titlebar-style = native
-# Half the screen, which is how the windows on this Mac are arranged. The size
-# is in cells, so this is the count that comes to 960 points of the 1920 this
-# screen has, at font-size 14. window-padding-balance takes up what is left over.
-window-width = 118
-window-height = 62
+# The window.
 window-padding-balance = true
 quit-after-last-window-closed = true
 confirm-close-surface = false
@@ -65,11 +57,7 @@ copy-on-select = clipboard
 # it, so stock Ghostty reads this file without complaining -- it just leaves the
 # splits uneven.
 
-# Keys that Ghostty has no default for. The rest of the iTerm2 keys are
-# Ghostty defaults already: cmd+d, cmd+shift+d, cmd+w, cmd+t, cmd+[, cmd+],
-# cmd+alt+arrows, cmd+shift+enter, cmd+f and cmd+1 to cmd+9.
-keybind = cmd+u=toggle_background_opacity
-keybind = cmd+left=previous_tab
-keybind = cmd+right=next_tab
-keybind = cmd+shift+left=move_tab:-1
-keybind = cmd+shift+right=move_tab:1
+# What only one desktop wants. Whichever of these is linked is read; the other
+# is not there, which the ? allows.
+config-file = ?macos.conf
+config-file = ?linux.conf

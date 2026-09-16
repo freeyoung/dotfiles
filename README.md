@@ -677,15 +677,23 @@ Without `--config-file-name`, `kitten themes` writes into the shared
   Keyboard > Keyboard Shortcuts > Services, and give "Quick access to kitty" a
   shortcut.
 
-### Ghostty on macOS
+### Ghostty
 
-[`macos/ghostty/`](macos/ghostty) is the same setup as the kitty one above, in
-the terminal that does most of it natively. `install` links it into
-`~/.config/ghostty` on a Mac that has Ghostty. Ghostty needs no custom tab bar,
-no watcher and no search kitten: its tabs are macOS tabs under a native title
-bar (`macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
-1.3.1 draws only the active one there), `unfocused-split-*`
-dims the other panes and `cmd+f` searches. What is left is the font, the
+[`ghostty/`](ghostty) is the same setup as the kitty one above, in the terminal
+that does most of it natively. `install` links it into `~/.config/ghostty`
+wherever Ghostty is, and links one file beside it for what only one desktop
+wants: [`macos/ghostty/macos.conf`](macos/ghostty/macos.conf) on a Mac, and
+[`omarchy/ghostty/linux.conf`](omarchy/ghostty/linux.conf) where Hyprland is,
+which follows the Omarchy theme. The shared file pulls in whichever is there
+with a `?` in front of the name, the way `kitty.conf` reaches its own by a glob
+that matches nothing.
+
+Ghostty needs no custom tab bar, no watcher and no search kitten: its tabs are
+the desktop's own (on macOS under a native title bar --
+`macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
+1.3.1 draws only the active one there), `unfocused-split-*` dims the other
+panes and `cmd+f` or `ctrl+shift+f` searches, which is what sent this setup
+looking for a second terminal in the first place. What is left is the font, the
 colors, 5 keys, and the 2 things below. Ghostty has a quick access terminal as
 well, but nothing here binds a key to it: a key that works from another
 application needs the Accessibility permission.
