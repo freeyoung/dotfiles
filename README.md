@@ -720,7 +720,9 @@ model works, so the light around the tab needs no hook at all.
 report:
 
 - Waiting for an answer: it sends the OSC 9;4 pause state, which the tab shows
-  by pulsing its light and the pane as a paused bar.
+  by pulsing its light and the pane as a paused bar. The bar over a pane is the
+  same light as the one on the tab, in the same colors: the build draws it that
+  way rather than as the blue block Ghostty ships.
 - Which pane, and which state: it sets palette color 255 with OSC 4 -- the last
   grayscale slot, which nothing draws with -- to 1 color for each state, and
   the tab draws its dot from that mark: green for a session with nothing to do,
