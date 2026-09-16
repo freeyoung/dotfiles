@@ -678,24 +678,13 @@ bar (`macos-titlebar-style = tabs` would put them in the title bar, but Ghostty
 dims the other panes, `cmd+f` searches, and `toggle_quick_terminal` is built in.
 What is left is the font, the colors, 4 keys, and the 2 things below.
 
-**This expects a patched Ghostty.** Two things Ghostty does not do are a
-30-line patch each, kept on the `split-auto-equalize` branch of a checkout in
-`~/code/ai/ghostty`, and built with `zig build -Doptimize=ReleaseFast
--Dxcframework-target=native`:
-
-- `split-auto-equalize` equalizes the splits in a window when one opens and
-  when one closes. A keybind chain can do the first (`new_split` then
-  `equalize_splits`) but not the second: the chain ends with the surface it
-  ran in. Ghostty has no event API either, so the alternative was a launch
-  agent polling its AppleScript interface, which this replaced.
-- The tab of a window whose surface reports progress shows a spinner, and one
-  that reports a pause shows a dot. Ghostty already reads OSC 9;4 into a
-  published value per surface, and already draws a bar for it inside the pane;
-  the patch puts the same state in the tab, where the existing accessory view
-  holds the tab colour dot and the `⌘1` label.
-
-Stock Ghostty runs this configuration and ignores the unknown setting with a
-warning. What is lost is equal splits on close, and the tab indicator.
+**Two settings here are not upstream.** `split-auto-equalize` keeps the splits
+in a window equal when one opens and when one closes, and the tab of a window
+whose surface reports progress carries an indicator. Both come from a local
+patch, because a keybind chain covers only the opening half -- the chain ends
+with the surface it ran in -- and Ghostty has no event API to hang the rest on.
+Stock Ghostty runs this configuration, warns about the setting it does not
+know, and goes without those 2 things.
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
 model works, so the spinner needs no hook at all.
