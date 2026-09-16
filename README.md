@@ -700,8 +700,7 @@ model works, so the light around the tab needs no hook at all.
 report:
 
 - Waiting for an answer: it sends the OSC 9;4 pause state, which the tab shows
-  by pulsing its light. The build draws no progress bar over the terminal
-  itself: the tab says the same thing and says it quietly.
+  by pulsing its light and the pane as a paused bar.
 - Which pane, and which state: it sets palette color 255 with OSC 4 -- the last
   grayscale slot, which nothing draws with -- to 1 color for each state, and
   the tab draws its dot from that mark: green for a session with nothing to do,
