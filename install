@@ -353,6 +353,24 @@ if [[ $(uname -s) == Darwin ]] && [[ -d /Applications/Ghostty.app ]]; then
     fi
   done
   rm -f "$HOME/.config/ghostty/agent.js" "$HOME/.config/ghostty/rebalance.js"
+
+  # What the Ghostty build in ~/code/ai/ghostty adds is off until it is asked
+  # for, so that the build behaves like the Ghostty it came from and the config
+  # file above works with either. These are the answers this setup wants. A
+  # value already set on this Mac is left alone, so an experiment survives.
+  while read -r key value; do
+    if ! defaults read com.mitchellh.ghostty "$key" >/dev/null 2>&1; then
+      defaults write com.mitchellh.ghostty "$key" $value
+    fi
+  done <<'GHOSTTY_DEFAULTS'
+TabActivityLight ring
+TabSessionDot -bool true
+TabTitleContrast -bool true
+TabSeparators -bool true
+SurfaceProgressBarStyle match
+ProgressReportTimeout -float 120
+SplitAutoEqualize -bool true
+GHOSTTY_DEFAULTS
 fi
 
 # Helper the Hyprland bindings call by name, so it has to be on PATH rather than
