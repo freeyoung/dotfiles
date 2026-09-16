@@ -698,8 +698,8 @@ light off, as Ghostty itself has none:
 defaults write com.mitchellh.ghostty TabActivityLight ring         # around the tab, as iTerm2 runs it
 defaults write com.mitchellh.ghostty TabActivityLight underline    # along the bottom, as the kitty tab bar lays it
 defaults delete com.mitchellh.ghostty TabActivityLight             # no light
-defaults write com.mitchellh.ghostty TabActivityLightSeconds 3     # 1 turn in 3 seconds, against 1.5
-defaults write com.mitchellh.ghostty TabActivityLightLength 200    # a longer tail, against 120 points
+defaults write com.mitchellh.ghostty TabActivityLightSeconds 1.5   # 1 turn in 1.5 seconds, against 3
+defaults write com.mitchellh.ghostty TabActivityLightLength 200    # a longer light, against 150 points
 defaults write com.mitchellh.ghostty TabActivityLightOnSelectedTab -bool true
 defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits, as Ghostty leaves them
 ```
