@@ -37,8 +37,12 @@ RING_CLEAR = '\033]104;255\007'
 # stale -- after 15 seconds in Ghostty as it ships -- and a turn is quiet for
 # longer than that, so working is sent again at every event that carries it.
 # Nothing sends anything for a prompt waiting to be answered.
-PROGRESS = {WORKING: '\033]9;4;3;0\007', WAITING: '\033]9;4;4;0\007'}
-PROGRESS_CLEAR = '\033]9;4;0;0\007'
+#
+# None of these carries a number. A number is a percentage, and `4;0` is a
+# paused job that has done nothing, which Ghostty draws as a bar of no width at
+# all; with no number it draws the whole bar, which is what waiting means here.
+PROGRESS = {WORKING: '\033]9;4;3\007', WAITING: '\033]9;4;4\007'}
+PROGRESS_CLEAR = '\033]9;4;0\007'
 
 
 def claude_tty() -> str:
