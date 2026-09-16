@@ -10,8 +10,12 @@ state goes through the 2 channels a pane does own, and the terminal draws it:
            be answered, so this hook sends the pause state for that.
 
   OSC 4    the palette. Color 255, the last grayscale slot, is set to a value
-           nothing draws with, and ring.glsl draws a ring around a pane whose
-           palette carries it. This is what shows the state inside the tab.
+           nothing draws with. ring.glsl draws a ring around a pane whose
+           palette carries a working or a waiting color, and the patched
+           Ghostty draws the colored dot of the tab from the same mark. The
+           mark is the only channel that tells a session with nothing to do
+           from no session at all, so it has a third color for that, which the
+           shader ignores.
 
 The detail text of a permission prompt has nowhere to go, unlike in kitty,
 where the tab bar and the pane title bars show it.
@@ -24,7 +28,11 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'claude'))
 from session_state import END, IDLE, WAITING, WORKING, classify  # noqa: E402
 
-RING = {WORKING: '\033]4;255;rgb:00/ff/01\007', WAITING: '\033]4;255;rgb:00/00/fe\007'}
+RING = {
+    WORKING: '\033]4;255;rgb:00/ff/01\007',
+    WAITING: '\033]4;255;rgb:00/00/fe\007',
+    IDLE: '\033]4;255;rgb:00/80/01\007',
+}
 RING_CLEAR = '\033]104;255\007'
 # OSC 9;4: 3 is indeterminate and 4 is pause. Claude Code sends 3 itself while
 # the model works and 0 when it stops, but a report that is not repeated goes
@@ -87,10 +95,10 @@ def main() -> None:
     state, _ = classify(event)
     if state is None:
         return
-    if state in (IDLE, END):
+    if state is END:
         write(RING_CLEAR + PROGRESS_CLEAR)
     else:
-        write(RING[state] + PROGRESS.get(state, ''))
+        write(RING[state] + PROGRESS.get(state, PROGRESS_CLEAR))
 
 
 if __name__ == '__main__':
