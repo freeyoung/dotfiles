@@ -683,8 +683,9 @@ well, but nothing here binds a key to it: a key that works from another
 application needs the Accessibility permission.
 
 **Two behaviors here are not upstream.** The splits in a window stay equal when
-one opens and when one closes, and the tab of a window whose surface reports
-progress carries a band of light running around it, the way iTerm2 3.7 rings a
+one opens and when one closes, and a tab shows what the session in it is doing:
+a colored dot in the same colors as the kitty tab bar, and, while the session
+works, a band of light running around the tab, the way iTerm2 3.7 rings a
 working tab. Both come from a local patch, because a keybind chain covers only
 the opening half -- the chain ends with the surface it ran in -- and Ghostty
 has no event API to hang the rest on. Both are that build's default, so nothing
@@ -698,11 +699,14 @@ report:
 
 - Waiting for an answer: it sends the OSC 9;4 pause state, which the tab shows
   by pulsing its outline and the pane as a paused bar.
-- Which pane: it sets palette color 255 with OSC 4 -- the last grayscale slot,
-  which nothing draws with -- and [`ring.glsl`](macos/ghostty/ring.glsl) draws
-  a ring of light around a pane whose palette carries the mark, green while
-  working and pulsing blue while waiting. The ring is what shows the state
-  inside the tab; the tab shows it from outside.
+- Which pane, and which state: it sets palette color 255 with OSC 4 -- the last
+  grayscale slot, which nothing draws with -- to 1 color for each state.
+  [`ring.glsl`](macos/ghostty/ring.glsl) draws a ring of light around a pane
+  whose palette carries a working or a waiting mark, green while working and
+  pulsing blue while waiting. The tab reads the same mark for its dot: green
+  for a session with nothing to do, orange while it works, and blue that blinks
+  while it waits. The third color is why the mark exists as well as the
+  progress report -- nothing else says that a session is there but idle.
 
 The event rules are shared with the kitty hook in
 [`claude/session_state.py`](claude/session_state.py), which also works out the
