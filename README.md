@@ -631,14 +631,15 @@ macOS, the settings in `macos.conf` override the shared settings above it.
 - `iterm2-keys.conf` has the split, tab and pane keys. Inside tmux,
   `tmux_or_kitty.py` sends the same keys to tmux.
 - `cc_status.py` is the Claude Code hook. It stores the status on the pane, and
-  the tab bar and the pane title bars show it. A waiting dot blinks. While a
-  session works, a band of green light runs along the bottom of its tab, like
-  the ring iTerm2 draws around the tab. The tab bar is 1 row of cells, so the
-  band is an underline and only the bottom edge has it.
+  the tab shows it as a colored dot, which blinks while a prompt waits to be
+  answered. While a session works, a band of green light runs along the bottom
+  of its tab, like the ring iTerm2 draws around the tab; the tab bar is 1 row of
+  cells, so the band is an underline and only the bottom edge has it.
   `iterm2_watcher.py` removes the status when Claude Code ends without its
-  `SessionEnd` hook, for example after a crash. The permission question comes
-  from [`claude/permission_detail.py`](claude/permission_detail.py), which the
-  Omarchy hook also uses.
+  `SessionEnd` hook, for example after a crash. Nothing spells the state out in
+  words: the dot is all of it, as in the other terminals here.
+  `window_title_bar.py` is left with 1 job, dropping the glyph Claude Code puts
+  in front of its title.
 - cmd+f opens [kitty-kitten-search](https://github.com/trygveaa/kitty-kitten-search).
   `install` clones it into `~/.config/kitty/kitty_search` at a fixed commit.
   `install --links-only` does not clone it.
@@ -702,9 +703,9 @@ report:
   inside the tab; the tab shows it from outside.
 
 The event rules are shared with the kitty hook in
-[`claude/session_state.py`](claude/session_state.py). The detail text of a
-permission prompt has nowhere to go, which kitty's tab bar and pane title bars
-do show.
+[`claude/session_state.py`](claude/session_state.py), which also works out the
+question a permission prompt asks -- `Allow Bash: make test?` -- for the
+Omarchy bar. Neither terminal here shows that text; a dot is enough.
 
 `install` links the hook but does not register it, for the same reason as
 kitty's. Add `~/.config/ghostty/cc-status` as a `command` hook to

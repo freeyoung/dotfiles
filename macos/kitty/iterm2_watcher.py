@@ -5,6 +5,7 @@
 # 3. On a timer: blink the dot of a waiting Claude Code session, move the band of light under the tab
 #    of a working session (tab_bar.py), and remove the status of a session that ended without its
 #    SessionEnd hook, for example when Claude Code crashed or was killed.
+# The status is only ever drawn on the tab, so a redraw here is a redraw of the tab bar.
 import os
 from time import monotonic
 from typing import Any
@@ -106,7 +107,6 @@ def _tick(timer_id: int | None = None) -> None:
             tab.mark_tab_bar_dirty()
         elif blink and status == 'waiting':
             tab.mark_tab_bar_dirty()
-            window.update_title_bar(is_active=tab.active_window is window)
             redraw = True
     if redraw:
         # kitty draws a frame only after its main loop wakes up, and a timer does not wake it.
@@ -143,12 +143,10 @@ def on_close(boss: Boss, window: Window, data: dict[str, Any]) -> None:
 
 
 def on_set_user_var(boss: Boss, window: Window, data: dict[str, Any]) -> None:
-    if data.get('key') in ('cc_status', 'cc_detail'):
+    if data.get('key') == 'cc_status':
         tab = window.tabref()
         if tab is not None:
             tab.mark_tab_bar_dirty()
-            # The pane title bar shows the status and detail text (window_title_bar.py).
-            window.update_title_bar(is_active=tab.active_window is window)
 
 
 def on_resize(boss: Boss, window: Window, data: dict[str, Any]) -> None:

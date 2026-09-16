@@ -4,10 +4,9 @@ It reads the hook event JSON on stdin and stores the session status on the
 kitty window as user vars, which tab_bar.py shows as a colored dot:
 
   cc_status    idle | working | waiting
-  cc_dot       dot color, same values as iTerm2
-  cc_text      status text color, same values as iTerm2
-  cc_detail    detail text, for example "Allow Bash: make test?"
-  cc_bg_tasks  number of background tasks still running
+  cc_bg_tasks  number of background tasks still running, which iTerm2 counts
+               as working; this is the only place the count survives between
+               the events that carry it
 
 The event rules match iTerm2's cc-status, found by replaying every event
 through it. The differences, most of them learned from the Omarchy hook
@@ -23,28 +22,17 @@ import shutil
 import subprocess
 import sys
 
-# Which state an event asks for is shared with the Ghostty hook, and the
-# permission text under it with the Omarchy one. This file is a link into the
-# dotfiles repository, and the shared modules are at claude/ there.
+# Which state an event asks for is shared with the Ghostty hook. This file is a
+# link into the dotfiles repository, and the shared module is at claude/ there.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'claude'))
-from session_state import END  # noqa: E402
-from session_state import WAITING as WAITING_STATE  # noqa: E402
-from session_state import WORKING as WORKING_STATE  # noqa: E402
-from session_state import classify  # noqa: E402
+from session_state import END, IDLE, WAITING, WORKING, classify  # noqa: E402
 
-IDLE = ('idle', '#00d75f', '#888888')
-WORKING = ('working', '#ff9500', '#ff9500')
-WAITING = ('waiting', '#5f87ff', '#5f87ff')
-VARS = ('cc_status', 'cc_dot', 'cc_text', 'cc_detail', 'cc_bg_tasks')
+VARS = ('cc_status', 'cc_bg_tasks')
 
 
 def kitten() -> list[str]:
     exe = shutil.which('kitten') or '/Applications/kitty.app/Contents/MacOS/kitten'
     return [exe, '@', '--to', os.environ['KITTY_LISTEN_ON'], 'set-user-vars', '--match', f"id:{os.environ['KITTY_WINDOW_ID']}"]
-
-
-def background_text(count: int) -> str:
-    return '1 background task running' if count == 1 else f'{count} background tasks running'
 
 
 def stored_bg_tasks() -> int:
@@ -59,14 +47,11 @@ def stored_bg_tasks() -> int:
     return 0
 
 
-def set_vars(status: tuple[str, str, str] | None, detail: str | None = None, bg_tasks: int | None = None) -> None:
+def set_vars(status: str | None, bg_tasks: int | None = None) -> None:
     if status is None:
         args = list(VARS)  # names alone unset the vars
     else:
-        name, dot, text = status
-        args = [f'cc_status={name}', f'cc_dot={dot}', f'cc_text={text}']
-        if detail is not None:
-            args.append(f'cc_detail={detail}')
+        args = [f'cc_status={status}']
         if bg_tasks is not None:
             args.append(f'cc_bg_tasks={bg_tasks}')
     try:
@@ -77,12 +62,9 @@ def set_vars(status: tuple[str, str, str] | None, detail: str | None = None, bg_
         print(f'cc-status: failed to run kitten: {e}', file=sys.stderr)
 
 
-def idle_or_background(detail_when_idle: str = '') -> None:
-    count = stored_bg_tasks()
-    if count > 0:
-        set_vars(WORKING, background_text(count))
-    else:
-        set_vars(IDLE, detail_when_idle)
+def idle_or_background() -> None:
+    # iTerm2 shows a session with background tasks as working, not idle.
+    set_vars(WORKING if stored_bg_tasks() > 0 else IDLE)
 
 
 def main() -> None:
@@ -93,28 +75,23 @@ def main() -> None:
     name = event.get('hook_event_name', '')
     # Which state the event asks for is the same question in every terminal, so
     # claude/session_state.py answers it. What a state looks like is kitty's own.
-    state, detail = classify(event)
+    state, _ = classify(event)
     if state is None:
         return
     if state == END:
         set_vars(None)
     elif name == 'SessionStart':
-        set_vars(IDLE, '', 0)
-    elif state == WORKING_STATE:
-        set_vars(WORKING, detail)
-    elif state == WAITING_STATE:
-        set_vars(WAITING, detail)
+        set_vars(IDLE, 0)
+    elif state in (WORKING, WAITING):
+        set_vars(state)
     elif name == 'Stop':
-        # iTerm2 counts a session with background tasks as working, and the
-        # count is only in this event, so it is stored for the events after it.
+        # The background task count is only in this event, so it is stored for
+        # the events after it.
         tasks = event.get('background_tasks')
         count = len(tasks) if isinstance(tasks, list) else None
-        if count:
-            set_vars(WORKING, background_text(count), count)
-        else:
-            set_vars(IDLE, detail, count)
+        set_vars(WORKING if count else IDLE, count)
     else:
-        idle_or_background(detail or '')
+        idle_or_background()
 
 
 if __name__ == '__main__':

@@ -128,23 +128,6 @@ def _side_width(hint: str, dot: tuple[str, int] | None, zoom: str) -> int:
     return (2 if dot is not None else 0) + (1 + wcswidth(zoom) if zoom else 0) + (1 + wcswidth(hint) if hint else 0)
 
 
-def _single_pane_status(os_window_id: int) -> tuple[str, int, str] | None:
-    """Claude Code status of the active tab when it has only 1 pane: (status, dot color, detail).
-
-    Tabs with 2 or more panes show the status in each pane title bar instead (window_title_bar.py).
-    """
-    tm = get_boss().os_window_map.get(os_window_id)
-    tab = tm.active_tab if tm is not None else None
-    if tab is None or len(tab) != 1 or tab.active_window is None:
-        return None
-    user_vars = tab.active_window.user_vars
-    status = user_vars.get('cc_status', '')
-    color = dict(STATUS_DOTS).get(status)
-    if color is None:
-        return None
-    return status, color, ' '.join(user_vars.get('cc_detail', '').split())
-
-
 def draw_tab(
     draw_data: DrawData, screen: Screen, tab: TabBarData, before: int, max_tab_length: int, index: int, is_last: bool, extra_data: ExtraData
 ) -> int:
@@ -226,26 +209,9 @@ def draw_tab(
     end = screen.cursor.x
 
     if is_last and end < screen.columns:
-        # Extend the track to the right edge and round it off. When the active tab has 1 pane,
-        # show its Claude Code status on the right of the track: "● waiting  Allow Bash: make test?".
+        # Extend the track to the right edge and round it off.
         screen.cursor.bg = TRACK
-        free = max(0, screen.columns - end - 1)
-        info = _single_pane_status(draw_data.os_window_id)
-        room = free - 6  # keep a gap after the tabs and 1 cell before the round end
-        if info is not None and room >= len(info[0]) + 2:
-            status, color, detail = info
-            detail = _fit(detail, room - len(status) - 4) if detail and room - len(status) - 4 >= 6 else ''
-            width = 2 + len(status) + (2 + wcswidth(detail) if detail else 0)
-            screen.draw(' ' * (free - width - 1))
-            screen.cursor.fg = color
-            screen.draw(_dot_glyph(status) + ' ')
-            screen.draw(status)
-            if detail:
-                screen.cursor.fg = FG_INACTIVE
-                screen.draw('  ' + detail)
-            screen.draw(' ')
-        else:
-            screen.draw(' ' * free)
+        screen.draw(' ' * max(0, screen.columns - end - 1))
         screen.cursor.fg, screen.cursor.bg = TRACK, as_rgb(int(draw_data.default_bg))
         screen.draw(RIGHT_CAP)
     return end
