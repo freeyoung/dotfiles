@@ -699,7 +699,7 @@ defaults write com.mitchellh.ghostty TabActivityLight ring         # around the 
 defaults write com.mitchellh.ghostty TabActivityLight underline    # along the bottom, as the kitty tab bar lays it
 defaults delete com.mitchellh.ghostty TabActivityLight             # no light
 defaults write com.mitchellh.ghostty TabActivityLightSeconds 1.5   # 1 turn in 1.5 seconds, against 3
-defaults write com.mitchellh.ghostty TabActivityLightLength 200    # a longer light, against 150 points
+defaults write com.mitchellh.ghostty TabActivityLightLength 150    # a shorter light, against 220 points
 defaults write com.mitchellh.ghostty TabActivityLightOnSelectedTab -bool true
 defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven splits, as Ghostty leaves them
 ```
