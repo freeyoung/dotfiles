@@ -683,19 +683,20 @@ What is left is the font, the colors, 4 keys, and the 2 things below.
 
 **Two settings here are not upstream.** `split-auto-equalize` keeps the splits
 in a window equal when one opens and when one closes, and the tab of a window
-whose surface reports progress carries an indicator. Both come from a local
+whose surface reports progress carries a band of light running around it, the
+way iTerm2 3.7 rings a working tab. Both come from a local
 patch, because a keybind chain covers only the opening half -- the chain ends
 with the surface it ran in -- and Ghostty has no event API to hang the rest on.
 Stock Ghostty runs this configuration, warns about the setting it does not
 know, and goes without those 2 things.
 
 **What a Claude Code session is doing.** Claude Code sends OSC 9;4 while the
-model works, so the spinner needs no hook at all.
+model works, so the light around the tab needs no hook at all.
 [`cc-status`](macos/ghostty/cc-status) fills in the 2 states Claude does not
 report:
 
 - Waiting for an answer: it sends the OSC 9;4 pause state, which the tab shows
-  as a dot and the pane as a paused bar.
+  by pulsing its outline and the pane as a paused bar.
 - Which pane: it sets palette color 255 with OSC 4 -- the last grayscale slot,
   which nothing draws with -- and [`ring.glsl`](macos/ghostty/ring.glsl) draws
   a ring of light around a pane whose palette carries the mark, green while
