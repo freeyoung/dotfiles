@@ -20,6 +20,16 @@ set -euo pipefail
 # a file.
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# A configuration rewritten in place stops being this repository's without
+# saying so, the way `sed -i` does it. Nothing touches kitty's this way today,
+# but the same check costs nothing.
+live="$HOME/.config/kitty/kitty.conf"
+if [[ -e $live && ! -L $live ]]; then
+  echo "$live is a file, not a link into this repository." >&2
+  echo "Keep whatever changed it, then run ./install to link it again." >&2
+  exit 1
+fi
 config="$repo_dir/kitty/kitty.conf"
 
 if [[ ! -f "$config" ]]; then
