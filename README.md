@@ -667,8 +667,8 @@ Without `--config-file-name`, `kitten themes` writes into the shared
   `Stop`, `StopFailure` and `SessionEnd`. The script does nothing outside kitty.
 - The quick access terminal, if it is wanted. In System Settings, go to
   Keyboard > Keyboard Shortcuts > Services, and give "Quick access to kitty" a
-  shortcut. Ghostty binds cmd+F12 to its own quick terminal, so only 1 of the 2
-  can have that key.
+  shortcut. Ghostty also binds cmd+F12 to its own quick terminal, but only
+  while Ghostty is in front, so the 2 can share the key.
 
 ### Ghostty on macOS
 
