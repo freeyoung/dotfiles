@@ -26,9 +26,12 @@ from session_state import END, IDLE, WAITING, WORKING, classify  # noqa: E402
 
 RING = {WORKING: '\033]4;255;rgb:00/ff/01\007', WAITING: '\033]4;255;rgb:00/00/fe\007'}
 RING_CLEAR = '\033]104;255\007'
-# OSC 9;4 state 4 is pause. Claude Code sends 3 (indeterminate) while the model
-# works and 0 when it stops, so only the waiting state is left to send.
-PROGRESS = {WAITING: '\033]9;4;4;0\007'}
+# OSC 9;4: 3 is indeterminate and 4 is pause. Claude Code sends 3 itself while
+# the model works and 0 when it stops, but a report that is not repeated goes
+# stale -- after 15 seconds in Ghostty as it ships -- and a turn is quiet for
+# longer than that, so working is sent again at every event that carries it.
+# Nothing sends anything for a prompt waiting to be answered.
+PROGRESS = {WORKING: '\033]9;4;3;0\007', WAITING: '\033]9;4;4;0\007'}
 PROGRESS_CLEAR = '\033]9;4;0;0\007'
 
 
