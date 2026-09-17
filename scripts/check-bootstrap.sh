@@ -100,6 +100,8 @@ linked_targets+=(.local/bin/peek-activate)
   linked_targets+=(.config/fcitx5/table/wbx.conf .local/share/fcitx5/punctuation/punc.mb.zh_CN)
 [[ $(uname -s) == Darwin && -d "/Library/Input Methods/Fcitx5.app" ]] &&
   linked_targets+=(.local/share/fcitx5/theme/wetype.conf)
+[[ $(uname -s) != Darwin ]] && command -v fcitx5 >/dev/null 2>&1 &&
+  linked_targets+=(.local/share/fcitx5/themes/wetype .local/share/fcitx5/themes/wetype-dark)
 
 if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
   ! grep -qx 'ActiveByDefault=False' "$tmp_dir/home/.config/fcitx5/config" 2>/dev/null; then
@@ -111,6 +113,15 @@ if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.a
   ! grep -qx 'TypePairedPunctuationsTogether=True' "$tmp_dir/home/.config/fcitx5/conf/punctuation.conf" 2>/dev/null; then
   echo 'Installer did not set TypePairedPunctuationsTogether=True in the fcitx5 punctuation config' >&2
   exit 1
+fi
+
+if [[ $(uname -s) != Darwin ]] && command -v fcitx5 >/dev/null 2>&1; then
+  for classicui_key in Theme=wetype DarkTheme=wetype-dark UseDarkTheme=True; do
+    if ! grep -qx "$classicui_key" "$tmp_dir/home/.config/fcitx5/conf/classicui.conf" 2>/dev/null; then
+      echo "Installer did not set $classicui_key in the fcitx5 classicui config" >&2
+      exit 1
+    fi
+  done
 fi
 
 if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } && {

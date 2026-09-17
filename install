@@ -266,18 +266,50 @@ if (( has_fcitx5 )); then
   set_ini_key "$HOME/.config/fcitx5/conf/punctuation.conf" "" \
     TypePairedPunctuationsTogether True
   fcitx5_shift_toggles "$HOME/.config/fcitx5/config"
-  # The candidate window theme is fcitx5-macos's web panel. fcitx5 on Linux
-  # draws with classicui, which reads a different theme format. The theme is
-  # only made available here: it is chosen once in the Theme Editor.
+  # The candidate window theme exists twice, because the two hosts draw the
+  # window with different addons that read different formats. On a Mac it is
+  # fcitx5-macos's web panel, and the theme is only made available: it is
+  # chosen once in the Theme Editor. On Linux it is classicui, which takes
+  # light or dark from the desktop by switching between two themes, and the
+  # choice is three keys in a file that also holds the font, which may differ
+  # per host, so only those keys are managed.
   if [[ $(uname -s) == Darwin ]]; then
     backup_and_link "$repo_dir/fcitx5/theme/wetype.conf" \
       "$HOME/.local/share/fcitx5/theme/wetype.conf"
+  else
+    for fcitx5_theme in wetype wetype-dark; do
+      backup_and_link "$repo_dir/fcitx5/themes/$fcitx5_theme" \
+        "$HOME/.local/share/fcitx5/themes/$fcitx5_theme"
+    done
+    set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" Theme wetype
+    set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" DarkTheme wetype-dark
+    set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" UseDarkTheme True
   fi
   # The table used to be wubi-large. Its link now points at a file that is gone.
   legacy="$HOME/.config/fcitx5/table/wubi-large.conf"
   if [[ -L "$legacy" && "$(readlink "$legacy")" == "$repo_dir/fcitx5/wubi-large.conf" ]]; then
     rm "$legacy"
     printf 'Removed stale link: %s\n' "$legacy"
+  fi
+  # A running fcitx5 holds its settings in memory and writes them back over
+  # these files later, which undid TypePairedPunctuationsTogether on a host
+  # where it was set under a running fcitx5. Reloading makes it read the files
+  # instead. --check keeps the call from starting a fcitx5 that is not running.
+  # -r reloads the global config only; an addon is reloaded by name over D-Bus,
+  # which fcitx5-macos does not have, so there an addon setting made under a
+  # running fcitx5 still needs fcitx5 restarted before it is written back.
+  fcitx5_remote="$(command -v fcitx5-remote || true)"
+  [[ -n "$fcitx5_remote" ]] ||
+    fcitx5_remote="/Library/Input Methods/Fcitx5.app/Contents/bin/fcitx5-remote"
+  if [[ -x "$fcitx5_remote" ]] && "$fcitx5_remote" --check -r >/dev/null 2>&1; then
+    printf 'Reloaded: fcitx5 config\n'
+    if command -v busctl >/dev/null 2>&1; then
+      for fcitx5_addon in punctuation classicui; do
+        busctl --user call org.fcitx.Fcitx5 /controller org.fcitx.Fcitx.Controller1 \
+          ReloadAddonConfig s "$fcitx5_addon" >/dev/null 2>&1 &&
+          printf 'Reloaded: fcitx5 %s\n' "$fcitx5_addon"
+      done
+    fi
   fi
 fi
 

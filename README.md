@@ -560,9 +560,30 @@ once under Theme Editor → Basic → User theme. Loading a theme writes every
 option to `conf/webpanel.conf`, which is not linked for the same reason as the
 global `config`, so choose the theme again after an edit to the file. Its Blur
 is Blur, not System, because Liquid Glass takes light or dark from the app
-behind the window and would ignore the two colour sets. fcitx5 on Linux draws
-with classicui, which reads a different theme format, so the file is not
-linked there.
+behind the window and would ignore the two colour sets.
+
+fcitx5 on Linux draws with classicui, which reads a different theme format, so
+the same look exists a second time:
+[`fcitx5/themes/wetype`](fcitx5/themes/wetype) and
+[`fcitx5/themes/wetype-dark`](fcitx5/themes/wetype-dark) are linked, as
+directories, into `~/.local/share/fcitx5/themes/`. classicui has no light and
+dark set inside one theme; it switches between two themes with the desktop's
+colour scheme, so the installer sets `Theme`, `DarkTheme` and
+`UseDarkTheme=True` in `conf/classicui.conf` -- single keys again, because the
+file also holds the font. The panel is opaque, not translucent: classicui only
+blurs under KWin, and Hyprland's blur is off here, so a translucent panel would
+just let the text behind it through. Its colour is the Mac panel's as it looks
+over a plain background. A rounded corner has to come from an image that
+classicui cuts in nine by the margins given beside it, so each radius equals
+the smallest margin of its image: the highlight's is 6, where the Mac's is 10.
+
+A running fcitx5 keeps its settings in memory and writes them back later, so a
+key set in one of these files under a running fcitx5 is undone unless fcitx5
+reads the file first. The installer therefore ends the fcitx5 step with a
+reload. `fcitx5-remote -r` reloads the global `config` only; the punctuation
+and classicui addons are reloaded by name over D-Bus. fcitx5-macos has no
+D-Bus, so there an addon key the installer has just set holds only if fcitx5 is
+restarted before it next saves.
 
 On macOS the installer builds
 [`fcitx5/macos-hotkey.swift`](fcitx5/macos-hotkey.swift) into
