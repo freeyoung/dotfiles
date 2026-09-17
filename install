@@ -466,15 +466,6 @@ if [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; then
     backup_and_link "$repo_dir/omarchy/kitty/tab_bar.py" "$HOME/.config/kitty/tab_bar.py"
     backup_and_link "$repo_dir/omarchy/kitty/claude-status.conf" "$HOME/.config/kitty/claude-status.conf"
   fi
-
-  # The ring and band over a working session's window, drawn by a Quickshell
-  # instance of its own. Quickshell looks for named configurations under
-  # ~/.config/quickshell/<name>, and the Hyprland autostart runs this one by
-  # name.
-  if command -v quickshell >/dev/null 2>&1; then
-    backup_and_link "$repo_dir/omarchy/quickshell/claude-rings" \
-      "$HOME/.config/quickshell/claude-rings"
-  fi
 fi
 
 ssh_dir="$HOME/.ssh"
