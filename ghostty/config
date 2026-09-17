@@ -35,6 +35,9 @@ background-opacity = 0.8
 
 # The window.
 window-padding-balance = true
+# A new tab goes to the end of the bar, where iTerm2 puts one, rather than next
+# to the tab it was opened from.
+window-new-tab-position = end
 quit-after-last-window-closed = true
 confirm-close-surface = false
 scrollback-limit = 100000000
