@@ -758,6 +758,24 @@ defaults write com.mitchellh.ghostty SplitAutoEqualize -bool false # uneven spli
 The tab you are looking at carries no light, because its own pane draws a
 progress bar for the same work; the key above lights it as well.
 
+**Building it on Linux.** `zig build -Doptimize=ReleaseFast -p ~/.local`, which
+puts the binary, the desktop entry, the terminfo and the shell integration under
+`~/.local` with absolute paths, so `xdg-terminal-exec` finds it ahead of the
+packaged Ghostty without touching anything pacman owns. One flag is worth
+adding to that line:
+
+```bash
+zig build -Doptimize=ReleaseFast -Dstrip=false -p ~/.local
+```
+
+`-Dstrip=false` is not the default for a fast release, and without it a crash
+leaves a core with nothing but offsets in it. That cost an afternoon once: the
+first core of a segfault could not be read at all, and the same crash had to be
+provoked a second time against an unstripped binary before the stack named
+`FcInitReinitialize` and the cause with it. Ninety megabytes of disk is a cheap
+standing price for the next one. Fontconfig needs no flag any more, the fork
+defaulting to the system library since that same afternoon.
+
 The light costs a few percent of a core while a session works, and the rate it
 is drawn at is nearly all of that: the pace it runs at costs nothing and its
 length little. Measured against an idle terminal, the light along the bottom
