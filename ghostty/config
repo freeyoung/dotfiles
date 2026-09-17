@@ -12,11 +12,36 @@
 # ~/.config/ghostty/themes/, where Ghostty looks for a theme by name.
 theme = My iTerm2
 
-# Font. The family, the size and the cut of the cell are each named by the
-# desktop that wants them, in the file it pulls in at the end of this one: the
-# 2 machines have different faces installed and sit at different distances, so
-# a value here would only be one the other has to undo. What is left is what
-# holds on both.
+# Font. A value belongs here when it is true of both machines, and in the file
+# each desktop pulls in at the end of this one when it is not. The family is
+# true of both, so saying it twice would only be 2 places to forget. The size
+# and the cut of the cell are not -- the 2 machines sit at different distances
+# -- and neither is the Chinese fallback, which only the Mac has to name.
+#
+# The plain Nerd Font variant, not the Mono one, because that is what Omarchy
+# can have: it depends on ttf-jetbrains-mono-nerd-basic, which carries the base
+# family alone, and the Mono variant lives in the full ttf-jetbrains-mono-nerd,
+# which conflicts with the basic one -- installing it would take the omarchy
+# package's own dependency with it.
+#
+# Nothing is lost by matching that here. Nerd Fonts patches JetBrains Mono
+# along 2 axes -- ligatures or NL, and Mono or Propo or neither -- and of the 6
+# results the 4 that are not Propo are the same font for this setup. Measured,
+# file against file: of the 12226 codepoints the Mono and the plain variant
+# share, 24 differ in advance, all of them combining marks that Mono widens to
+# a full cell and the plain one rightly leaves at 0. Every Nerd Font icon is
+# the same width in both.
+#
+# Ghostty fits the icons itself either way: it carries the Nerd Fonts patcher's
+# own per-codepoint scaling rules (src/font/nerd_font_attributes.zig, generated
+# from nerd_font_codegen.py) and applies them to whatever face supplied the
+# glyph.
+#
+# The 3 font-feature lines are how the ligatures are turned off. They say what
+# is wanted whatever font is named, where the NL variant would only be a file
+# that happens to lack the glyphs, to be remembered again the next time the
+# face changes.
+font-family = JetBrainsMono Nerd Font
 font-feature = -calt
 font-feature = -liga
 font-feature = -dlig
