@@ -225,48 +225,49 @@ backup_and_link "$repo_dir/mise/config.toml" "$HOME/.config/mise/config.toml"
 # for no effect.
 if [[ $OSTYPE == linux* ]]; then
   backup_and_link "$repo_dir/fontconfig/fonts.conf" "$HOME/.config/fontconfig/fonts.conf"
-  # Copied, not linked, and that is the whole point: a sandbox binds ~/.config
-  # without binding this repository, so a link here would dangle inside one and
-  # fontconfig would read it as nothing at all. A real file in the bound tree is
-  # what reaches WeChat and anything else under bwrap or Flatpak. conf.d is part
-  # of the ordinary search path, so it is read outside a sandbox too, which is
-  # why the file is named for what it holds rather than for why it is a copy.
-  fontconfig_cjk="$HOME/.config/fontconfig/conf.d/99-cjk.conf"
-  # It was 99-sandbox-cjk.conf until the name proved misleading. Left behind it
-  # would load beside the new one, both claiming the same rules.
+  # The CJK rules go to /etc, and the head of that file says at length why.
+  # Two reasons, both of which /etc answers and $HOME does not. Root rebuilds
+  # the system font cache from /etc on every font package pacman installs, and
+  # that cache is the one applications read, so scan rules kept under $HOME
+  # were replaced by a cache that had never seen them, silently. And a sandbox
+  # binds /etc while giving itself a tmpfs for /home, so a symlink into this
+  # repository dangles inside one: that is what the hand-synchronised copy in
+  # ~/.config/fontconfig/conf.d existed to work around, and it is why that copy
+  # is gone now.
+  #
+  # This is the only thing here written outside $HOME. It is written only when
+  # the content differs, and comparing needs no privilege, so a second run on a
+  # configured host asks for nothing.
+  fontconfig_cjk_src="$repo_dir/fontconfig/51-cjk.conf"
+  fontconfig_cjk="/etc/fonts/conf.d/51-cjk.conf"
+  # Both earlier homes of these rules. Left in place either one loads beside
+  # the new file and applies the same rules a second time, and the user copy
+  # would go on overruling it, since ~/.config is read before conf.d finishes.
+  backup_conflicting "$HOME/.config/fontconfig/conf.d/99-cjk.conf" \
+    "the CJK rules moved to /etc/fonts/conf.d/51-cjk.conf"
   backup_conflicting "$HOME/.config/fontconfig/conf.d/99-sandbox-cjk.conf" \
-    "renamed to 99-cjk.conf"
-  if ! cmp -s "$repo_dir/fontconfig/99-cjk.conf" "$fontconfig_cjk"; then
-    mkdir -p "$(dirname "$fontconfig_cjk")"
-    cp "$repo_dir/fontconfig/99-cjk.conf" "$fontconfig_cjk"
-    printf 'Copied: %s\n' "$fontconfig_cjk"
-  else
-    printf 'Already current: %s\n' "$fontconfig_cjk"
-  fi
-  # The scan rules go to /etc, and the head of that file says at length why.
-  # In short: a scan rule lives in the font cache rather than in any file an
-  # application reads at startup, the cache applications read is the system
-  # one, and root rebuilds that from /etc on every font package pacman
-  # installs. Kept under $HOME they were dropped by each such install, in
-  # silence. This is the only thing here written outside $HOME. It is written
-  # only when the content differs, and comparing needs no privilege, so a
-  # second run on a configured host asks for nothing.
-  fontconfig_scan_src="$repo_dir/fontconfig/31-cjk-lastresort.conf"
-  fontconfig_scan="/etc/fonts/conf.d/31-cjk-lastresort.conf"
+    "the CJK rules moved to /etc/fonts/conf.d/51-cjk.conf"
   if [[ -d /etc/fonts/conf.d ]]; then
-    if cmp -s "$fontconfig_scan_src" "$fontconfig_scan"; then
-      printf 'Already current: %s\n' "$fontconfig_scan"
+    if [[ -e /etc/fonts/conf.d/31-cjk-lastresort.conf ]] && command -v sudo >/dev/null 2>&1; then
+      # The scan rules were briefly a file of their own before the rest joined
+      # them. Nothing warns when two copies of a scan rule disagree.
+      sudo rm -f /etc/fonts/conf.d/31-cjk-lastresort.conf
+      printf 'Removed: /etc/fonts/conf.d/31-cjk-lastresort.conf, folded into 51-cjk.conf\n'
+    fi
+    if cmp -s "$fontconfig_cjk_src" "$fontconfig_cjk"; then
+      printf 'Already current: %s\n' "$fontconfig_cjk"
     elif ! command -v sudo >/dev/null 2>&1; then
-      printf 'No sudo, so %s is unwritten and the CJK last-resort rules are not in effect\n' \
-        "$fontconfig_scan" >&2
-    elif sudo cp "$fontconfig_scan_src" "$fontconfig_scan" && sudo chmod 0644 "$fontconfig_scan"; then
-      printf 'Installed: %s\n' "$fontconfig_scan"
-      # Forced, because an unforced run only revisits directories whose mtime
-      # moved, and editing a rule moves none of them.
+      printf 'No sudo, so %s is unwritten and the CJK rules are not in effect\n' \
+        "$fontconfig_cjk" >&2
+    elif sudo cp "$fontconfig_cjk_src" "$fontconfig_cjk" && sudo chmod 0644 "$fontconfig_cjk"; then
+      printf 'Installed: %s\n' "$fontconfig_cjk"
+      # For the scan rules in it, which are read into the cache rather than
+      # consulted per lookup. Forced, because an unforced run only revisits
+      # directories whose mtime moved, and editing a rule moves none of them.
       sudo fc-cache -s -f >/dev/null
       printf 'Rebuilt: system font cache, for the scan rules\n'
     else
-      printf 'Could not write %s; the CJK last-resort rules are not in effect\n' "$fontconfig_scan" >&2
+      printf 'Could not write %s; the CJK rules are not in effect\n' "$fontconfig_cjk" >&2
     fi
     # Ask the cache rather than trusting the file. A scan rule that has quietly
     # stopped applying reads exactly like one that was never needed, which is

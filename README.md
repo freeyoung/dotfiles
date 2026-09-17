@@ -23,7 +23,7 @@ command-line dependencies, creates symlinks, restores shell/Vim plugins, and
 backs up any conflicting target under `~/.dotfiles-backups/<timestamp>/`.
 
 Everything it writes is under `$HOME`, with one exception: on Linux it puts
-`fontconfig/31-cjk-lastresort.conf` into `/etc/fonts/conf.d/`, which needs
+`fontconfig/51-cjk.conf` into `/etc/fonts/conf.d/`, which needs
 `sudo` once per host and is explained under [Fonts](#fonts). It compares
 before writing, and comparing needs no privilege, so a second run on a
 configured host asks for nothing.
@@ -337,6 +337,11 @@ Japanese glyph forms. These rules put the Simplified Chinese faces first for
 Chinese, and each region's own face first for Japanese, Korean and Traditional
 Chinese.
 
+The CJK half of that lives in [`fontconfig/51-cjk.conf`](fontconfig/51-cjk.conf)
+rather than in `fonts.conf`, for reasons given below; what stays in
+`fonts.conf` is the generic family aliases and the Latin substitutions, which
+only this desktop needs.
+
 Chromium and Electron resolve a missing glyph one character at a time, on a
 pattern carrying neither a family nor a language, so language rules never fire
 for them. A weakly bound last-resort family covers that path; all three SC
@@ -374,10 +379,10 @@ own matcher tolerates that and answers correctly, which is what makes it hard
 to see; Ghostty segfaults on it, renderer thread and all, on any codepoint
 that reaches those two fonts.
 
-Those are scan rules, and they live in
-[`fontconfig/31-cjk-lastresort.conf`](fontconfig/31-cjk-lastresort.conf),
-which `install` writes to `/etc/fonts/conf.d/`. That path is the point of them
-rather than a detail. A scan rule is applied when a font is read into the
+Those are scan rules, and they live with the rest of the CJK rules in
+[`fontconfig/51-cjk.conf`](fontconfig/51-cjk.conf), which `install` writes to
+`/etc/fonts/conf.d/`. That path is the point of the file rather than a detail,
+for two separate reasons. A scan rule is applied when a font is read into the
 cache, so what it says lives in the cache and not in any file an application
 reads at startup, and the cache applications read is the system one:
 `fonts.conf` lists `/var/cache/fontconfig` before the user's own, and the
@@ -387,6 +392,21 @@ a hook whose action is `fc-cache -s`, run as root against `/etc` and blind to
 `pacman -S` that touched a font, in silence, until somebody remembered
 `fc-cache -f`. In `/etc` the rebuild that used to erase them is the rebuild
 that carries them, and there is nothing left to remember.
+
+The second reason is the sandbox. A `bwrap` sandbox binds `/etc` whole and
+gives itself a tmpfs for `/home`, which can be read straight off the command
+line that launches WeChat, so a symlink into this repository points at nothing
+inside one. The CJK rules used to be duplicated into
+`~/.config/fontconfig/conf.d/99-cjk.conf`, a real file in a bound directory,
+kept in step with `fonts.conf` by hand and by nothing else. `/etc` is bound
+too, so one copy now serves the terminal, the browser and the sandbox, and
+that second file is gone along with the synchronising it demanded.
+
+The number is load-bearing as well. `50-user.conf` pulls the user's
+configuration in at position 50, ahead of `60-latin`, `65-nonlatin` and
+`90-synthetic`, which is where these rules were written and measured. 51 is
+the first position after that include, so they keep the neighbours they were
+tested against.
 
 `install` still checks rather than assumes, because a scan rule that has
 stopped applying reads exactly like one that was never needed. It asks the
