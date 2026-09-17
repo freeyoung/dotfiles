@@ -388,11 +388,31 @@ one of these, installed later, would lose to its own substitute until the line
 goes.
 
 No font is installed on any platform: these rules and `kitty.conf` select
-faces, they do not provide them. Omarchy already ships the Noto CJK families
-and a Nerd Font, which is why nothing here has had to. A Debian desktop does
-not, and a rule that names a face the host lacks simply never fires — install
-`fonts-noto-cjk` and a JetBrains Mono Nerd Font build there to give the
-selection something to choose from.
+faces, they do not provide them. A rule naming a face the host lacks does not
+fail, it simply never fires, so what is missing shows up as a page quietly
+looking wrong rather than as an error anywhere.
+
+Omarchy ships the Noto CJK families, a Nerd Font and Liberation, which is why
+nothing here has had to. The rest this configuration names, on Arch:
+
+```bash
+# the Chinese face, and the extension blocks behind it
+pacman -S ttf-babelstone-han ttf-hanazono   # otf-apple-pingfang is in the AUR
+# what the Latin aliases point at
+pacman -S ttf-roboto ttf-roboto-mono inter-font ttf-dejavu ttf-carlito \
+          ttf-caladea gsfonts
+```
+
+Roboto and Inter are there because pages ask for them by name and they are
+free to install, so those requests reach the real face rather than a stand-in.
+DejaVu is what Menlo, Verdana and Tahoma are sent to, and gsfonts carries the
+Nimbus Sans that Helvetica Neue is sent to, which arrives on most desktops
+only as some other package's dependency and is worth asking for by name. Carlito and Caladea are
+worth more than an alias: Calibri and Cambria map onto them metric for metric,
+so a page laid out for either keeps its line breaks.
+
+A Debian desktop ships none of this — `fonts-noto-cjk`, a JetBrains Mono Nerd
+Font build and `fonts-dejavu` are where to start there.
 
 ### tmux
 
