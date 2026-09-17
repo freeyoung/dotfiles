@@ -404,6 +404,7 @@ TabSeparators -bool true
 SurfaceProgressBarStyle match
 ProgressReportTimeout -float 120
 SplitAutoEqualize -bool true
+LinkHoverMouseCapture -bool true
 GHOSTTY_DEFAULTS
   elif command -v hyprland >/dev/null 2>&1 || command -v Hyprland >/dev/null 2>&1; then
     backup_and_link "$repo_dir/omarchy/ghostty/linux.conf" "$HOME/.config/ghostty/linux.conf"
