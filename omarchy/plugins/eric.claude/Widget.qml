@@ -28,7 +28,18 @@ BarWidget {
   // it however the font size was set, since it is drawn from a different part
   // of the font; these are drawn, not typeset, so they match exactly. The
   // motion a working session used to carry here is the ring around its tab.
-  readonly property int dotSize: Style.space(8)
+  //
+  // The size takes the parity of the bar's, so that the space left over splits
+  // into two whole halves. With a 9 px dot in a 30 px bar the centre falls on
+  // a half pixel, and an anchor that centres rounds that down unless it is
+  // told not to (alignWhenCentered): the dot sat half a pixel high, a whole
+  // device pixel at a scale of 2. The anchors below are all told not to,
+  // because the row is as high as the count's text, which is odd or even as
+  // the font pleases; the two halves then cancel and the dot lands whole.
+  readonly property int dotSize: {
+    var size = Style.space(8)
+    return (barSize - size) % 2 === 0 ? size : size - 1
+  }
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
 
@@ -187,6 +198,14 @@ BarWidget {
   Grid {
     id: pills
     anchors.centerIn: parent
+    anchors.alignWhenCentered: false
+    // A Grid puts each item at the top left of its cell unless told otherwise,
+    // and a cell is as high as the highest item in its row. A dot with a
+    // count beside it is as high as the text, a dot alone only as high as
+    // itself, so the lone one -- usually the green one -- sat 4 px above the
+    // others.
+    verticalItemAlignment: Grid.AlignVCenter
+    horizontalItemAlignment: Grid.AlignHCenter
     columns: root.vertical ? 1 : 3
     rowSpacing: 2
     columnSpacing: 8
@@ -203,6 +222,7 @@ BarWidget {
         Rectangle {
           id: dot
           anchors.verticalCenter: parent.verticalCenter
+          anchors.alignWhenCentered: false
           implicitWidth: root.dotSize
           implicitHeight: root.dotSize
           radius: root.dotSize / 2
@@ -220,6 +240,7 @@ BarWidget {
 
         Text {
           anchors.verticalCenter: parent.verticalCenter
+          anchors.alignWhenCentered: false
           visible: pill.n > 1
           text: String(pill.n)
           color: root.foreground

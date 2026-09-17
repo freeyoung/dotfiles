@@ -95,7 +95,10 @@ was restarted by hand.
 view of the same records, one dot per state across every session, with a
 count when there is more than one and a tooltip naming each. The dots are
 drawn rather than typeset, so every state is the same size; the motion lives
-on the tab, not here. A click raises
+on the tab, not here. Each dot is centred in its cell of the grid, because a
+dot with a count is as high as the text and a dot alone is not, and the size
+of a dot takes the parity of the bar's, so that the centre is a whole pixel.
+A click raises
 the window and tab of the session that needs attention most; that goes
 through `claude-tab-status focus`, which is why `kitty.conf` allows remote
 control over its socket. The installer links the plugin; it appears in the bar
