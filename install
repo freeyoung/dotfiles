@@ -243,20 +243,41 @@ if [[ $OSTYPE == linux* ]]; then
   else
     printf 'Already current: %s\n' "$fontconfig_cjk"
   fi
-  # The scan rules in fonts.conf are applied when a font is scanned into the
-  # cache, not when it is matched, so the files landing here change nothing on
-  # their own: applications go on reading whatever the previous rules wrote
-  # into the cache. That lag is not cosmetic. Those rules assign lang, and an
-  # earlier spelling of them assigned it a string where fontconfig stores a
-  # langset, which segfaulted Ghostty's renderer on any codepoint that fell
-  # through to BabelStone or HanaMin. A cache left alone keeps serving exactly
-  # that, and the fix looks applied while nothing has changed. Forced, because
-  # an unforced fc-cache only revisits directories whose mtime moved and
-  # editing a rule moves none of them. Around two seconds here, which is less
-  # than it would take to work out whether this run needed it.
-  if command -v fc-cache >/dev/null 2>&1; then
-    fc-cache -f >/dev/null
-    printf 'Rebuilt: font cache, for the scan rules in fonts.conf\n'
+  # The scan rules go to /etc, and the head of that file says at length why.
+  # In short: a scan rule lives in the font cache rather than in any file an
+  # application reads at startup, the cache applications read is the system
+  # one, and root rebuilds that from /etc on every font package pacman
+  # installs. Kept under $HOME they were dropped by each such install, in
+  # silence. This is the only thing here written outside $HOME. It is written
+  # only when the content differs, and comparing needs no privilege, so a
+  # second run on a configured host asks for nothing.
+  fontconfig_scan_src="$repo_dir/fontconfig/31-cjk-lastresort.conf"
+  fontconfig_scan="/etc/fonts/conf.d/31-cjk-lastresort.conf"
+  if [[ -d /etc/fonts/conf.d ]]; then
+    if cmp -s "$fontconfig_scan_src" "$fontconfig_scan"; then
+      printf 'Already current: %s\n' "$fontconfig_scan"
+    elif ! command -v sudo >/dev/null 2>&1; then
+      printf 'No sudo, so %s is unwritten and the CJK last-resort rules are not in effect\n' \
+        "$fontconfig_scan" >&2
+    elif sudo cp "$fontconfig_scan_src" "$fontconfig_scan" && sudo chmod 0644 "$fontconfig_scan"; then
+      printf 'Installed: %s\n' "$fontconfig_scan"
+      # Forced, because an unforced run only revisits directories whose mtime
+      # moved, and editing a rule moves none of them.
+      sudo fc-cache -s -f >/dev/null
+      printf 'Rebuilt: system font cache, for the scan rules\n'
+    else
+      printf 'Could not write %s; the CJK last-resort rules are not in effect\n' "$fontconfig_scan" >&2
+    fi
+    # Ask the cache rather than trusting the file. A scan rule that has quietly
+    # stopped applying reads exactly like one that was never needed, which is
+    # how the last round of this went unnoticed: BabelStone Han is meant to
+    # come back with an empty langset, and anything else means the rules are
+    # not in the cache being read, whatever this script just wrote.
+    if fc-list ':family=BabelStone Han' family 2>/dev/null | grep -q . &&
+       fc-list -f '%{lang}' ':family=BabelStone Han' 2>/dev/null | grep -q .; then
+      printf 'WARNING: BabelStone Han still declares a language, so the scan rules are not\n' >&2
+      printf '         in the cache being read. Try: sudo fc-cache -s -f\n' >&2
+    fi
   fi
   # Compose sequences. Harmless where no compose key is bound, since nothing
   # reads the table until a compose key produces a sequence.
