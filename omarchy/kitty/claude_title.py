@@ -4,9 +4,9 @@
 # member is a separate kitty OS window. A working session reads "🟠 <title>",
 # a session waiting on a prompt blinks "🔵 Bash? · <title>", a finished turn
 # reads "🟢 <title>". The colours are emoji because a title is plain text:
-# Hyprland draws group tabs in one colour for all of them. The motion while a
-# session works is the ring quickshell/claude-rings draws around the tab, so
-# the title itself stays still.
+# Hyprland draws group tabs in one colour for all of them. Nothing moves while
+# a session works: a group tab is a title and no more, and the motion belongs to
+# the terminal's own tab bar, not to Hyprland's.
 #
 # kitty loads this through the watcher line in kitty.conf. The state itself
 # comes from claude_status.py; this file only turns it into titles.

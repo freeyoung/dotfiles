@@ -2,8 +2,8 @@
 
 This is Omarchy's, and only Omarchy's: the installer links the hook and
 registers it on a host that has Omarchy, and skips both anywhere else, since
-what reads the records is the Omarchy bar widget and the Hyprland group-tab
-ring, and what writes them leans on `/proc` and `$XDG_RUNTIME_DIR`. The kitty files
+what reads the records is the Omarchy bar widget, and what writes them leans on
+`/proc` and `$XDG_RUNTIME_DIR`. The kitty files
 are linked there too and nowhere else: `kitty.conf` is one file shared across
 hosts, so it names them through a glob that matches nothing off Omarchy, and a
 host without them keeps kitty's own tab bar. macOS has a separate hook and tab
@@ -49,7 +49,7 @@ own interpreter, since a file kitty cannot load falls back silently.
 The hook sends nothing back to the terminal. It once asked Claude to write an
 OSC 9;4 progress report, which kitty draws as a bar along the top edge of the
 window. kitty's animation for it was too fast to read, and it moved only when
-the window repainted, so the ring below replaced it.
+the window repainted, so the tab bar and the window title below say it instead.
 
 [`omarchy/kitty/claude_title.py`](../kitty/claude_title.py) is a kitty watcher that puts
 the same state into each window's title, for a Hyprland group: its tab bar
@@ -63,33 +63,18 @@ alone. Both kitty files read the records through
 [`omarchy/kitty/claude_status.py`](../kitty/claude_status.py), which holds the one scan
 and the one timer; a change to it needs a kitty restart rather than a reload.
 
-[`omarchy/quickshell/claude-rings`](../quickshell/claude-rings) draws the ring. Hyprland
-offers no way to decorate one group tab, so a separate Quickshell instance,
-started from `omarchy/hypr/autostart.lua`, puts a click-through layer over each screen
-and lays a ring over every group tab whose kitty window holds a working session.
-It finds the tab from Hyprland's own layout: the group's visible member, the
-order of its members, and the `group:groupbar` options, through the arithmetic
-Hyprland 0.56 uses to place the bar. That arithmetic is copied, not asked for,
-so a Hyprland update that changes it moves the rings off their tabs. The light
-is iTerm2's own gradient, alpha 0, .5, 1, 1, .5, 0, in two copies laid end to
-end along the outline, one turn every three seconds; the shader that draws it is
-`ring.frag`, compiled into the `ring.frag.qsb` Quickshell loads:
+A Quickshell instance of its own once laid a running ring over every Hyprland
+group tab holding a working session, the nearest thing here to what iTerm2 draws.
+It is gone: it only ever said anything on a group tab, and the groups turned out
+not to be part of how this desktop is used. `git log -- omarchy/quickshell` has
+it, shader and all, if the habit ever changes.
 
-```bash
-/usr/lib/qt6/bin/qsb --glsl "150,330,300 es" -o ring.frag.qsb ring.frag
-```
-
-The ring follows a window's final geometry rather than its animation, so it
-reaches a moving tab slightly ahead of it, and it is drawn above windows, so a
-floating window over a group tab still shows the ring on top.
-
-Both the ring and the bar widget watch the directory the records live in, which
-a reboot empties and the first session's first hook recreates -- long after
-either started watching. A watcher pointed at a directory that does not exist
-never sees it appear, so `omarchy/hypr/autostart.lua` creates it at login and both
-watchers point themselves at it again every few seconds while they have nothing
-to show. Without that, a reboot left the bar with no indicator until the shell
-was restarted by hand.
+The bar widget watches the directory the records live in, which a reboot empties
+and the first session's first hook recreates -- long after it started watching.
+A watcher pointed at a directory that does not exist never sees it appear, so
+`omarchy/hypr/autostart.lua` creates it at login and the widget points itself at
+it again every few seconds while it has nothing to show. Without that, a reboot
+left the bar with no indicator until the shell was restarted by hand.
 
 [`omarchy/plugins/eric.claude`](../plugins/eric.claude) is the bar's
 view of the same records, one dot per state across every session, with a

@@ -2,9 +2,9 @@
 
 # Claude Code hook that records what each session is doing, the way iTerm2's
 # cc-status hook feeds its Session Status dots. Consumers are kitty's custom
-# tab bar and window titles (omarchy/kitty/), the omarchy bar widget
-# (omarchy/plugins/eric.claude) and the ring (omarchy/quickshell/claude-rings);
-# none talks to Claude, they only read the records here.
+# tab bar and window titles (omarchy/kitty/) and the omarchy bar widget
+# (omarchy/plugins/eric.claude); neither talks to Claude, they only read the
+# records here.
 #
 # Invoked by Claude Code with the hook payload on stdin. One record per
 # session, under $XDG_RUNTIME_DIR/claude-tabs/<session-id>.json, so a reboot
@@ -155,7 +155,8 @@ jq -n \
 # No terminal sequence goes back to Claude. OSC 9;4 progress was tried, since
 # kitty draws its own bar for it and a hook may ask Claude to write one, but
 # kitty's indeterminate animation is too fast to read and moves only when the
-# window repaints; the band is drawn by quickshell/claude-rings now.
+# window repaints, so the tab bar says it instead. Ghostty is the other way
+# round: its own bar is what shows a report, and ghostty/cc-status sends one.
 #
 # No bell either, though the same route would carry one: kitty turns BEL in an
 # unfocused window into an xdg-activation request, and with Omarchy's

@@ -10,8 +10,8 @@
 # A tab that holds a working session carries a band of green light along its
 # bottom edge. iTerm2 runs its light around the whole tab, but a tab bar is 1
 # row of cells: a cell has an underline and no outline, so only the bottom edge
-# can carry it. The light is the one in omarchy/quickshell/claude-rings, #00ff00
-# at alpha 0, .5, 1, 1, .5, 0, crossing the tab in 1.5 seconds. Something has to
+# can carry it. The light is iTerm2's own, #00ff00 at alpha
+# 0, .5, 1, 1, .5, 0, crossing the tab in 1.5 seconds. Something has to
 # redraw the bar for it to move: macos/kitty/iterm2_watcher.py does on a timer,
 # and claude_status.py does on Omarchy.
 import re
