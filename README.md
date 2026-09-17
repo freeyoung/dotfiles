@@ -778,9 +778,15 @@ The event rules are shared with the kitty hook in
 question a permission prompt asks -- `Allow Bash: make test?` -- for the
 Omarchy bar. Neither terminal here shows that text; a dot is enough.
 
-`install` links the hook but does not register it, for the same reason as
-kitty's. Add `~/.config/ghostty/cc-status` as a `command` hook to
-`~/.claude/settings.json`, for the events listed under kitty above. The script
+`install` links the hook and registers it, on an Omarchy host and nowhere else:
+[`scripts/install-claude-hooks.sh`](scripts/install-claude-hooks.sh) merges
+[`ghostty/claude/hooks.json`](ghostty/claude/hooks.json) into
+`~/.claude/settings.json` beside the Omarchy hook's own manifest, for the same
+12 events listed under kitty above, and leaves an entry that is already there
+alone. The command is written `"$HOME/.config/ghostty/cc-status"` so that one
+settings file suits every machine. A Mac is not touched, for the reason kitty's
+is not: the Claude settings there also carry the iTerm2 hooks, which this
+repository has no business adding to, so register it by hand on one. The script
 does nothing outside Ghostty.
 
 ### Tracking Omarchy

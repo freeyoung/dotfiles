@@ -19,7 +19,10 @@ records.
 [`hooks.json`](hooks.json) names the events it is registered
 for, and [`scripts/install-claude-hooks.sh`](../../scripts/install-claude-hooks.sh)
 merges those into `~/.claude/settings.json` -- merged rather than linked,
-because that file also carries choices made from inside Claude. Each event
+because that file also carries choices made from inside Claude. The same script
+merges [`ghostty/claude/hooks.json`](../../ghostty/claude/hooks.json) where
+Ghostty is installed, for the hook that marks a Ghostty pane; the 2 are
+registered for the same events and neither knows about the other. Each event
 becomes one record under `$XDG_RUNTIME_DIR/claude-tabs/<session>.json`: a
 prompt or a tool call means `working`, a permission or elicitation prompt
 means `waiting`, the end of a turn means `idle`, and the end of the session
