@@ -31,6 +31,30 @@ BAND_TURN_SECONDS = 3.0
 LEADING_GLYPH = re.compile(r'^[\s◐◑◒◓✳✻✶✽✢·⏺⠀-⣿]+')
 LEFT_CAP, RIGHT_CAP = '', ''
 
+# How far the track, the divider between 2 tabs and the text of a tab that is
+# not open sit from the terminal's own background, as a fraction of the way to
+# white on a dark background and to black on a light one.
+#
+# They are the Mac's fixed palette read back against the black it was tuned on:
+# 0x2B2E30, 0x45494C and 0x9A9A9A are 17%, 28% and 60% of the way to white. A
+# host that themes kitty's tab colours can pass its own; a host that does not
+# gets this look rather than kitty's defaults, which are a light grey tab meant
+# to sit among others and become a slab across the whole bar here.
+TRACK_LIFT, DIVIDER_LIFT, FG_INACTIVE_LIFT = 0.17, 0.28, 0.60
+
+
+def lift(bg: int, t: float) -> int:
+    """`bg` moved `t` of the way toward white, or toward black if it is light."""
+    r, g, b = (bg >> 16) & 0xFF, (bg >> 8) & 0xFF, bg & 0xFF
+    toward = 0 if (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.5 * 0xFF else 0xFF
+    mix = lambda c: round(c + (toward - c) * t)
+    return (mix(r) << 16) | (mix(g) << 8) | mix(b)
+
+
+def inactive_from(bg: int) -> tuple[int, int, int]:
+    """The (track, divider, fg_inactive) of a bar drawn over `bg`."""
+    return lift(bg, TRACK_LIFT), lift(bg, DIVIDER_LIFT), lift(bg, FG_INACTIVE_LIFT)
+
 
 class Palette(NamedTuple):
     """Everything the bar is drawn with, as 0xRRGGBB."""
