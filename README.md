@@ -570,7 +570,14 @@ directories, into `~/.local/share/fcitx5/themes/`. classicui has no light and
 dark set inside one theme; it switches between two themes with the desktop's
 colour scheme, so the installer sets `Theme`, `DarkTheme` and
 `UseDarkTheme=True` in `conf/classicui.conf` -- single keys again, because the
-file also holds the font. The panel is opaque, not translucent: classicui only
+file also holds the DPI a host forces. `Font` is set there too. classicui
+draws at 96 DPI times the scale of the output, so a point is the same logical
+size on a HiDPI screen and on any other, but it does not apply the desktop's
+text scaling factor: its default of Sans 10 came out at 13 px beside a
+terminal and a bar whose 11 pt, times the 1.18 of this host, is 17. The
+installer sets Sans at 11 pt times the factor it reads from gsettings, which
+is 13 here and 11 on a host that scales nothing. Run it again after changing
+the factor. The panel is opaque, not translucent: classicui only
 blurs under KWin, and Hyprland's blur is off here, so a translucent panel would
 just let the text behind it through. Its colour is the Mac panel's as it looks
 over a plain background. A rounded corner has to come from an image that

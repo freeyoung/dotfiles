@@ -271,8 +271,14 @@ if (( has_fcitx5 )); then
   # fcitx5-macos's web panel, and the theme is only made available: it is
   # chosen once in the Theme Editor. On Linux it is classicui, which takes
   # light or dark from the desktop by switching between two themes, and the
-  # choice is three keys in a file that also holds the font, which may differ
-  # per host, so only those keys are managed.
+  # choice is three keys in a file that also holds the DPI a host forces, so
+  # only single keys are managed. The font is one of them. classicui draws at
+  # 96 DPI times the scale of the output, so a point is the same logical size
+  # on a HiDPI screen and on any other; what it does not apply is the
+  # desktop's text scaling factor. Its default of Sans 10 was 13 px here,
+  # beside a terminal and a bar that are 11 pt times 1.18, or 17. So the size
+  # is 11 pt times whatever the factor is on this host: 13 here, 11 where
+  # nothing is scaled.
   if [[ $(uname -s) == Darwin ]]; then
     backup_and_link "$repo_dir/fcitx5/theme/wetype.conf" \
       "$HOME/.local/share/fcitx5/theme/wetype.conf"
@@ -284,6 +290,9 @@ if (( has_fcitx5 )); then
     set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" Theme wetype
     set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" DarkTheme wetype-dark
     set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" UseDarkTheme True
+    text_scale="$(gsettings get org.gnome.desktop.interface text-scaling-factor 2>/dev/null || true)"
+    fcitx5_font_size="$(awk -v f="$text_scale" 'BEGIN { if (f + 0 <= 0) f = 1; printf "%d", 11 * f + 0.5 }')"
+    set_ini_key "$HOME/.config/fcitx5/conf/classicui.conf" "" Font "\"Sans $fcitx5_font_size\""
   fi
   # The table used to be wubi-large. Its link now points at a file that is gone.
   legacy="$HOME/.config/fcitx5/table/wubi-large.conf"
