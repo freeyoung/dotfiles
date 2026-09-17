@@ -225,6 +225,19 @@ backup_and_link "$repo_dir/mise/config.toml" "$HOME/.config/mise/config.toml"
 # for no effect.
 if [[ $OSTYPE == linux* ]]; then
   backup_and_link "$repo_dir/fontconfig/fonts.conf" "$HOME/.config/fontconfig/fonts.conf"
+  # Copied, not linked, and that is the whole point: a sandbox binds ~/.config
+  # without binding this repository, so a link here would dangle inside one and
+  # fontconfig would read it as nothing at all. A real file in the bound tree is
+  # what reaches WeChat and anything else under bwrap or Flatpak. It is read
+  # outside a sandbox too, conf.d being part of the ordinary search path.
+  fontconfig_sandbox="$HOME/.config/fontconfig/conf.d/99-sandbox-cjk.conf"
+  if ! cmp -s "$repo_dir/fontconfig/99-sandbox-cjk.conf" "$fontconfig_sandbox"; then
+    mkdir -p "$(dirname "$fontconfig_sandbox")"
+    cp "$repo_dir/fontconfig/99-sandbox-cjk.conf" "$fontconfig_sandbox"
+    printf 'Copied: %s\n' "$fontconfig_sandbox"
+  else
+    printf 'Already current: %s\n' "$fontconfig_sandbox"
+  fi
   # Compose sequences. Harmless where no compose key is bound, since nothing
   # reads the table until a compose key produces a sequence.
   backup_and_link "$repo_dir/xcompose" "$HOME/.XCompose"
