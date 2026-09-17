@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
-# Register bin/claude-tab-status with Claude Code, event by event, in
+# Register this repository's Claude Code hooks, event by event, in
 # ~/.claude/settings.json. That file is Claude's, not this repository's: it
 # also holds the model choice, permissions and whatever else the user set from
 # inside Claude, so it is merged into rather than linked. Only the hook entries
-# named in omarchy/claude/hooks.json are touched, and an entry that is already
+# named in the manifests below are touched, and an entry that is already there
 # is left alone, so running this again changes nothing.
+#
+# 2 hooks, 1 manifest each, the same 12 events: bin/claude-tab-status, which
+# writes the records the Omarchy bar widget reads, and ghostty/cc-status, which
+# marks the Ghostty pane it runs in through the palette. Neither knows about
+# the other.
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-hooks="$repo_dir/omarchy/claude/hooks.json"
 settings="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
 
 # Omarchy only. Nothing off it reads the records this hook writes, and every
@@ -30,17 +34,29 @@ fi
 mkdir -p "$(dirname "$settings")"
 [[ -s $settings ]] || printf '{}\n' >"$settings"
 
-# For each event in hooks.json, append its hook groups to the same event in
+# The Ghostty hook only where Ghostty is: its command is a path inside that
+# terminal's configuration directory, and the script does nothing when run
+# anywhere else anyway. The Omarchy guard above still applies to both, so a Mac
+# sharing this repository keeps the hooks it has.
+manifests=("$repo_dir/omarchy/claude/hooks.json")
+if command -v ghostty >/dev/null 2>&1 || [[ -d /Applications/Ghostty.app ]]; then
+  manifests+=("$repo_dir/ghostty/claude/hooks.json")
+fi
+
+# For each event in a manifest, append its hook groups to the same event in
 # settings.json unless a group with the same command is already registered
 # there. Everything else in settings.json passes through untouched.
-merged=$(jq --slurpfile add "$hooks" '
-  .hooks = ((.hooks // {}) as $have
-    | reduce ($add[0].hooks | to_entries[]) as $event ($have;
-        .[$event.key] = ((.[$event.key] // []) as $groups
-          | $groups + [$event.value[]
-              | select(.hooks[0].command as $cmd
-                       | ($groups | map(.hooks[]?.command) | index($cmd)) == null)])))
-' "$settings")
+merged=$(cat "$settings")
+for manifest in "${manifests[@]}"; do
+  merged=$(printf '%s\n' "$merged" | jq --slurpfile add "$manifest" '
+    .hooks = ((.hooks // {}) as $have
+      | reduce ($add[0].hooks | to_entries[]) as $event ($have;
+          .[$event.key] = ((.[$event.key] // []) as $groups
+            | $groups + [$event.value[]
+                | select(.hooks[0].command as $cmd
+                         | ($groups | map(.hooks[]?.command) | index($cmd)) == null)])))
+  ')
+done
 
 if [[ $merged == "$(cat "$settings")" ]]; then
   printf 'Claude Code hooks already registered: %s\n' "$settings"
