@@ -49,6 +49,16 @@ font-family = JetBrainsMono Nerd Font
 # own metrics, so it means the same thing at any DPI, at any size, on either
 # desktop. The kitty beside this one says the same 2 numbers in its own shared
 # file.
+#
+# What lands is not the ratio but the whole pixel nearest to it, and the
+# smaller the cell the coarser that is. Measured on this JetBrains Mono: a
+# 21-pixel cell asked for -6% loses exactly 1 pixel, which is -4.8%, and a
+# 10-pixel cell loses exactly 1 as well, which is -10%. So the number here is a
+# request, not a proportion, and a screen at a different scale rounds it
+# somewhere else. It matters less than it sounds: kitty asks for the same ratio
+# of the same face and lands on the same pixel, which is the whole point of
+# saying it as a ratio. Worth remembering only if these are ever pushed far
+# enough to see, since Ghostty narrows the cell and not the glyph.
 adjust-cell-width = -6%
 adjust-cell-height = -4%
 
