@@ -375,6 +375,18 @@ that rebuilds the cache without this configuration undoes them, a pacman font
 package being the ordinary way that happens: run `install`, or `fc-cache -f`,
 after installing fonts.
 
+A page that names a face no Linux host can license — Segoe UI, Menlo, Georgia,
+the Apple and Microsoft faces the web asks for by habit — used to land on
+nothing, and Chrome answers that with its standard font, which is a serif. A
+block of aliases sends each of those to something installed and close in
+design: Menlo to DejaVu Sans Mono, which it is a modified cut of, Verdana and
+Tahoma to DejaVu Sans, which shares its Bitstream Vera ancestry, Segoe UI to
+Noto Sans, Helvetica Neue to Nimbus Sans. They use `prefer` rather than
+`accept`, because `accept` appends the substitute after the requested family,
+which fc-match honours and Chrome ignores; the cost is that a genuine copy of
+one of these, installed later, would lose to its own substitute until the line
+goes.
+
 No font is installed on any platform: these rules and `kitty.conf` select
 faces, they do not provide them. Omarchy already ships the Noto CJK families
 and a Nerd Font, which is why nothing here has had to. A Debian desktop does
