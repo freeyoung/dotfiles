@@ -502,32 +502,24 @@ if [[ -d "$HOME/.config/omarchy" ]] || command -v omarchy >/dev/null 2>&1; then
   # reloads on that file appearing and tries the watcher within a fraction of a
   # second; a watcher that is not there yet is recorded as failed and never
   # tried again until kitty restarts.
-  #
-  # linux.conf goes with them: the mirror of the macOS layer, holding the font
-  # size this desktop needs and the shared file cannot carry. Ghostty applies
-  # the desktop's text scaling factor to its font and kitty does not, so the
-  # two terminals say the size outright here rather than inherit a number that
-  # means two things.
   if command -v kitty >/dev/null 2>&1; then
     backup_and_link "$repo_dir/omarchy/kitty/claude_status.py" "$HOME/.config/kitty/claude_status.py"
     backup_and_link "$repo_dir/omarchy/kitty/claude_title.py" "$HOME/.config/kitty/claude_title.py"
     backup_and_link "$repo_dir/omarchy/kitty/tab_bar.py" "$HOME/.config/kitty/tab_bar.py"
-    backup_and_link "$repo_dir/omarchy/kitty/linux.conf" "$HOME/.config/kitty/linux.conf"
     backup_and_link "$repo_dir/omarchy/kitty/claude-status.conf" "$HOME/.config/kitty/claude-status.conf"
   fi
-  # Both terminals now say their size outright, which is only the same size in
-  # both if the desktop is not scaling text on top of it -- Ghostty would
-  # multiply that factor in and kitty would not, which is the split these files
-  # just closed. Nothing here changes a desktop-wide setting; it says so and
-  # leaves the choice, along with the other sizes that would have to move with
-  # it.
+  # Both terminals take their size from the same 11, which is only the same size
+  # on screen if the desktop is not scaling text on top of it: Ghostty
+  # multiplies that factor into its font and kitty does not. Nothing here
+  # changes a desktop-wide setting; it says what it found and leaves the
+  # choice, along with the other sizes that would have to move with it.
   desktop_text_scale="$(gsettings get org.gnome.desktop.interface text-scaling-factor 2>/dev/null || true)"
   if [[ -n "$desktop_text_scale" ]] &&
     awk -v f="$desktop_text_scale" 'BEGIN { exit !(f + 0 > 0 && (f + 0 < 0.999 || f + 0 > 1.001)) }'; then
-    printf 'Warning: text-scaling-factor is %s, and the 2 terminals here say their\n' \
+    printf 'Warning: text-scaling-factor is %s, and the 2 terminals here share one\n' \
       "$desktop_text_scale" >&2
-    printf '  size outright. Ghostty multiplies that factor into its font size and\n' >&2
-    printf '  kitty does not, so they will not match. To settle it:\n' >&2
+    printf '  font size. Ghostty multiplies that factor into it and kitty does not,\n' >&2
+    printf '  so the 2 will not match on screen. To settle it:\n' >&2
     printf '    gsettings set org.gnome.desktop.interface text-scaling-factor 1.0\n' >&2
     printf '  and raise font-name, monospace-font-name and document-font-name by the\n' >&2
     printf '  same factor, so that nothing else on the desktop changes size.\n' >&2
