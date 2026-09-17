@@ -18,6 +18,7 @@ state goes through the 2 channels a pane does own, and the terminal draws it:
 The detail text of a permission prompt has nowhere to go, unlike in kitty,
 where the tab bar and the pane title bars show it.
 """
+import datetime
 import json
 import os
 import subprocess
@@ -63,26 +64,54 @@ def claude_tty() -> str:
     return ''
 
 
-def write(text: str) -> None:
+def write(text: str) -> str:
     """Send escape codes to the pane this hook runs in.
 
     /dev/tty is that pane whenever Claude Code passes its terminal on, which it
     does today. If it ever stops, the tty of the Claude process itself is the
     same pane, so that is tried next.
+
+    Returns what it wrote to, or an empty string when it found nothing to write
+    to, which is the one failure the log below cannot see any other way.
     """
     try:
         out = open('/dev/tty', 'w')
     except OSError:
         tty = claude_tty()
         if tty in ('??', ''):
-            return
+            return ''
         try:
             out = open(f'/dev/{tty}', 'w')
         except OSError:
-            return
+            return ''
     with out:
         out.write(text)
         out.flush()
+        return getattr(out, 'name', '?')
+
+
+def log(*fields: object) -> None:
+    """A line per event, when CC_STATUS_LOG is set in the environment.
+
+    What a tab shows is whatever event reached it last, and the tab keeps no
+    history, so a tab left saying the wrong thing is a question about order:
+    which events arrived, in which order, which of them said nothing, and which
+    pane each one was written to. Nothing but a log can answer that.
+
+    Off unless it is asked for, because the answer is worth a line on disk only
+    while a question is open. A log that cannot be written is not worth failing
+    a hook over, so every error here is dropped.
+    """
+    if not os.environ.get('CC_STATUS_LOG'):
+        return
+    path = os.path.expanduser('~/.cache/cc-status.log')
+    stamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'a') as out:
+            out.write(f'{stamp} pid={os.getpid():<7} ' + ' '.join(str(f) for f in fields) + '\n')
+    except OSError:
+        pass
 
 
 def main() -> None:
@@ -94,13 +123,16 @@ def main() -> None:
         event = json.load(sys.stdin)
     except ValueError:
         return
+    name = event.get('hook_event_name', '?')
     state, _ = classify(event)
     if state is None:
+        log(f'{name:<20}', 'no change')
         return
     if state is END:
-        write(RING_CLEAR + PROGRESS_CLEAR)
+        target = write(RING_CLEAR + PROGRESS_CLEAR)
     else:
-        write(RING[state] + PROGRESS.get(state, PROGRESS_CLEAR))
+        target = write(RING[state] + PROGRESS.get(state, PROGRESS_CLEAR))
+    log(f'{name:<20}', f'-> {state:<8}', target or 'NOWHERE')
 
 
 if __name__ == '__main__':
