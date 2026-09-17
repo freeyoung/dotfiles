@@ -18,7 +18,7 @@
 # looked at it on a screen: the colors come from whatever Omarchy theme is
 # loaded, and a theme this bar looks wrong in is the sort of thing only an eye
 # can find.
-PILL = False
+PILL = True
 
 import os
 import sys
@@ -48,13 +48,25 @@ import pill_tab_bar as pill  # noqa: E402
 
 
 def _palette(draw_data: DrawData) -> 'pill.Palette':
-    """The bar in the colors of the theme kitty is running."""
+    """The bar in the colors of the theme kitty is running.
+
+    The open tab is the theme's: every Omarchy theme sets
+    active_tab_background and its foreground, and that pair is what says which
+    tab you are on. Nothing else is. inactive_tab_background stays at kitty's
+    own #999999, which is a light grey tab meant to sit among other tabs -- and
+    this bar's track runs the whole width of the bar, so it arrived as a bright
+    slab across a dark terminal with the rounded ends and the pill lost in it.
+    The track, the divider and the text of a tab that is not open are lifted
+    off the terminal's background instead, by the fractions the Mac's palette
+    sits at over its own black.
+    """
+    track, divider, fg_inactive = pill.inactive_from(int(draw_data.default_bg))
     return pill.Palette(
-        track=int(draw_data.inactive_bg),
+        track=track,
         pill=int(draw_data.active_bg),
-        divider=int(draw_data.inactive_fg),
+        divider=divider,
         fg_active=int(draw_data.active_fg),
-        fg_inactive=int(draw_data.inactive_fg),
+        fg_inactive=fg_inactive,
         band=0x00FF00,
         dots=cs.COLORS,
         bell=cs.COLORS['working'],
