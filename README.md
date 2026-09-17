@@ -22,6 +22,12 @@ exec zsh
 command-line dependencies, creates symlinks, restores shell/Vim plugins, and
 backs up any conflicting target under `~/.dotfiles-backups/<timestamp>/`.
 
+Everything it writes is under `$HOME`, with one exception: on Linux it puts
+`fontconfig/31-cjk-lastresort.conf` into `/etc/fonts/conf.d/`, which needs
+`sudo` once per host and is explained under [Fonts](#fonts). It compares
+before writing, and comparing needs no privilege, so a second run on a
+configured host asks for nothing.
+
 Use `bash ~/dotfiles/install --links-only` when only links and local
 configuration should be refreshed, or `--skip-plugins` when dependencies are
 welcome but plugin downloads should wait.
@@ -368,12 +374,24 @@ own matcher tolerates that and answers correctly, which is what makes it hard
 to see; Ghostty segfaults on it, renderer thread and all, on any codepoint
 that reaches those two fonts.
 
-Those are scan rules, applied when a font is scanned into the cache rather
-than when it is matched, so editing them changes nothing until `fc-cache -f`
-runs — which `install` now does at the end of the fontconfig step. Anything
-that rebuilds the cache without this configuration undoes them, a pacman font
-package being the ordinary way that happens: run `install`, or `fc-cache -f`,
-after installing fonts.
+Those are scan rules, and they live in
+[`fontconfig/31-cjk-lastresort.conf`](fontconfig/31-cjk-lastresort.conf),
+which `install` writes to `/etc/fonts/conf.d/`. That path is the point of them
+rather than a detail. A scan rule is applied when a font is read into the
+cache, so what it says lives in the cache and not in any file an application
+reads at startup, and the cache applications read is the system one:
+`fonts.conf` lists `/var/cache/fontconfig` before the user's own, and the
+first valid one wins. pacman rebuilds exactly that on every font package, from
+a hook whose action is `fc-cache -s`, run as root against `/etc` and blind to
+`~/.config`. Kept under `$HOME` these rules were therefore dropped by any
+`pacman -S` that touched a font, in silence, until somebody remembered
+`fc-cache -f`. In `/etc` the rebuild that used to erase them is the rebuild
+that carries them, and there is nothing left to remember.
+
+`install` still checks rather than assumes, because a scan rule that has
+stopped applying reads exactly like one that was never needed. It asks the
+cache whether BabelStone Han comes back with an empty langset and says so
+loudly when it does not.
 
 A page that names a face no Linux host can license — Segoe UI, Menlo, Georgia,
 the Apple and Microsoft faces the web asks for by habit — used to land on
