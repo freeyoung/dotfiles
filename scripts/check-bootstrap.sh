@@ -114,8 +114,8 @@ if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.a
 fi
 
 if [[ $(uname -s) != Darwin ]] && command -v fcitx5 >/dev/null 2>&1; then
-  for classicui_key in Theme=wetype DarkTheme=wetype-dark UseDarkTheme=True; do
-    if ! grep -qx "$classicui_key" "$tmp_dir/home/.config/fcitx5/conf/classicui.conf" 2>/dev/null; then
+  for classicui_key in Theme=wetype DarkTheme=wetype-dark UseDarkTheme=True 'Font="Sans [0-9]+"'; do
+    if ! grep -qxE "$classicui_key" "$tmp_dir/home/.config/fcitx5/conf/classicui.conf" 2>/dev/null; then
       echo "Installer did not set $classicui_key in the fcitx5 classicui config" >&2
       exit 1
     fi
