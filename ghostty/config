@@ -42,6 +42,16 @@ theme = My iTerm2
 # that happens to lack the glyphs, to be remembered again the next time the
 # face changes.
 font-family = JetBrainsMono Nerd Font
+
+# The cell, cut to the proportions of the iTerm2 profile the Mac's terminals
+# copy: kitty says 94% and 96%, which is -6% and -4% here. A ratio carries
+# between machines where a point size does not -- it is relative to the font's
+# own metrics, so it means the same thing at any DPI, at any size, on either
+# desktop. The kitty beside this one says the same 2 numbers in its own shared
+# file.
+adjust-cell-width = -6%
+adjust-cell-height = -4%
+
 font-feature = -calt
 font-feature = -liga
 font-feature = -dlig
