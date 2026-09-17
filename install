@@ -314,11 +314,14 @@ if (( has_fcitx5 )); then
   # its global config back whenever any global option changes, and the file
   # holds hotkeys that differ per host, so only this key is managed.
   set_ini_key "$HOME/.config/fcitx5/config" Behavior ActiveByDefault False
-  # Quotes and brackets are typed as a pair. conf/punctuation.conf also holds
-  # the punctuation toggle key, which may differ per host, so only this key is
-  # managed.
+  # Quotes and brackets are typed as a pair, and a punctuation after a letter
+  # or a digit stays full width -- fcitx5 makes it ASCII by default, which
+  # gets in the way. conf/punctuation.conf also holds the punctuation toggle
+  # key, which may differ per host, so only these keys are managed.
   set_ini_key "$HOME/.config/fcitx5/conf/punctuation.conf" "" \
     TypePairedPunctuationsTogether True
+  set_ini_key "$HOME/.config/fcitx5/conf/punctuation.conf" "" \
+    HalfWidthPuncAfterLetterOrNumber False
   fcitx5_shift_toggles "$HOME/.config/fcitx5/config"
   # The candidate window theme exists twice, because the two hosts draw the
   # window with different addons that read different formats. On a Mac it is
