@@ -12,13 +12,11 @@
 # ~/.config/ghostty/themes/, where Ghostty looks for a theme by name.
 theme = My iTerm2
 
-# Font. The Mono variant keeps every glyph 1 cell wide, and the cell is cut
-# down to the same size as the iTerm2 profile: kitty says 94% and 96%, which is
-# the same as -6% and -4% here.
-font-family = JetBrainsMono Nerd Font Mono
-font-size = 14
-adjust-cell-width = -6%
-adjust-cell-height = -4%
+# Font. The family, the size and the cut of the cell are each named by the
+# desktop that wants them, in the file it pulls in at the end of this one: the
+# 2 machines have different faces installed and sit at different distances, so
+# a value here would only be one the other has to undo. What is left is what
+# holds on both.
 font-feature = -calt
 font-feature = -liga
 font-feature = -dlig
