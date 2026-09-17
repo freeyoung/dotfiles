@@ -337,6 +337,21 @@ for them. A weakly bound last-resort family covers that path; all three SC
 faces are named, because a monospace pattern carries a spacing requirement the
 proportional face cannot satisfy.
 
+That family is appended rather than prepended, which matters more than the
+word suggests. Weak binding holds a family behind the strong names, but among
+the weak entries themselves it is position that decides, and at the front of
+the list these faces answered every family name the host does not have —
+Helvetica, Segoe UI, Roboto, any of them — so a page asking for one of those
+had its Latin drawn in PingFang's Latin. Appended, the fallback path is
+untouched, a lookup that names no family being one where appending and
+prepending are the same thing, and a page that names a font keeps what it
+asked for.
+
+Chrome asks for Noto Sans CJK SC by name on a page declaring Chinese, that
+being its own default for the Han script and a face this host has. An alias
+sends that request on to PingFang, so the answer is the same whichever path a
+page arrives by.
+
 Everything here adds to the generic families rather than replacing them, so a
 distribution that assigns its own faces to `sans-serif` and the rest keeps
 them.
@@ -345,6 +360,20 @@ Fonts that exist only to cover the CJK extension blocks — BabelStone Han,
 HanaMin — claim enough of Unicode besides that fontconfig will otherwise hand
 them ordinary text and even emoji. The language they declare is reassigned so
 they stay what they are for: a last resort for a codepoint nothing else has.
+What is assigned is a langset holding `zxx`, the code for no linguistic
+content, which fontconfig does not recognise and so stores as an empty
+langset: it matches no language, and it is still a langset. Assigning a plain
+string there instead leaves the property holding the wrong type. fontconfig's
+own matcher tolerates that and answers correctly, which is what makes it hard
+to see; Ghostty segfaults on it, renderer thread and all, on any codepoint
+that reaches those two fonts.
+
+Those are scan rules, applied when a font is scanned into the cache rather
+than when it is matched, so editing them changes nothing until `fc-cache -f`
+runs — which `install` now does at the end of the fontconfig step. Anything
+that rebuilds the cache without this configuration undoes them, a pacman font
+package being the ordinary way that happens: run `install`, or `fc-cache -f`,
+after installing fonts.
 
 No font is installed on any platform: these rules and `kitty.conf` select
 faces, they do not provide them. Omarchy already ships the Noto CJK families
