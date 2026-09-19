@@ -476,8 +476,8 @@ fi
 if (( $+commands[eza] )); then
   alias e='eza -lh --group-directories-first --icons=auto --git'
   alias ea='e -a'
-  alias et='eza --tree --level=2 --long --icons --git'
-  alias eta='et -a'
+  alias etree='eza --tree --level=2 --long --icons --git'
+  alias etreea='etree -a'
 fi
 
 # Pick a file with fzf, previewing it on the way. Kitty can draw images

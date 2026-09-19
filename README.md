@@ -308,8 +308,10 @@ One difference remains: eza collates byte-wise, so dotfiles sort ahead of
 everything instead of under their letter. eza has no collation setting, and no
 habit depends on it.
 
-`e`, `ea`, `et`, and `eta` reach for eza's own flags directly, in long and
-tree form, each with and without dotfiles.
+`e`, `ea`, `etree`, and `etreea` reach for eza's own flags directly, in long
+and tree form, each with and without dotfiles. The tree pair spells out
+`etree` because `et` is
+[Eternal Terminal](https://eternalterminal.dev/), which has to stay reachable.
 
 `tdl <command> [second]` builds a tmux dev layout — editor left, the command
 on the right, a shell along the bottom — `tdlm` opens one such window per
