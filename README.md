@@ -643,6 +643,15 @@ system one whole rather than overriding single keys, which is why the file
 carries every key; and it cannot hold comments, because `#` is itself a key.
 fcitx5 reads the map when it starts, so restart it after an edit.
 
+[`fcitx5/quickphrase.d/de.mb`](fcitx5/quickphrase.d/de.mb) is linked to
+`~/.local/share/fcitx5/data/quickphrase.d/de.mb`. It holds the German letters
+the keyboard cannot reach: `ae` for ä, `oe` for ö, `ue` for ü, their
+capitals, and `ss` for ß. Type them in the table input method with a semicolon first, as in
+`;ae`, which is where fcitx5 opens quick phrase. macOS reaches these letters
+through the ABC dead keys (Option+u, then the letter), but fcitx5 reads the
+keys itself and its own layouts put them behind AltGr, which macOS Option does
+not send.
+
 Changing a table setting through fcitx5's configuration tool rewrites
 `wbx.conf` in full -- the symlink survives, but every default is written out
 explicitly and the comments are lost, so trim it back afterwards. The

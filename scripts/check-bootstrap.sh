@@ -95,7 +95,7 @@ linked_targets+=(.local/bin/peek-activate)
 [[ -d $tmp_dir/home/.config/omarchy ]] && command -v kitty >/dev/null 2>&1 &&
   linked_targets+=(.config/kitty/tab_bar.py .config/kitty/claude_title.py .config/kitty/claude_status.py .config/kitty/claude-status.conf)
 { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
-  linked_targets+=(.config/fcitx5/table/wbx.conf .local/share/fcitx5/punctuation/punc.mb.zh_CN)
+  linked_targets+=(.config/fcitx5/table/wbx.conf .local/share/fcitx5/punctuation/punc.mb.zh_CN .local/share/fcitx5/data/quickphrase.d/de.mb)
 [[ $(uname -s) == Darwin && -d "/Library/Input Methods/Fcitx5.app" ]] &&
   linked_targets+=(.local/share/fcitx5/theme/wetype.conf)
 [[ $(uname -s) != Darwin ]] && command -v fcitx5 >/dev/null 2>&1 &&

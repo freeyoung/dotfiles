@@ -310,6 +310,12 @@ if (( has_fcitx5 )); then
   # the file carries every key, not only the quotes it changes.
   backup_and_link "$repo_dir/fcitx5/punc.mb.zh_CN" \
     "$HOME/.local/share/fcitx5/punctuation/punc.mb.zh_CN"
+  # German letters that the fcitx5 keyboard layout cannot reach: macOS dead
+  # keys (Option+u) are gone once fcitx5 reads the keys itself, and the xkb
+  # ones need AltGr, which macOS Option does not send. Typed as ;ae in the
+  # table input method, where semicolon opens quick phrase.
+  backup_and_link "$repo_dir/fcitx5/quickphrase.d/de.mb" \
+    "$HOME/.local/share/fcitx5/data/quickphrase.d/de.mb"
   # A new input context starts inactive, in the first input method of the
   # group (keyboard-us), and the trigger key switches it to wbx. fcitx5 writes
   # its global config back whenever any global option changes, and the file
