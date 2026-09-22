@@ -304,7 +304,45 @@ has_fcitx5=0
 if command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; then
   has_fcitx5=1
 fi
+
+# What fcitx5 has to read again after this run: the files whose keys are set
+# in place, and the linked files together with where they point. The linked
+# files change when this repository is pulled, not during the run, so their
+# state is compared with the one the last run left behind; the files set in
+# place are also rewritten by fcitx5 itself, so those are compared within the
+# run only.
+fcitx5_set_files() {
+  local f
+  for f in config conf/punctuation.conf conf/classicui.conf; do
+    cksum <"$HOME/.config/fcitx5/$f" 2>/dev/null || echo -
+  done
+}
+fcitx5_linked_files() {
+  local f
+  for f in "$HOME/.config/fcitx5/table/wbx.conf" \
+    "$HOME/.local/share/fcitx5/punctuation/punc.mb.zh_CN" \
+    "$HOME/.local/share/fcitx5/data/quickphrase.d/de.mb"; do
+    printf '%s %s\n' "$(readlink "$f" 2>/dev/null)" "$(cksum <"$f" 2>/dev/null)"
+  done
+}
+
+# fcitx5 switches between the first input method of its group and the group's
+# DefaultIM, so the trigger key and the Cmd+Space agent only do anything when
+# a keyboard layout comes first. The group lives in profile, which fcitx5
+# rewrites and this repository does not manage; it is only checked here.
+fcitx5_check_group() {
+  local profile="$HOME/.config/fcitx5/profile" first
+  [[ -f "$profile" ]] || return 0
+  first="$(awk '/^\[/ { s = $0; next } s == "[Groups/0/Items/0]" && /^Name=/ { print substr($0, 6); exit }' "$profile")"
+  if [[ -n "$first" && "$first" != keyboard-* ]]; then
+    printf 'Warning: the first fcitx5 input method is %s, not a keyboard layout such as keyboard-us,\n' "$first" >&2
+    printf '  so the trigger key and Cmd+Space have nothing to switch to. Put Keyboard - English (US)\n' >&2
+    printf '  first under Input Methods in the Fcitx5 settings.\n' >&2
+  fi
+}
+
 if (( has_fcitx5 )); then
+  fcitx5_set_before="$(fcitx5_set_files)"
   backup_and_link "$repo_dir/fcitx5/wbx.conf" "$HOME/.config/fcitx5/table/wbx.conf"
   # A punctuation map in the data directory replaces the system one whole, so
   # the file carries every key, not only the quotes it changes.
@@ -384,12 +422,23 @@ if (( has_fcitx5 )); then
   # instead. --check keeps the call from starting a fcitx5 that is not running.
   # -r reloads the global config only; an addon is reloaded by name over D-Bus.
   # fcitx5-macos has neither: its fcitx5-remote is a zsh script that knows
-  # -c -o -t -n -s only, so --check -r fails and nothing is reloaded there. A
-  # setting made under a running fcitx5-macos still needs fcitx5 restarted
-  # (pkill -x Fcitx5; macOS starts it again) before it is written back.
+  # -c -o -t -n -s only. So on a Mac, fcitx5 is restarted instead, and only when
+  # something it reads has changed: a restart can make the first key after it
+  # come out in English. Quitting saves the learned words first, and macOS
+  # starts Fcitx5 again when an app next takes text. A run with a temporary
+  # HOME, as scripts/check-bootstrap.sh does, must not touch the running one.
+  fcitx5_stamp="$HOME/.local/state/dotfiles/fcitx5-linked.cksum"
+  fcitx5_linked="$(fcitx5_linked_files)"
+  if [[ $(uname -s) == Darwin ]]; then
+    if [[ "$(fcitx5_set_files)" != "$fcitx5_set_before" ||
+      "$fcitx5_linked" != "$(cat "$fcitx5_stamp" 2>/dev/null)" ]] &&
+      [[ "$HOME" == "$(eval echo "~$(id -un)")" ]] && pgrep -x Fcitx5 >/dev/null; then
+      killall Fcitx5 && printf 'Restarted: Fcitx5, to read the changed settings\n'
+    fi
+    mkdir -p "$(dirname "$fcitx5_stamp")"
+    printf '%s\n' "$fcitx5_linked" >"$fcitx5_stamp"
+  fi
   fcitx5_remote="$(command -v fcitx5-remote || true)"
-  [[ -n "$fcitx5_remote" ]] ||
-    fcitx5_remote="/Library/Input Methods/Fcitx5.app/Contents/bin/fcitx5-remote"
   if [[ -x "$fcitx5_remote" ]] && "$fcitx5_remote" --check -r >/dev/null 2>&1; then
     printf 'Reloaded: fcitx5 config\n'
     if command -v busctl >/dev/null 2>&1; then
@@ -400,6 +449,7 @@ if (( has_fcitx5 )); then
       done
     fi
   fi
+  fcitx5_check_group
 fi
 
 # Unlike the Hyprland files above, this replaces Omarchy's kitty.conf rather

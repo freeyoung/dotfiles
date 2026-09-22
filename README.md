@@ -698,15 +698,20 @@ A running fcitx5 keeps its settings in memory and writes them back later, so a
 key set in one of these files under a running fcitx5 is undone unless fcitx5
 reads the file first. The installer therefore ends the fcitx5 step with a
 reload. `fcitx5-remote -r` reloads the global `config` only; the punctuation
-and classicui addons are reloaded by name over D-Bus. On macOS the reload
-never happens: fcitx5-macos's `fcitx5-remote` is a zsh script that knows
-`-c`, `-o`, `-t`, `-n` and `-s` and nothing else, so `--check -r` fails and
-the installer moves on quietly. There a key the installer has just set holds
-only if fcitx5 is restarted before it next saves: `pkill -x Fcitx5`, and
-macOS starts it again when an app next takes text input, or `open` the app
-at once. Until some window has focused a text field after the restart,
-fcitx5 has no input context, `fcitx5-remote` reports state 0 and `-n` prints
-nothing; switching to another app and back is enough.
+and classicui addons are reloaded by name over D-Bus. fcitx5-macos can do
+neither: its `fcitx5-remote` is a zsh script that knows `-c`, `-o`, `-t`, `-n`
+and `-s` and nothing else. So on a Mac the installer restarts Fcitx5 instead,
+and only when something fcitx5 reads has changed: a key it set in place during
+this run, or a linked file that differs from what the last run saw, which is
+how a pulled change to `wbx.conf` or the punctuation map arrives. The linked
+files' state is kept in `~/.local/state/dotfiles/fcitx5-linked.cksum`. Quitting
+saves the learned words first, and macOS starts Fcitx5 again when an app next
+takes text input. The first key after that can come out in English, which is
+why an unchanged run does not restart. Until some window has focused a text
+field after the restart, fcitx5 has no input context, `fcitx5-remote` reports
+state 0 and `-n` prints nothing; switching to another app and back is enough.
+A run with a temporary `$HOME`, as the bootstrap check makes, never restarts
+it.
 
 On macOS the installer builds
 [`fcitx5/macos-hotkey.swift`](fcitx5/macos-hotkey.swift) into
@@ -729,8 +734,9 @@ On a Mac where the group had come to hold wbx alone, the agent was registered,
 `fcitx5-remote -t` got a 200 from fcitx5, and nothing changed -- the state
 stays 1 and `-n` stays wbx, which looks exactly like a hotkey that is not
 bound. The group is `~/.config/fcitx5/profile`, which this repository does not
-manage; it is checked in Fcitx5's settings under Input Methods, where
-Keyboard - English (US) goes first. Editing the file by hand only holds if
+manage, because fcitx5 rewrites it. The installer only reads it, and warns when
+the first input method is not a keyboard layout. It is fixed in Fcitx5's
+settings under Input Methods, where Keyboard - English (US) goes first. Editing the file by hand only holds if
 fcitx5 is stopped first: it writes the profile back when it exits, so the
 order is stop, wait until the process is gone, edit, start.
 
