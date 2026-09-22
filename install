@@ -468,8 +468,8 @@ if [[ $(uname -s) == Darwin && -d /Applications/Ghostty.app ]] || command -v gho
   if [[ $(uname -s) == Darwin ]]; then
     backup_and_link "$repo_dir/macos/ghostty/macos.conf" "$HOME/.config/ghostty/macos.conf"
 
-    # What the Ghostty build in a local checkout adds is off until it is asked
-    # for, so that the build behaves like the Ghostty it came from and the config
+    # What the patched Ghostty build adds is off until it is asked for,
+    # so that the build behaves like the Ghostty it came from and the config
     # file above works with either. These are the answers this setup wants. A
     # value already set on this Mac is left alone, so an experiment survives.
     while read -r key value; do
@@ -498,7 +498,7 @@ GHOSTTY_DEFAULTS
   fi
 
   # Equal splits and the tab badge were a launch agent that drove Ghostty over
-  # AppleScript, until the Ghostty build in a local checkout did both itself.
+  # AppleScript, until the patched Ghostty build did both itself.
   for ghostty_agent in com.eric.ghostty-agent com.eric.ghostty-rebalance; do
     if [[ -e "$HOME/Library/LaunchAgents/$ghostty_agent.plist" ]]; then
       launchctl bootout "gui/$(id -u)/$ghostty_agent" 2>/dev/null || true
@@ -965,7 +965,18 @@ fi
 # host that switches tables has to move its learned words over first, or
 # fcitx-dict's first run would treat the old auto phrases as chosen words.
 # Once installed, it is refreshed here like everything else.
-fcitx_dict_dir="${FCITX_DICT_REPO:-$HOME/.local/share/fcitx-dict}"
+# Where the clone lives is private too, so this public file names no working
+# directory. An installed fcitx-dict is found through the link its bin/install
+# makes, which points into the clone; FCITX_DICT_REPO overrides that, and a
+# host with neither gets a neutral default.
+fcitx_dict_link="$HOME/.local/share/fcitx5/table/wbx.dict.d"
+if [[ -n "${FCITX_DICT_REPO:-}" ]]; then
+  fcitx_dict_dir="$FCITX_DICT_REPO"
+elif [[ -L "$fcitx_dict_link" ]]; then
+  fcitx_dict_dir="$(dirname "$(readlink "$fcitx_dict_link")")"
+else
+  fcitx_dict_dir="$HOME/.local/share/fcitx-dict"
+fi
 fcitx_dict_url=git@github.com:freeyoung/fcitx-dict.git
 if (( has_fcitx5 )); then
   if [[ -d "$fcitx_dict_dir/.git/fcitx-dict" ]]; then

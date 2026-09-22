@@ -4,8 +4,8 @@
 Ghostty has no tab bar a script can draw in and no pane title bars, so the
 state goes through the 2 channels a pane does own, and the terminal draws it:
 
-  OSC 9;4  the progress report, which Ghostty shows on the tab (the patch in
-           a local checkout) and as a bar along the top of the pane. Claude
+  OSC 9;4  the progress report, which Ghostty shows on the tab (with a patched
+           build) and as a bar along the top of the pane. Claude
            Code sends `working` itself; it has nothing for a prompt waiting to
            be answered, so this hook sends the pause state for that.
 

@@ -735,8 +735,10 @@ fcitx5 is stopped first: it writes the profile back when it exits, so the
 order is stop, wait until the process is gone, edit, start.
 
 The installer also brings in fcitx-dict. Once it is installed, each run
-refreshes it through its own `bin/install`. Before that, a networked run clones
-it into `~/.local/share/fcitx-dict` (or `$FCITX_DICT_REPO`) where the account can
+refreshes it through its own `bin/install`; the installer finds the clone
+through the link fcitx-dict makes for its word lists, so the repository names
+no working directory. Before that, a networked run clones it into
+`~/.local/share/fcitx-dict` (or `$FCITX_DICT_REPO`) where the account can
 reach it, and then only says how to install it: a host that moves from another
 table has to copy its learned words over first, as fcitx-dict's README
 describes, or fcitx-dict's first run would take the old auto phrases for
