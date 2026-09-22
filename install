@@ -382,9 +382,11 @@ if (( has_fcitx5 )); then
   # these files later, which undid TypePairedPunctuationsTogether on a host
   # where it was set under a running fcitx5. Reloading makes it read the files
   # instead. --check keeps the call from starting a fcitx5 that is not running.
-  # -r reloads the global config only; an addon is reloaded by name over D-Bus,
-  # which fcitx5-macos does not have, so there an addon setting made under a
-  # running fcitx5 still needs fcitx5 restarted before it is written back.
+  # -r reloads the global config only; an addon is reloaded by name over D-Bus.
+  # fcitx5-macos has neither: its fcitx5-remote is a zsh script that knows
+  # -c -o -t -n -s only, so --check -r fails and nothing is reloaded there. A
+  # setting made under a running fcitx5-macos still needs fcitx5 restarted
+  # (pkill -x Fcitx5; macOS starts it again) before it is written back.
   fcitx5_remote="$(command -v fcitx5-remote || true)"
   [[ -n "$fcitx5_remote" ]] ||
     fcitx5_remote="/Library/Input Methods/Fcitx5.app/Contents/bin/fcitx5-remote"

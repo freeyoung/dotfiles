@@ -698,9 +698,15 @@ A running fcitx5 keeps its settings in memory and writes them back later, so a
 key set in one of these files under a running fcitx5 is undone unless fcitx5
 reads the file first. The installer therefore ends the fcitx5 step with a
 reload. `fcitx5-remote -r` reloads the global `config` only; the punctuation
-and classicui addons are reloaded by name over D-Bus. fcitx5-macos has no
-D-Bus, so there an addon key the installer has just set holds only if fcitx5 is
-restarted before it next saves.
+and classicui addons are reloaded by name over D-Bus. On macOS the reload
+never happens: fcitx5-macos's `fcitx5-remote` is a zsh script that knows
+`-c`, `-o`, `-t`, `-n` and `-s` and nothing else, so `--check -r` fails and
+the installer moves on quietly. There a key the installer has just set holds
+only if fcitx5 is restarted before it next saves: `pkill -x Fcitx5`, and
+macOS starts it again when an app next takes text input, or `open` the app
+at once. Until some window has focused a text field after the restart,
+fcitx5 has no input context, `fcitx5-remote` reports state 0 and `-n` prints
+nothing; switching to another app and back is enough.
 
 On macOS the installer builds
 [`fcitx5/macos-hotkey.swift`](fcitx5/macos-hotkey.swift) into
@@ -714,6 +720,19 @@ in the apps that pass the key on. The binary is rebuilt only when the source
 changes. The agent is loaded only when `$HOME` is the account's own home, so
 the bootstrap check, which runs the installer with a temporary one, never
 replaces the running agent. It logs to `~/Library/Logs/fcitx5-hotkey.log`.
+
+What `-t` toggles is fcitx5's own active state: between the first input
+method of the current group and the group's `DefaultIM`. So the hotkey only
+does something when the group has `keyboard-us` first and `wbx` as the
+default, which is the layout the `ActiveByDefault=False` story above assumes.
+On a Mac where the group had come to hold wbx alone, the agent was registered,
+`fcitx5-remote -t` got a 200 from fcitx5, and nothing changed -- the state
+stays 1 and `-n` stays wbx, which looks exactly like a hotkey that is not
+bound. The group is `~/.config/fcitx5/profile`, which this repository does not
+manage; it is checked in Fcitx5's settings under Input Methods, where
+Keyboard - English (US) goes first. Editing the file by hand only holds if
+fcitx5 is stopped first: it writes the profile back when it exits, so the
+order is stop, wait until the process is gone, edit, start.
 
 The installer also brings in fcitx-dict. Once it is installed, each run
 refreshes it through its own `bin/install`. Before that, a networked run clones
