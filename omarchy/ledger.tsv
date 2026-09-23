@@ -35,7 +35,7 @@ a	skipped	launches omarchy-agent, which only exists here
 c	skipped	opencode launcher; zsh/abbr has oc and occ already
 cx	skipped	claude launcher, a personal flag choice
 cy	skipped	codex launcher, a personal flag choice
-h	skipped	herdr launcher, a one-word alias
+h	ported	
 hdl	ported	takes the command as an argument
 hdlm	ported	one hdl tab per subdirectory; quotes the command
 hds	skipped	hard-codes hunk diff --watch and opencode, as tds does

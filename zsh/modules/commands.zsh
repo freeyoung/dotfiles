@@ -711,6 +711,10 @@ if [[ $OSTYPE == linux* ]] && (( $+commands[inotifywait] && $+commands[rsync] ))
   }
 fi
 
+# Launch or attach to the persistent herdr session, as t does for tmux. Outside
+# the block below, which also needs jq for the layouts.
+(( $+commands[herdr] )) && alias h='herdr'
+
 # herdr is a terminal workspace manager (https://github.com/herdrdev/herdr),
 # distributed independently of Omarchy. Its layouts mirror the tmux ones above,
 # so they are here on the same terms: the command is an argument, and the
