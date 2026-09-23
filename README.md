@@ -1,8 +1,7 @@
 Eric's dotfiles
 ===============
 
-One repository for shared Vim/Neovim, Zsh, Starship, tmux, and SSH
-configuration.
+One repository for shared Vim/Neovim, Zsh, Starship, and SSH configuration.
 Machine- and organisation-specific shell settings stay in
 `~/.config/zsh/local.zsh`, outside Git.
 Git follows the same pattern: shared defaults live in `git/config`, while
@@ -313,12 +312,12 @@ and tree form, each with and without dotfiles. The tree pair spells out
 `etree` because `et` is
 [Eternal Terminal](https://eternalterminal.dev/), which has to stay reachable.
 
-`tdl <command> [second]` builds a tmux dev layout — editor left, the command
-on the right, a shell along the bottom — `tdlm` opens one such window per
-subdirectory, and `tsl <n> <command>` tiles the same command across n panes.
-`hdl`, `hdlm`, and `hsl` are the same three layouts under
-[herdr](https://github.com/herdrdev/herdr). All take the command as an argument
-rather than hard-coding a particular editor or agent.
+`hdl <command> [second]` builds a [herdr](https://github.com/herdrdev/herdr)
+dev layout — editor left, the command on the right, a shell along the bottom —
+`hdlm` opens one such tab per subdirectory, and `hsl <n> <command>` tiles the
+same command across n panes. All take the command as an argument rather than
+hard-coding a particular editor or agent. `h` starts or attaches to herdr, and
+`t` does the same for a tmux session named Work.
 
 Every command in this group carries the guard that makes it safe on both
 platforms. `open` and `iso2sd` are defined only on Linux: macOS has its own
@@ -456,28 +455,15 @@ Font build and `fonts-dejavu` are where to start there.
 
 ### tmux
 
-[`tmux.conf`](tmux.conf) is linked to `~/.tmux.conf`. It enables true color,
-mouse support, large scrollback, and system clipboard integration. Splits
-preserve the current directory; `h/j/k/l` navigate panes and `prefix + r`
-reloads the configuration. Ctrl-B stays the prefix, because that is what an
-unconfigured tmux on a server answers to; Ctrl-Space is a secondary prefix.
+tmux is not configured here. It is kept for leaving something running in the
+background on a server, where its defaults do, and herdr is the workspace tool
+on this machine. On Omarchy, tmux runs on the configuration Omarchy ships at
+`~/.config/tmux/tmux.conf`, which answers to both `Ctrl+Space` and `Ctrl+B`.
 
-tmux applies every configuration file it finds rather than stopping at the
-first, in the order `/etc/tmux.conf`, `~/.tmux.conf`,
-`$XDG_CONFIG_HOME/tmux/tmux.conf`. A file at the XDG path therefore does not
-supplement this one -- it overrides every setting the two have in common.
-Omarchy installs one, so the installer moves it into the backup directory.
-What was worth keeping from it is here instead: the no-prefix Alt layer
-(`Alt+Enter` to split, `Alt+1`..`Alt+9` for windows, `Ctrl+Alt+arrows` for
-panes), the uppercase session controls, `prefix + ?` for the searchable
-keybinding popup, and a note on every binding so `list-keys -N` reads as
-documentation.
-
-The status line names colors instead of giving hex values, so it follows
-whatever palette the terminal is themed with -- Omarchy's theme switcher
-repaints it for free, and a 16-color terminal on a server still renders it. It
-shows the session on the left, and copy/prefix/zoom flags, host, date, and time
-on the right, refreshed every second.
+A host set up while this repository still carried a `tmux.conf` has
+`~/.tmux.conf` linked to that file, and Omarchy's configuration moved into the
+backup directory. The installer removes the link and, on Omarchy, puts the
+shipped configuration back with `omarchy-refresh-tmux`.
 
 ### Performance
 
@@ -981,14 +967,12 @@ line that defines it; add a row for each and the next run is quiet. The script
 exits cleanly on a host without Omarchy.
 
 It checks the other direction too. Omarchy ships user configuration files, and
-some of them this repository either owns or has to keep out of the way:
-`omarchy/hypr/input.lua`, `omarchy/hypr/looknfeel.lua`,
-`omarchy/herdr/config.toml`, `starship.toml`, and `tmux/tmux.conf`, which must
-not exist at all since tmux reads it after `~/.tmux.conf`.
-`omarchy-refresh-config` copies Omarchy's version over `~/.config/<path>` with
-`cp -f`, and the Omarchy menu reaches it through `omarchy-refresh-hyprland` and
-`omarchy-refresh-tmux`, which name exactly those files -- so this is one click
-away rather than hypothetical.
+some of them this repository owns: `omarchy/hypr/input.lua`,
+`omarchy/hypr/looknfeel.lua`, `omarchy/herdr/config.toml`, and
+`starship.toml`, among others. `omarchy-refresh-config` copies Omarchy's
+version over `~/.config/<path>` with `cp -f`, and the Omarchy menu reaches it
+through `omarchy-refresh-hyprland`, which names some of those files -- so this
+is one click away rather than hypothetical.
 
 `cp -f` writes through a symlink rather than replacing it, so a refresh
 overwrites the contents of a file in this repository, where `git status` will
@@ -1004,14 +988,13 @@ own exit 0.
 [`scripts/check-bootstrap.sh`](scripts/check-bootstrap.sh) on every push and
 pull request, on both Ubuntu and macOS, since much of what the installer does
 turns on which of the two it is running on. Every check inside the bootstrap is
-guarded on its tool existing, so the workflow installs zsh, vim, tmux, and Lua
-first -- an absent tool is not a passing check, it is a check that never ran.
+guarded on its tool existing, so the workflow installs zsh, vim, and Lua first -- an absent tool is not a passing check, it is a check that never ran.
 
 The Ubuntu job tests the linking half only. It runs `install --links-only`,
 which skips
 [`scripts/install-dependencies.sh`](scripts/install-dependencies.sh)
 entirely. What it proves is the linking half on a Linux that is not this one:
-the platform guards, the SSH sanitiser, and the tmux, Lua, Zsh, and Vim
+the platform guards, the SSH sanitiser, and the Lua, Zsh, and Vim
 configuration parsing under older tools and no installed plugins. Both of
 those last two caught a real bug the first time it ran.
 

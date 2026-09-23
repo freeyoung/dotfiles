@@ -187,11 +187,8 @@ fcitx5_shift_toggles() {
   set_ini_key "$file" Hotkey AltTriggerKeys ""
 }
 
-# tmux applies every configuration file it finds rather than stopping at the
-# first, so a second file does not supplement ~/.tmux.conf -- it overrides
-# every setting the two have in common. Omarchy installs one at the XDG path,
-# which tmux reads last and which therefore wins. Move such a file aside; what
-# was worth keeping from Omarchy's is already in tmux.conf here.
+# Move aside a file that would undo something this repository sets up, leaving
+# nothing in its place -- unlike backup_and_link, which puts a link there.
 backup_conflicting() {
   local target="$1" reason="$2" backup
 
@@ -207,9 +204,21 @@ vim_dir="$repo_dir/vim"
 backup_and_link "$vim_dir" "$HOME/.vim"
 backup_and_link "$vim_dir/vimrc" "$HOME/.vimrc"
 backup_and_link "$vim_dir/nvim_init.vim" "$HOME/.config/nvim/init.vim"
-backup_and_link "$repo_dir/tmux.conf" "$HOME/.tmux.conf"
-backup_conflicting "$HOME/.config/tmux/tmux.conf" \
-  "tmux reads it after ~/.tmux.conf and would override it"
+
+# tmux is not configured here any more. It is kept for running something in the
+# background on a server, where its defaults do, and herdr is the workspace tool
+# on this machine; on Omarchy the configuration it ships is the one tmux uses.
+# An earlier install linked ~/.tmux.conf into this repository and moved
+# Omarchy's file aside, so undo both, and only where that happened.
+if [[ -L "$HOME/.tmux.conf" && "$(readlink "$HOME/.tmux.conf")" == "$repo_dir/tmux.conf" ]]; then
+  rm "$HOME/.tmux.conf"
+  printf 'Removed stale link: %s\n' "$HOME/.tmux.conf"
+  if [[ ! -e "$HOME/.config/tmux/tmux.conf" ]] && command -v omarchy-refresh-tmux >/dev/null 2>&1; then
+    OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}" omarchy-refresh-tmux &&
+      printf 'Restored Omarchy tmux configuration: %s\n' "$HOME/.config/tmux/tmux.conf"
+  fi
+fi
+
 backup_and_link "$repo_dir/zsh/zshrc" "$HOME/.zshrc"
 backup_and_link "$repo_dir/zsh/zprofile" "$HOME/.zprofile"
 backup_and_link "$repo_dir/zsh/plugins.txt" "$HOME/.zsh_plugins.txt"

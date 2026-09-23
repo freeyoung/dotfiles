@@ -27,9 +27,9 @@ rsw	ported	Linux only
 sff	ported	zsh glob qualifier instead of find -printf
 ssh	ported	the reconnect wrapper, the substantial one
 t	ported	
-tdl	ported	takes the command as an argument; fixes Omarchy's unset $opencode_pane
-tsl	ported	
-tdlm	ported	one tdl window per subdirectory; quotes the command, which Omarchy does not
+tdl	skipped	tmux is not a workspace tool here; hdl is the herdr one
+tsl	skipped	tmux is not a workspace tool here; hsl is the herdr one
+tdlm	skipped	tmux is not a workspace tool here; hdlm is the herdr one
 ga	renamed	gwa -- ga reads as git add everywhere else
 a	skipped	launches omarchy-agent, which only exists here
 c	skipped	opencode launcher; zsh/abbr has oc and occ already

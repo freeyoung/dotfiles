@@ -10,14 +10,14 @@
 # one; this subtracts the ledger from what Omarchy currently defines, so the
 # output is only ever the new arrivals. That is news, not a problem.
 #
-# Omarchy also ships user configuration files, and four of them this repository
-# either owns or has to keep out of the way. omarchy-refresh-config copies
+# Omarchy also ships user configuration files, and some of them this
+# repository owns. omarchy-refresh-config copies
 # $OMARCHY_PATH/config/<path> over ~/.config/<path> with cp -f, which writes
 # through a symlink rather than replacing it -- so a refresh overwrites the
 # contents of a file in this repository, where git will show it, instead of
 # quietly detaching the link. The Omarchy menu reaches this through
-# omarchy-refresh-hyprland and omarchy-refresh-tmux, which name exactly these
-# files, so it is one click away rather than hypothetical. That is a
+# omarchy-refresh-hyprland, which names some of these files, so it is one click
+# away rather than hypothetical. That is a
 # regression, so it exits 1; new definitions on their own exit 0.
 set -euo pipefail
 
@@ -37,10 +37,8 @@ if [[ ! -r $ledger ]]; then
 fi
 
 # Path under ~/.config, then the file in this repository that should be linked
-# there -- or "-" where nothing should be at that path at all, because tmux
-# reads a file there after ~/.tmux.conf and would override it.
+# there.
 managed_files=(
-  'tmux/tmux.conf|-'
   'hypr/input.lua|omarchy/hypr/input.lua'
   'hypr/looknfeel.lua|omarchy/hypr/looknfeel.lua'
   'hypr/bindings.lua|omarchy/hypr/bindings.lua'
@@ -90,11 +88,7 @@ report_files() {
     target="$HOME/.config/$config_path"
     problem=""
 
-    if [[ $repo_path == '-' ]]; then
-      if [[ -e $target || -L $target ]]; then
-        problem="reappeared, and tmux reads it after ~/.tmux.conf"
-      fi
-    elif [[ ! -L $target ]]; then
+    if [[ ! -L $target ]]; then
       [[ -e $target ]] &&
         problem="is no longer a link into this repository" ||
         problem="is missing"

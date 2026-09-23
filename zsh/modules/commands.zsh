@@ -532,95 +532,10 @@ fi
 
 (( $+commands[docker] )) && alias d='docker'
 
-# tmux. Omarchy pairs each of these with a herdr twin and hard-codes the
-# programs each pane runs; here the command is always an argument, so the
-# layout is the reusable part.
-if (( $+commands[tmux] )); then
-  alias t='tmux attach || tmux new -s Work'
-
-  # Dev layout: editor filling the left, a command on the right, a shell along
-  # the bottom. A second command splits the right-hand pane.
-  #   tdl 'claude --permission-mode auto' [second-command]
-  tdl() {
-    if (( $# == 0 )); then
-      print -u2 'Usage: tdl <command> [second-command]'
-      return 1
-    fi
-    [[ -n $TMUX ]] || { print -u2 'tdl: start tmux first'; return 1; }
-
-    local dir=$PWD editor_pane=$TMUX_PANE side_pane second_pane
-
-    tmux rename-window -t "$editor_pane" "${dir:t}"
-    tmux split-window -v -p 15 -t "$editor_pane" -c "$dir"
-    side_pane=$(tmux split-window -h -p 30 -t "$editor_pane" -c "$dir" -P -F '#{pane_id}')
-
-    if [[ -n $2 ]]; then
-      second_pane=$(tmux split-window -v -t "$side_pane" -c "$dir" -P -F '#{pane_id}')
-      tmux send-keys -t "$second_pane" "$2" C-m
-    fi
-
-    tmux send-keys -t "$side_pane" "$1" C-m
-    tmux send-keys -t "$editor_pane" "${EDITOR:-vim} ." C-m
-    # Omarchy selects $opencode_pane here, which that function never assigns --
-    # a leftover from the square layout, so focus lands nowhere in particular.
-    tmux select-pane -t "$editor_pane"
-  }
-
-  # One tdl window per subdirectory of the current one, for working across a
-  # set of checkouts at once.
-  #   tdlm 'claude --permission-mode auto' [second-command]
-  tdlm() {
-    if (( $# == 0 )); then
-      print -u2 'Usage: tdlm <command> [second-command]'
-      return 1
-    fi
-    [[ -n $TMUX ]] || { print -u2 'tdlm: start tmux first'; return 1; }
-
-    local base=$PWD dir pane_id session
-    local -i first=1
-
-    # tmux rejects dots and colons in a session name.
-    session=${${base:t}//[.:]/-}
-    tmux rename-session "$session" 2>/dev/null
-
-    for dir in $base/*(N/); do
-      # Quote each argument: Omarchy passes them bare, which works for its own
-      # single-word aliases and comes apart for a command with arguments.
-      if (( first )); then
-        tmux send-keys -t "$TMUX_PANE" "cd ${(q)dir} && tdl ${(q)1} ${2:+${(q)2}}" C-m
-        first=0
-      else
-        pane_id=$(tmux new-window -c "$dir" -P -F '#{pane_id}')
-        tmux send-keys -t "$pane_id" "tdl ${(q)1} ${2:+${(q)2}}" C-m
-      fi
-    done
-  }
-
-  # Swarm: the same command in a tiled grid of panes.
-  #   tsl 4 'claude --permission-mode auto'
-  tsl() {
-    if (( $# < 2 )); then
-      print -u2 'Usage: tsl <pane-count> <command>'
-      return 1
-    fi
-    [[ -n $TMUX ]] || { print -u2 'tsl: start tmux first'; return 1; }
-
-    local -i count=$1
-    local cmd=$2 dir=$PWD pane
-    local -a panes=("$TMUX_PANE")
-
-    tmux rename-window -t "$TMUX_PANE" "${dir:t}"
-    while (( ${#panes} < count )); do
-      panes+=("$(tmux split-window -h -t "${panes[-1]}" -c "$dir" -P -F '#{pane_id}')")
-      tmux select-layout -t "${panes[1]}" tiled
-    done
-
-    for pane in "${panes[@]}"; do
-      tmux send-keys -t "$pane" "$cmd" C-m
-    done
-    tmux select-pane -t "${panes[1]}"
-  }
-fi
+# Attach to the Work tmux session, or start it. tmux is kept for leaving
+# something running in the background; herdr is the workspace tool, so the
+# layouts are defined for herdr only.
+(( $+commands[tmux] )) && alias t='tmux attach || tmux new -s Work'
 
 # Linux only: writing an image to a block device has no macOS equivalent, and
 # the tools below are GNU/util-linux. Omarchy picks the drive with its own
@@ -716,9 +631,9 @@ fi
 (( $+commands[herdr] )) && alias h='herdr'
 
 # herdr is a terminal workspace manager (https://github.com/herdrdev/herdr),
-# distributed independently of Omarchy. Its layouts mirror the tmux ones above,
-# so they are here on the same terms: the command is an argument, and the
-# tool-specific square layout is left out.
+# distributed independently of Omarchy. The layouts follow Omarchy's, except
+# that the command is an argument rather than a hard-coded editor or agent, and
+# the square layout, which hard-codes its tools, is left out.
 if (( $+commands[herdr] && $+commands[jq] )); then
   # A ratio as a short decimal. zsh arithmetic would render 1/3 as
   # 0.33333333333333331, and herdr is given a four-place figure like the

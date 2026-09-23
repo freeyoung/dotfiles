@@ -76,7 +76,7 @@ if command -v ssh >/dev/null 2>&1; then
 fi
 
 linked_targets=(
-  .vim .vimrc .tmux.conf .zshrc .zprofile .zsh_plugins.txt
+  .vim .vimrc .zshrc .zprofile .zsh_plugins.txt
   .gitconfig .config/git/ignore .ssh/config .config/nvim/init.vim .config/starship.toml
   .config/zsh-abbr/user-abbreviations .config/mise/config.toml
 )
@@ -240,42 +240,23 @@ grep -Fqx 'Include */config.local config.d/*.conf' \
   exit 1
 }
 
-# tmux reads every configuration file it finds, so one at the XDG path would
-# override ~/.tmux.conf rather than add to it. Omarchy installs such a file.
-shadow_home="$tmp_dir/tmux-shadow-home"
-mkdir -p "$shadow_home/.config/tmux"
-printf '%s\n' 'set -g prefix C-Space' > "$shadow_home/.config/tmux/tmux.conf"
-HOME="$shadow_home" bash "$tmp_dir/install" --links-only
-if [[ -e "$shadow_home/.config/tmux/tmux.conf" ]]; then
-  echo 'Installer left a tmux configuration that shadows ~/.tmux.conf' >&2
+# tmux used to be configured here. A host set up back then has ~/.tmux.conf
+# linked to a file that is gone; the installer removes that link, and leaves
+# alone a tmux configuration that is the user's own.
+stale_home="$tmp_dir/tmux-stale-home"
+mkdir -p "$stale_home/.config/tmux"
+# The installer compares against its own directory as pwd -P gives it, and on
+# macOS the temporary directory sits behind the /var -> /private/var link.
+ln -s "$(cd "$tmp_dir" && pwd -P)/tmux.conf" "$stale_home/.tmux.conf"
+printf '%s\n' 'set -g prefix C-Space' > "$stale_home/.config/tmux/tmux.conf"
+HOME="$stale_home" bash "$tmp_dir/install" --links-only
+if [[ -e "$stale_home/.tmux.conf" || -L "$stale_home/.tmux.conf" ]]; then
+  echo 'Installer left the stale ~/.tmux.conf link in place' >&2
   exit 1
 fi
-shadow_backup="$(
-  find "$shadow_home/.dotfiles-backups" \
-    -type f -path '*/.config/tmux/tmux.conf' -print -quit
-)"
-if [[ -z "$shadow_backup" ]] ||
-   ! grep -qx 'set -g prefix C-Space' "$shadow_backup"; then
-  echo 'Installer did not back up the shadowing tmux configuration' >&2
+if ! grep -qx 'set -g prefix C-Space' "$stale_home/.config/tmux/tmux.conf"; then
+  echo 'Installer touched a tmux configuration it does not own' >&2
   exit 1
-fi
-
-# tmux reports configuration errors to the client that sourced the file, and
-# says nothing when the server starts detached -- so source it from a client.
-if command -v tmux >/dev/null 2>&1; then
-  # tmux exits with the status of the last command it was given, so source-file
-  # has to be the last one -- appending kill-server here would report that
-  # kill-server succeeded and swallow a rejected configuration.
-  tmux_socket="dotfiles-check-$$"
-  tmux_status=0
-  tmux -L "$tmux_socket" -f /dev/null start-server \; \
-    source-file "$tmp_dir/tmux.conf" || tmux_status=$?
-  tmux -L "$tmux_socket" kill-server 2>/dev/null || true
-  if (( tmux_status != 0 )); then
-    echo 'Tmux rejected the configuration' >&2
-    exit 1
-  fi
-  printf 'Tmux configuration check passed.\n'
 fi
 
 echo "Clean offline bootstrap check passed in $tmp_dir"

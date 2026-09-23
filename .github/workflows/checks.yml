@@ -24,7 +24,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends zsh vim tmux lua5.4 kitty
+          sudo apt-get install -y --no-install-recommends zsh vim lua5.4 kitty
           # The kitty check passes quietly on a host without kitty, which is
           # right for a laptop and wrong here. Fail now if the archive did not
           # provide it, rather than reporting a check that never ran as green.
@@ -32,7 +32,7 @@ jobs:
 
       - name: Install the tools the checks look for
         if: runner.os == 'macOS'
-        run: brew install tmux lua
+        run: brew install lua
 
       # The Lua check calls luac by that name; the packages may only provide a
       # versioned one.
