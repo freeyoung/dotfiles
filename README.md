@@ -601,6 +601,18 @@ Alt being spoken for), and turns on natural scrolling and three-finger drag.
 `looknfeel.lua` carries the border and gap settings ported from the old
 `hyprland.conf`.
 
+[`omarchy/herdr/config.toml`](omarchy/herdr/config.toml) is Omarchy's herdr
+configuration, taken over whole and linked to `~/.config/herdr/config.toml`
+wherever herdr is installed. Omarchy's copy maps its tmux setup onto herdr,
+prefix included: `Ctrl+Space`, with no second prefix, because herdr accepts
+only one and `Ctrl+B` was tmux's `prefix2`. herdr reads a single file, so
+unlike the Hyprland overrides this one replaces Omarchy's rather than layering
+over it, and changes to the template are picked up by hand. Two lines are this
+repository's own: `onboarding = false`, so herdr never writes the file itself
+(which skips the first-run offer to install agent integrations -- run
+`herdr integration install` for those), and `[update] version_check = false`,
+since herdr comes from Omarchy's package repository rather than upstream.
+
 fcitx5 is split between this repository and
 [fcitx-dict](https://github.com/freeyoung/fcitx-dict), a private one. The rule
 is what each kind of file is: preferences written by hand live here, and the
@@ -969,9 +981,10 @@ line that defines it; add a row for each and the next run is quiet. The script
 exits cleanly on a host without Omarchy.
 
 It checks the other direction too. Omarchy ships user configuration files, and
-four of them this repository either owns or has to keep out of the way:
-`omarchy/hypr/input.lua`, `omarchy/hypr/looknfeel.lua`, `starship.toml`, and `tmux/tmux.conf`,
-which must not exist at all since tmux reads it after `~/.tmux.conf`.
+some of them this repository either owns or has to keep out of the way:
+`omarchy/hypr/input.lua`, `omarchy/hypr/looknfeel.lua`,
+`omarchy/herdr/config.toml`, `starship.toml`, and `tmux/tmux.conf`, which must
+not exist at all since tmux reads it after `~/.tmux.conf`.
 `omarchy-refresh-config` copies Omarchy's version over `~/.config/<path>` with
 `cp -f`, and the Omarchy menu reaches it through `omarchy-refresh-hyprland` and
 `omarchy-refresh-tmux`, which name exactly those files -- so this is one click
@@ -979,8 +992,8 @@ away rather than hypothetical.
 
 `cp -f` writes through a symlink rather than replacing it, so a refresh
 overwrites the contents of a file in this repository, where `git status` will
-show it, instead of quietly detaching the link. The review reports any of the
-four that reappeared, stopped being a link, or came back byte-identical to
+show it, instead of quietly detaching the link. The review reports any of them
+that reappeared, stopped being a link, or came back byte-identical to
 Omarchy's default, and names the `.bak.<epoch>` file Omarchy left behind. That
 is a regression rather than news, so it exits 1; new shell definitions on their
 own exit 0.
