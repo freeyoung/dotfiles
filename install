@@ -579,9 +579,9 @@ if command -v Hyprland >/dev/null 2>&1; then
   backup_and_link "$repo_dir/xresources" "$HOME/.Xresources"
 fi
 
-# Omarchy's herdr configuration, kept here as it ships plus two settings of
-# its own (onboarding, the update check), so every machine runs the same keys
-# rather than whatever its last refresh left. Like kitty.conf it replaces rather than layers, since herdr
+# Omarchy's herdr configuration, kept here as it ships plus onboarding, so every
+# machine runs the same keys rather than whatever its last refresh left. herdr
+# itself comes from mise, not from Omarchy's package; see mise/config.toml. Like kitty.conf it replaces rather than layers, since herdr
 # reads a single config.toml, and scripts/omarchy-review.sh surfaces a refresh
 # that overwrites it. Omarchy's migration only seeds this file when it is
 # missing, so a link made first is left alone.

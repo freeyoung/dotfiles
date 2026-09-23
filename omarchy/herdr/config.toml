@@ -98,8 +98,3 @@ tab_bar_right = [{ type = "zoom" }, { type = "hostname" }]
 # the basename of the pane cwd. This is what Hyprland shows in the group bar,
 # and it resolves on the server so remote sessions name the remote host.
 window_title = "{hostname}: {workspace}"
-
-[update]
-# herdr comes from the omarchy pacman repo; skip the upstream release check so the
-# menu does not flag versions the repo has not packaged yet
-version_check = false

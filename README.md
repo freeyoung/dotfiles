@@ -593,11 +593,22 @@ wherever herdr is installed. Omarchy's copy maps its tmux setup onto herdr,
 prefix included: `Ctrl+Space`, with no second prefix, because herdr accepts
 only one and `Ctrl+B` was tmux's `prefix2`. herdr reads a single file, so
 unlike the Hyprland overrides this one replaces Omarchy's rather than layering
-over it, and changes to the template are picked up by hand. Two lines are this
+over it, and changes to the template are picked up by hand. One line is this
 repository's own: `onboarding = false`, so herdr never writes the file itself
 (which skips the first-run offer to install agent integrations -- run
-`herdr integration install` for those), and `[update] version_check = false`,
-since herdr comes from Omarchy's package repository rather than upstream.
+`herdr integration install` for those).
+
+herdr itself comes from mise, tracking `latest` like the other CLIs in
+[`mise/config.toml`](mise/config.toml), rather than from Omarchy's package,
+which reaches Omarchy's stable channel weeks after an upstream release. That
+matters for `herdr --remote`, which requires the remote herdr to report exactly
+the local version and otherwise offers to replace it: every host has to be on
+the same release, and mise gets the upstream one on the Mac and on Linux alike.
+mise's release binary is also statically linked, where the package is built
+against Arch's glibc -- and on a remote with the same platform, herdr seeds the
+remote with a copy of whatever binary it is running, unless mise, Homebrew, or
+Nix installed it. The shim sits ahead of `/usr/bin` in the Hyprland session's
+`PATH`, so Omarchy's launch binding starts the mise one as well.
 
 fcitx5 is split between this repository and
 [fcitx-dict](https://github.com/freeyoung/fcitx-dict), a private one. The rule
