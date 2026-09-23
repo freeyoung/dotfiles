@@ -42,7 +42,13 @@ focus_pane_down = "ctrl+alt+down"
 focus_pane_up = "ctrl+alt+up"
 focus_pane_right = "ctrl+alt+right"
 
-resize_mode = ["prefix+ctrl+left", "prefix+ctrl+down", "prefix+ctrl+up", "prefix+ctrl+right"]
+# Unbound, where Omarchy gives it all four prefix+ctrl+arrows. Every one of them
+# only enters resize mode, whichever arrow it is, and the direct bindings below
+# resize without a mode. Joined into one label they also run 72 columns, which
+# pushes every description in the prefix+? panel onto a line of its own. An
+# empty string rather than deleting the line: herdr's default is prefix+r,
+# which is rename_tab here.
+resize_mode = ""
 
 # Like resize-pane on C-M-S-arrows
 resize_pane_left = "ctrl+alt+shift+left"
