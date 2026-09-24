@@ -350,19 +350,7 @@ fcitx5_check_group() {
   fi
 }
 
-if (( has_fcitx5 )); then
-  fcitx5_set_before="$(fcitx5_set_files)"
-  backup_and_link "$repo_dir/fcitx5/wbx.conf" "$HOME/.config/fcitx5/table/wbx.conf"
-  # A punctuation map in the data directory replaces the system one whole, so
-  # the file carries every key, not only the quotes it changes.
-  backup_and_link "$repo_dir/fcitx5/punc.mb.zh_CN" \
-    "$HOME/.local/share/fcitx5/punctuation/punc.mb.zh_CN"
-  # German letters that the fcitx5 keyboard layout cannot reach: macOS dead
-  # keys (Option+u) are gone once fcitx5 reads the keys itself, and the xkb
-  # ones need AltGr, which macOS Option does not send. Typed as ;ae in the
-  # table input method, where semicolon opens quick phrase.
-  backup_and_link "$repo_dir/fcitx5/quickphrase.d/de.mb" \
-    "$HOME/.local/share/fcitx5/data/quickphrase.d/de.mb"
+fcitx5_set_keys() {
   # A new input context starts inactive, in the first input method of the
   # group (keyboard-us), and the trigger key switches it to wbx. fcitx5 writes
   # its global config back whenever any global option changes, and the file
@@ -377,6 +365,22 @@ if (( has_fcitx5 )); then
   set_ini_key "$HOME/.config/fcitx5/conf/punctuation.conf" "" \
     HalfWidthPuncAfterLetterOrNumber False
   fcitx5_shift_toggles "$HOME/.config/fcitx5/config"
+}
+
+if (( has_fcitx5 )); then
+  fcitx5_set_before="$(fcitx5_set_files)"
+  backup_and_link "$repo_dir/fcitx5/wbx.conf" "$HOME/.config/fcitx5/table/wbx.conf"
+  # A punctuation map in the data directory replaces the system one whole, so
+  # the file carries every key, not only the quotes it changes.
+  backup_and_link "$repo_dir/fcitx5/punc.mb.zh_CN" \
+    "$HOME/.local/share/fcitx5/punctuation/punc.mb.zh_CN"
+  # German letters that the fcitx5 keyboard layout cannot reach: macOS dead
+  # keys (Option+u) are gone once fcitx5 reads the keys itself, and the xkb
+  # ones need AltGr, which macOS Option does not send. Typed as ;ae in the
+  # table input method, where semicolon opens quick phrase.
+  backup_and_link "$repo_dir/fcitx5/quickphrase.d/de.mb" \
+    "$HOME/.local/share/fcitx5/data/quickphrase.d/de.mb"
+  fcitx5_set_keys
   # The candidate window theme exists twice, because the two hosts draw the
   # window with different addons that read different formats. On a Mac it is
   # fcitx5-macos's web panel, and the theme is only made available: it is
@@ -436,13 +440,27 @@ if (( has_fcitx5 )); then
   # come out in English. Quitting saves the learned words first, and macOS
   # starts Fcitx5 again when an app next takes text. A run with a temporary
   # HOME, as scripts/check-bootstrap.sh does, must not touch the running one.
+  #
+  # Quitting also writes the settings Fcitx5 holds back over these files, so
+  # a key set above under a running Fcitx5 is undone by the restart meant to
+  # load it. Wait for it to exit, then set the keys again.
   fcitx5_stamp="$HOME/.local/state/dotfiles/fcitx5-linked.cksum"
   fcitx5_linked="$(fcitx5_linked_files)"
   if [[ $(uname -s) == Darwin ]]; then
     if [[ "$(fcitx5_set_files)" != "$fcitx5_set_before" ||
       "$fcitx5_linked" != "$(cat "$fcitx5_stamp" 2>/dev/null)" ]] &&
       [[ "$HOME" == "$(eval echo "~$(id -un)")" ]] && pgrep -x Fcitx5 >/dev/null; then
-      killall Fcitx5 && printf 'Restarted: Fcitx5, to read the changed settings\n'
+      killall Fcitx5
+      for _ in {1..50}; do
+        pgrep -x Fcitx5 >/dev/null || break
+        sleep 0.1
+      done
+      if pgrep -x Fcitx5 >/dev/null; then
+        printf 'Warning: Fcitx5 did not quit; its settings may not match this run\n' >&2
+      else
+        fcitx5_set_keys >/dev/null
+        printf 'Restarted: Fcitx5, to read the changed settings\n'
+      fi
     fi
     mkdir -p "$(dirname "$fcitx5_stamp")"
     printf '%s\n' "$fcitx5_linked" >"$fcitx5_stamp"
