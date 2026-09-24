@@ -11,6 +11,14 @@ herdr = "latest"
 node = "26.7.0"
 opencode = "latest"
 pi = "latest"
+pnpm = "latest"
+
+# Each tool above lives only in mise; Homebrew, npm -g and the vendors' own
+# installers must not install a second copy. Left to itself, Claude Code
+# updates by installing a native copy in ~/.local/bin; `mise upgrade` updates
+# it here instead.
+[env]
+DISABLE_AUTOUPDATER = "1"
 
 [settings.upgrade]
 auto_prune = false
