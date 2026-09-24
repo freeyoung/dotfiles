@@ -323,7 +323,7 @@ fi
 fcitx5_set_files() {
   local f
   for f in config conf/punctuation.conf conf/classicui.conf; do
-    cksum <"$HOME/.config/fcitx5/$f" 2>/dev/null || echo -
+    cksum 2>/dev/null <"$HOME/.config/fcitx5/$f" || echo -
   done
 }
 fcitx5_linked_files() {
@@ -331,7 +331,7 @@ fcitx5_linked_files() {
   for f in "$HOME/.config/fcitx5/table/wbx.conf" \
     "$HOME/.local/share/fcitx5/punctuation/punc.mb.zh_CN" \
     "$HOME/.local/share/fcitx5/data/quickphrase.d/de.mb"; do
-    printf '%s %s\n' "$(readlink "$f" 2>/dev/null)" "$(cksum <"$f" 2>/dev/null)"
+    printf '%s %s\n' "$(readlink "$f" 2>/dev/null)" "$(cksum 2>/dev/null <"$f")"
   done
 }
 
