@@ -107,7 +107,7 @@ window_title = "{hostname}: {workspace}"
 
 status_indicators = "symbols"
 [ui.toast]
-delivery = "system"
+delivery = "terminal"
 
 [ui.sound]
 enabled = true
