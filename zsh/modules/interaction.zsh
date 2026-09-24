@@ -33,6 +33,11 @@ bindkey -M emacs '^[f' forward-word-fish
 bindkey -M emacs '^[[1;5D' backward-word-fish
 bindkey -M emacs '^[[1;5C' forward-word-fish
 
+# Option+Left/Right as a terminal sends it when it does not rewrite it to
+# esc b / esc f (Ghostty on the Mac is set not to, so herdr can see the arrow).
+bindkey -M emacs '^[[1;3D' backward-word-fish
+bindkey -M emacs '^[[1;3C' forward-word-fish
+
 # Keep native Tab completion. Ctrl+F accepts the inline history suggestion,
 # matching Fish's dark suggestion + accept interaction.
 bindkey '^I' expand-or-complete
