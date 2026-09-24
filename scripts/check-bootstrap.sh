@@ -109,8 +109,8 @@ fi
 
 if { command -v fcitx5 >/dev/null 2>&1 || [[ -d "/Library/Input Methods/Fcitx5.app" ]]; } &&
   { ! grep -qx 'TypePairedPunctuationsTogether=True' "$tmp_dir/home/.config/fcitx5/conf/punctuation.conf" 2>/dev/null ||
-    ! grep -qx 'HalfWidthPuncAfterLetterOrNumber=False' "$tmp_dir/home/.config/fcitx5/conf/punctuation.conf" 2>/dev/null; }; then
-  echo 'Installer did not set the two keys in the fcitx5 punctuation config' >&2
+    grep -qx 'HalfWidthPuncAfterLetterOrNumber=False' "$tmp_dir/home/.config/fcitx5/conf/punctuation.conf" 2>/dev/null; }; then
+  echo 'Installer did not set TypePairedPunctuationsTogether, or left HalfWidthPuncAfterLetterOrNumber off, in the fcitx5 punctuation config' >&2
   exit 1
 fi
 

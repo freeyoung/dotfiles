@@ -626,8 +626,9 @@ keys and keeps the keys each host already has there. It empties
 only goes back to the input method it left, so it cannot activate a new
 context, and left Shift did nothing in a new window. The same applies to
 `conf/punctuation.conf`, which also holds a hotkey: the installer sets only two
-keys there. Quotes and brackets are typed as a pair, and a punctuation mark
-after a letter or a digit stays full width, where fcitx5 would make it ASCII. fcitx-dict sets `AutoSavePeriod`, which
+keys there. Quotes and brackets are typed as a pair. A period or a comma after
+a letter or a digit is ASCII, so a decimal such as `1.5` needs no switch;
+Backspace straight after it gives the full-width mark. fcitx-dict sets `AutoSavePeriod`, which
 only its sync needs. Everything below is linked where fcitx5 or
 fcitx5-macos exists; fcitx5-macos puts no `fcitx5` on `PATH`, so it is found by
 its app.
