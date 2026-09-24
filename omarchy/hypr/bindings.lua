@@ -391,6 +391,12 @@ local function peek_owns(peek, window)
   if not window or not window.class then
     return false
   end
+  -- A window that opened while the peek was up lands on its workspace, and
+  -- toggling the peek back in focuses that window first. Counting it as a
+  -- stranger hid the peek the moment it appeared, on every press.
+  if window.workspace and window.workspace.name == peek.special then
+    return true
+  end
   for _, app in ipairs(peek.apps) do
     if class_matches(window.class, app.class) then
       return true
