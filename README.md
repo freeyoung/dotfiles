@@ -750,6 +750,23 @@ settings under Input Methods, where Keyboard - English (US) goes first. Editing 
 fcitx5 is stopped first: it writes the profile back when it exits, so the
 order is stop, wait until the process is gone, edit, start.
 
+Which macOS input source Fcitx5 is added as matters too. **Status: to be
+verified** (2026-09-24, on the MacBook Pro; the Mac mini has run this way
+without trouble). Fcitx5 appears twice in System Settings > Keyboard > Input
+Sources: added from the English group it is an input mode that macOS counts as
+able to type ASCII, and added from the Chinese group it is one that macOS does
+not. With only the Chinese one, macOS switched to its keyboard layout (U.S.)
+wherever it wants ASCII input, such as a password field, and did not switch
+back, so Fcitx5 kept seeming not to be the default. The setup that should hold
+is the Mac mini's: the English-group Fcitx5 first, and ABC under it, with
+nothing else. macOS insists on one keyboard layout of its own and will not
+remove the last one, which is why U.S. could only go once ABC was added; ABC
+is the layout Fcitx5 types through anyway. The system shortcuts that cycle
+input sources stay off. None of this is set by the installer: macOS 27 no
+longer keeps the enabled sources in `com.apple.HIToolbox.plist`, and
+`TISDisableInputSource` returned success without disabling anything, even from
+the desktop session.
+
 The installer also brings in fcitx-dict. Once it is installed, each run
 refreshes it through its own `bin/install`; the installer finds the clone
 through the link fcitx-dict makes for its word lists, so the repository names
